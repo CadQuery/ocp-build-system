@@ -24,6 +24,8 @@ jobs:
         cd OCP/pywrap
         python setup.py install
         cd ..
+        pip uninstall path.py
+        pip install path
         pywrap all ocp.toml
         cmake -S OCP -B build
         cmake --build build
