@@ -17,11 +17,13 @@ jobs:
       run: |
         git clone --recurse-submodules https://github.com/CadQuery/OCP.git
         cd OCP
-        conda install -c conda-forge -c cadquery ocp
+        conda install -c conda-forge -c cadquery ocp=7.5.1
     - name: Run build
       shell: bash --login {0}
       run: |
-        cd OCP
+        cd OCP/pywrap
+        python setup.py install
+        cd ..
         pywrap all ocp.toml
         cmake -S OCP -B build
         cmake --build build
