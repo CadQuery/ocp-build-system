@@ -1,0 +1,31 @@
+name: build-wheel
+on:
+  workflow_dispatch
+jobs:
+  build-linux:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - uses: conda-incubator/setup-miniconda@v2
+      with:
+        miniconda-version: "latest"
+        auto-update-conda: true
+        python-version: 3.8
+        activate-environment: test
+    - name: Build Miniconda environment
+      shell: bash --login {0}
+      run: |
+        git clone --recurse-submodules https://github.com/CadQuery/OCP.git
+        cd OCP
+        conda install -c conda-forge -c cadquery ocp
+    - name: Run build
+      shell: bash --login {0}
+      run: |
+        cd OCP
+        pywrap all ocp.toml
+        cmake -S OCP -B build
+        cmake --build build
+    - uses: actions/upload-artifact@v2
+      with:
+        name: cq-cli-Linux-x86_64
+        path: build
