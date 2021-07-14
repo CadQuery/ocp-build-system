@@ -18,8 +18,8 @@ jobs:
         git clone --recurse-submodules https://github.com/CadQuery/OCP.git
         cd OCP
         conda env create -f env.yml -n ocp
-        pip uninstall --yes path.py
-        pip install path
+        # pip uninstall --yes path.py
+        # pip install path
     - name: Run build
       shell: bash --login {0}
       run: |
