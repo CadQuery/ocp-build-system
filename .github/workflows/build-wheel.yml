@@ -29,8 +29,8 @@ jobs:
         python setup.py install
         cd ..
         pywrap all ocp.toml
-        cmake -S OCP -B build
-        cmake --build build
+        cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -S OCP -B build
+        cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON --build build
     - uses: actions/upload-artifact@v2
       with:
         name: cq-cli-Linux-x86_64
