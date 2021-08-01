@@ -31,6 +31,7 @@ jobs:
         pywrap all ocp.toml
         cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -S OCP -B build
         cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON --build build
+        sudo find / -iname OCP*.so
     - uses: actions/upload-artifact@v2
       with:
         name: cq-cli-Linux-x86_64
