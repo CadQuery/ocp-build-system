@@ -21,7 +21,7 @@ jobs:
         conda env create -f env.yml -n ocp
         # pip uninstall --yes path.py
         # pip install path
-    - name: Run build
+    - name: Run pywrap
       shell: bash --login {0}
       run: |
         conda activate ocp
@@ -29,8 +29,15 @@ jobs:
         python setup.py install
         cd ..
         pywrap all ocp.toml
+    - name: Run cmake
+      shell: bash --login {0}
+      run: |
+        conda activate ocp
         cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -S OCP -B build
         cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON --build build
+    - name: Find library
+      shell: bash --login {0}
+      run: |
         sudo find / -iname OCP*.so
     - uses: actions/upload-artifact@v2
       with:
