@@ -41,5 +41,5 @@ jobs:
         sudo find / -iname OCP*.so
     - uses: actions/upload-artifact@v2
       with:
-        name: cq-cli-Linux-x86_64
-        path: /home/runner/work/ocp-build-system
+        name: OCP-Linux-x86_64
+        path: /home/runner/work/ocp-build-system/ocp-build-system/OCP/build
