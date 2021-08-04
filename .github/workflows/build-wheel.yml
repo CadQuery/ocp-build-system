@@ -37,7 +37,7 @@ jobs:
         cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -S OCP -B build
         cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON --build build
         cd /home/runner/work/ocp-build-system/ocp-build-system/OCP/build
-        make
+        make VERBOSE=1
     - name: Find library
       shell: bash --login {0}
       run: |
