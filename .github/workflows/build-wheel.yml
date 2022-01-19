@@ -15,7 +15,7 @@ jobs:
     - name: Build Miniconda environment
       shell: bash --login {0}
       run: |
-        sudo apt install -y build-essential libgl1-mesa-dev mesa-common-dev libglu1-mesa-dev freeglut3-dev libclang-dev
+        sudo apt install -y build-essential libgl1-mesa-dev mesa-common-dev libglu1-mesa-dev libegl1-mesa-dev freeglut3-dev libclang-dev
         git clone --recurse-submodules https://github.com/CadQuery/OCP.git
         cd OCP
         conda env create -f env.yml -n ocp
@@ -25,10 +25,12 @@ jobs:
       shell: bash --login {0}
       run: |
         conda activate ocp
-        cd OCP/pywrap
-        python setup.py install
-        cd ..
-        pywrap all ocp.toml
+        cd OCP
+        cmake -B new -S . -G Ninja
+        # cd OCP/pywrap
+        # python setup.py install
+        # cd ..
+        # pywrap all ocp.toml
     - name: Run cmake
       shell: bash --login {0}
       run: |
