@@ -3,7 +3,7 @@ on:
   workflow_dispatch
 jobs:
   build-linux:
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
     - uses: conda-incubator/setup-miniconda@v2
@@ -15,7 +15,7 @@ jobs:
     - name: Build Miniconda environment
       shell: bash --login {0}
       run: |
-        sudo apt install -y build-essential libgl1-mesa-dev mesa-common-dev libglu1-mesa-dev freeglut3-dev
+        sudo apt install -y build-essential libgl1-mesa-dev mesa-common-dev libglu1-mesa-dev freeglut3-dev clang-9
         git clone --recurse-submodules https://github.com/CadQuery/OCP.git
         cd OCP
         conda env create -f env.yml -n ocp
