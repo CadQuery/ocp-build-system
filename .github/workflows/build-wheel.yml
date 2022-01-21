@@ -36,7 +36,7 @@ jobs:
       run: |
         conda activate ocp
         cd OCP
-        cmake -S OCP -B build
+        cmake -S OCP -B build -DCMAKE_BUILD_TYPE=Release
         cmake --build build
         # cd /home/runner/work/ocp-build-system/ocp-build-system/OCP/build
         # make VERBOSE=1
