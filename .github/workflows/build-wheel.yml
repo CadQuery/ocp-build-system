@@ -36,8 +36,8 @@ jobs:
       run: |
         conda activate ocp
         cd OCP
-        cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON -S OCP -B build
-        cmake -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON --build build
+        cmake -S OCP -B build
+        cmake --build build
         # cd /home/runner/work/ocp-build-system/ocp-build-system/OCP/build
         # make VERBOSE=1
     - name: Find library
