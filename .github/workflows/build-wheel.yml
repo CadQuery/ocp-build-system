@@ -19,18 +19,13 @@ jobs:
         git clone --recurse-submodules https://github.com/CadQuery/OCP.git
         cd OCP
         conda env create -f env.yml -n ocp
-        # pip uninstall --yes path.py
-        # pip install path
+        pip install setuptools
     - name: Run pywrap
       shell: bash --login {0}
       run: |
         conda activate ocp
         cd OCP
         cmake -B new -S . -G Ninja
-        # cd OCP/pywrap
-        # python setup.py install
-        # cd ..
-        # pywrap all ocp.toml
     - name: Run cmake
       shell: bash --login {0}
       run: |
@@ -38,13 +33,20 @@ jobs:
         cd OCP
         cmake -S OCP -B build -DCMAKE_BUILD_TYPE=Release
         cmake --build build
-        # cd /home/runner/work/ocp-build-system/ocp-build-system/OCP/build
-        # make VERBOSE=1
-    - name: Find library
+    - name: Build Wheel
+      shell: bash --login {0}
+      run: |
+        conda activate ocp
+        export LD_LIBRARY_PATH=/home/runner/work/ocp-build-system/ocp-build-system/OCP/build
+        python setup.py bdist_wheel
+    - name: Find library and Wheel
       shell: bash --login {0}
       run: |
         find /home/runner/work/ocp-build-system -iname *.so
+        find /home/runner/work/ocp-build-system -iname *.whl
     - uses: actions/upload-artifact@v2
       with:
         name: OCP-Linux-x86_64
-        path: /home/runner/work/ocp-build-system/ocp-build-system/OCP/build
+        path: |
+          /home/runner/work/ocp-build-system/ocp-build-system/OCP/build/*.so
+          /home/runner/work/ocp-build-system/ocp-build-system/dist/*.whl
