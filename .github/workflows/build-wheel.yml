@@ -31,7 +31,7 @@ jobs:
       run: |
         conda activate ocp
         cd OCP
-        cmake -S OCP -B build -DCMAKE_BUILD_TYPE=Release -fuse-ld=lld
+        cmake -S OCP -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fuse-ld=lld"
         cmake --build build
     - name: Build Wheel
       shell: bash --login {0}
