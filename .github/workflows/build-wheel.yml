@@ -15,7 +15,7 @@ jobs:
     - name: Build Miniconda environment
       shell: bash --login {0}
       run: |
-        sudo apt install -y build-essential libgl1-mesa-dev mesa-common-dev libglu1-mesa-dev libegl1-mesa-dev freeglut3-dev libclang-dev
+        sudo apt install -y build-essential libgl1-mesa-dev mesa-common-dev libglu1-mesa-dev libegl1-mesa-dev freeglut3-dev libclang-dev lld
         git clone --recurse-submodules https://github.com/CadQuery/OCP.git
         cd OCP
         conda env create -f env.yml -n ocp
@@ -31,7 +31,7 @@ jobs:
       run: |
         conda activate ocp
         cd OCP
-        cmake -S OCP -B build -DCMAKE_BUILD_TYPE=Release
+        cmake -S OCP -B build -DCMAKE_BUILD_TYPE=Release -fuse-ld=lld
         cmake --build build
     - name: Build Wheel
       shell: bash --login {0}
