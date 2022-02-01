@@ -37,6 +37,12 @@ setup(
         'Programming Language :: Python :: 3 :: Only',
     ],
     package_data={'': ['OCP.cpython-39-x86_64-linux-gnu.so']},
+    ext_modules =[
+        setuptools.Extension(
+            name='OCP',
+            sources=[]
+        )
+    ],
     python_requires='>=3.8, <3.10',
     install_requires=[
         'boost>=1.74.0',
