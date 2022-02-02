@@ -44,6 +44,8 @@ jobs:
       run: |
         find /home/runner/work/ocp-build-system -iname *.so
         find /home/runner/work/ocp-build-system -iname *.whl
+        ls -l /home/runner/work/ocp-build-system/ocp-build-system/build/lib.linux-x86_64-3.9/OCP.cpython-39-x86_64-linux-gnu.so
+        ls -l /home/runner/work/ocp-build-system/ocp-build-system/OCP/build/OCP.cpython-39-x86_64-linux-gnu.so
     - uses: actions/upload-artifact@v2
       with:
         name: OCP-Linux-x86_64
