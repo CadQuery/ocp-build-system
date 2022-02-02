@@ -37,7 +37,7 @@ setup(
         # "Programming Language :: Python :: 3.10",
         'Programming Language :: Python :: 3 :: Only',
     ],
-    package_data={'': ['OCP.cpython-39-x86_64-linux-gnu.so']},
+    # package_data={'': ['OCP.cpython-39-x86_64-linux-gnu.so']},
     ext_modules =[
         setuptools.Extension(
             name='OCP',
