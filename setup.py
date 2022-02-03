@@ -7,13 +7,17 @@ https://github.com/pypa/sampleproject
 
 # Always prefer setuptools over distutils
 import setuptools
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Distribution
 import pathlib
 
 here = pathlib.Path(__file__).parent.resolve()
 
 # Get the long description from the README file
 long_description = (here / 'README.md').read_text(encoding='utf-8')
+
+class BinaryDistribution(Distribution):
+    def has_ext_modules(blank):
+        return True
 
 # Arguments marked as "Required" below must be included for upload to PyPI.
 # Fields marked as "Optional" may be commented out.
