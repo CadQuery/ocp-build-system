@@ -37,7 +37,6 @@ jobs:
       shell: bash --login {0}
       run: |
         conda activate ocp
-        rm /home/runner/work/ocp-build-system/ocp-build-system/build/lib.linux-x86_64-3.9/OCP.cpython-39-x86_64-linux-gnu.so
         export LD_LIBRARY_PATH=/home/runner/work/ocp-build-system/ocp-build-system/OCP/build
         python setup.py bdist_wheel
     - name: Find library and Wheel
