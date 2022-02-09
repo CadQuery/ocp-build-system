@@ -22,6 +22,7 @@ jobs:
           auto-update-conda: true
           python-version: 3.8
           activate-environment: build
+
       - name: Setup OCP environment
         run: |
           git clone --recurse-submodules https://github.com/CadQuery/OCP.git
@@ -30,7 +31,7 @@ jobs:
 
       # Used to host cibuildwheel
       - uses: actions/setup-python@v2
-
+      - uses: conda-incubator/setup-miniconda@v2
       - name: Install cibuildwheel
         run: |
           conda activate ocp
