@@ -28,19 +28,21 @@ jobs:
           git clone --recurse-submodules https://github.com/CadQuery/OCP.git
           cd OCP
           conda env create -f env.yml -n ocp
+          cd ..
+          python -m pip install cibuildwheel==2.3.1
+          python -m cibuildwheel --output-dir wheelhouse
 
       # Used to host cibuildwheel
-      - uses: actions/setup-python@v2
-      - uses: conda-incubator/setup-miniconda@v2
-      - name: Install cibuildwheel
-        run: |
-          conda activate ocp
-          python -m pip install cibuildwheel==2.3.1
+      # - uses: actions/setup-python@v2
+      # - name: Install cibuildwheel
+      #   run: |
+      #     conda activate ocp
+      #     python -m pip install cibuildwheel==2.3.1
 
-      - name: Build wheels
-        run: |
-          conda activate ocp
-          python -m cibuildwheel --output-dir wheelhouse
+      # - name: Build wheels
+      #   run: |
+      #     conda activate ocp
+      #     python -m cibuildwheel --output-dir wheelhouse
         # to supply options, put them in 'env', like:
         # env:
         #   CIBW_SOME_OPTION: value
