@@ -1,54 +1,65 @@
-name: build-wheel
+name: Create Python wheel using Conda
+
 on:
-  workflow_dispatch
+  push:
+    branches: [ master ]
+
 jobs:
-  build-linux:
-    runs-on: ubuntu-latest
+  build:
+    name: Build for python ${{ matrix.python-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}-latest
+
+    strategy:
+      matrix:
+        os: [ 'ubuntu', 'macos', 'windows' ]
+        python-version: [ '3.8', '3.9', '3.10' ]
+
     steps:
-    - uses: actions/checkout@v2
-    - uses: conda-incubator/setup-miniconda@v2
-      with:
-        miniconda-version: "latest"
-        auto-update-conda: true
-        python-version: 3.8
-        activate-environment: test
-    - name: Build Miniconda environment
-      shell: bash --login {0}
-      run: |
-        sudo apt install -y build-essential libgl1-mesa-dev mesa-common-dev libglu1-mesa-dev libegl1-mesa-dev freeglut3-dev libclang-dev lld
-        git clone --recurse-submodules https://github.com/CadQuery/OCP.git
-        cd OCP
-        conda env create -f env.yml -n ocp
-        pip install setuptools
-    - name: Run pywrap
-      shell: bash --login {0}
-      run: |
-        conda activate ocp
-        cd OCP
-        cmake -B new -S . -G Ninja
-    - name: Run cmake
-      shell: bash --login {0}
-      run: |
-        conda activate ocp
-        cd OCP
-        cmake -S OCP -B build -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_FLAGS="-fuse-ld=lld"
-        cmake --build build
-    - name: Build Wheel
-      shell: bash --login {0}
-      run: |
-        conda activate ocp
-        export LD_LIBRARY_PATH=/home/runner/work/ocp-build-system/ocp-build-system/OCP/build
-        python setup.py bdist_wheel
-    - name: Find library and Wheel
-      shell: bash --login {0}
-      run: |
-        find /home/runner/work/ocp-build-system -iname *.so
-        find /home/runner/work/ocp-build-system -iname *.whl
-        # ls -l /home/runner/work/ocp-build-system/ocp-build-system/build/lib.linux-x86_64-3.9/OCP.cpython-39-x86_64-linux-gnu.so
-        ls -l /home/runner/work/ocp-build-system/ocp-build-system/OCP/build/OCP.cpython-39-x86_64-linux-gnu.so
-    - uses: actions/upload-artifact@v2
-      with:
-        name: OCP-Linux-x86_64
-        path: |
-          # /home/runner/work/ocp-build-system/ocp-build-system/OCP/build/*.so
-          /home/runner/work/ocp-build-system/ocp-build-system/dist/*.whl
+
+      - name: Checkout project
+        uses: actions/checkout@v2
+
+      # See https://cibuildwheel.readthedocs.io/en/stable/
+      # Not usable for now, because cadquery libraries require glibc 2.31,
+      # but the manylinux images have been created only up to 2.24 (as of 2022-04-11).
+      # - name: Build wheels
+      #   uses: pypa/cibuildwheel@v2.4.0
+      #   with:
+      #     output-dir: dist
+
+      # see https://github.com/marketplace/actions/setup-miniconda
+      - name: Setup Conda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          miniforge-version: latest
+          activate-environment: ocp-vtk
+          python-version: ${{ matrix.python-version }}
+          channels: conda-forge
+
+      - name: Build wheel
+        shell: bash -l {0}
+        run: |
+          conda install -n ocp-vtk -y ocp=7.5.3.0
+          pip install --upgrade pip
+          pip install build setuptools wheel requests auditwheel delocate delvewheel
+          python -m build --no-isolation
+
+      - name: Print info
+        shell: bash -l {0}
+        run: |
+          conda info
+          conda list --explicit
+          echo '${{ github.event_name }} ${{ github.ref }}'
+
+      - name: Test wheel
+        shell: bash -l {0}
+        run: |
+          pip install 'git+https://github.com/CadQuery/cadquery' ezdxf multimethod nlopt nptyping typish
+          python -c "import cadquery; cadquery.Workplane('XY').box(1,2,3).toSvg()"
+
+      # see https://github.com/marketplace/actions/upload-a-build-artifact
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ocp-vtk-${{ matrix.os }}-cp${{ matrix.python-version }}
+          path: dist/*.whl
