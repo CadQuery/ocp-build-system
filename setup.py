@@ -269,7 +269,6 @@ def write_licenses(prefix, whl, always_pkgs, added_files, out):
             with open(fn, "rb") as f:
                 raw = f.read()
             for l in raw.decode(errors="replace").splitlines():
-                print(l)
                 print(f"> {l.rstrip()}", file=out)
 
 
