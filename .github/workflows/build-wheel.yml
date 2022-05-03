@@ -40,7 +40,7 @@ jobs:
       - name: Build wheel
         shell: bash -l {0}
         run: |
-          conda install -n ocp-vtk -y ocp=7.5.3.0
+          conda install -n ocp-vtk -y ocp=7.5.3.0 vtk=9.0.1
           pip install --upgrade pip
           pip install build setuptools wheel requests auditwheel delocate delvewheel
           python -m build --no-isolation
