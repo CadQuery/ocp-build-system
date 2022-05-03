@@ -1,11 +1,9 @@
 name: Create Python wheel using Conda
 
 on:
-  push:
-    branches: [ master ]
-  workflow_dispatch:
-    tags:
-        description: 'Manual build'
+  workflow_dispatch
+  # push:
+  #   branches: [ master ]
 
 jobs:
   build:
