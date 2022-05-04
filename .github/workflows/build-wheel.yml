@@ -5,6 +5,9 @@ on:
   # push:
   #   branches: [ master ]
 
+env:
+  PYTHONUTF8: 1
+
 jobs:
   build:
     name: Build for python ${{ matrix.python-version }} on ${{ matrix.os }}
