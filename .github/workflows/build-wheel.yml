@@ -59,7 +59,8 @@ jobs:
         shell: bash -l {0}
         run: |
           conda deactivate
-          python --version
+          conda create --yes -n cadquerytest python={{ matrix.python-version }}
+          conda activate cadquerytest
           pip install dist/*.whl
           python -c "import OCP"
       # pip install 'git+https://github.com/CadQuery/cadquery' ezdxf multimethod nlopt nptyping typish
