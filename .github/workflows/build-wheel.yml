@@ -62,9 +62,7 @@ jobs:
           conda create --yes -n cadquerytest python=${{ matrix.python-version }}
           conda activate cadquerytest
           pip install dist/*.whl
-          python -c "import OCP"
-      # pip install 'git+https://github.com/CadQuery/cadquery' ezdxf multimethod nlopt nptyping typish
-      # python -c "import cadquery; cadquery.Workplane('XY').box(1,2,3).toSvg()"
+          python -c "import OCP;print('OCP imported successfully')"
 
       # see https://github.com/marketplace/actions/upload-a-build-artifact
       - name: Upload Artifact
