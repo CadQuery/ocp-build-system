@@ -58,6 +58,7 @@ jobs:
       - name: Test wheel
         shell: bash -l {0}
         run: |
+          ! python -c "import OCP"
           pip install 'git+https://github.com/CadQuery/cadquery' ezdxf multimethod nlopt nptyping typish
           python -c "import cadquery; cadquery.Workplane('XY').box(1,2,3).toSvg()"
 
