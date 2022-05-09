@@ -292,7 +292,7 @@ args = [conda, "list", "--json", "^ocp$"]
 [ocp_meta] = json.loads(subprocess.check_output(args))
 
 setup(
-    name="ocp-vtk",
+    name="cadquery-ocp",
     version=ocp_meta["version"],
     description="OCP+VTK wheel with shared library dependencies bundled.",
     long_description=open("README.md").read(),

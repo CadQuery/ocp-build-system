@@ -36,14 +36,14 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           miniforge-version: latest
-          activate-environment: ocp-vtk
+          activate-environment: cadquery-ocp
           python-version: ${{ matrix.python-version }}
           channels: conda-forge
 
       - name: Build wheel
         shell: bash -l {0}
         run: |
-          conda install -n ocp-vtk -y ocp=7.5.3.0 vtk=9.0.1
+          conda install -n cadquery-ocp -y ocp=7.5.3.0 vtk=9.0.1
           pip install --upgrade pip
           pip install build setuptools wheel requests auditwheel delocate delvewheel
           python -m build --no-isolation
@@ -68,5 +68,5 @@ jobs:
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ocp-vtk-${{ matrix.os }}-cp${{ matrix.python-version }}
+          name: cadquery-ocp-${{ matrix.os }}-cp${{ matrix.python-version }}
           path: dist/*.whl
