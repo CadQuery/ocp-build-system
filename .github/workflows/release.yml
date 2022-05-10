@@ -16,7 +16,7 @@ jobs:
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
         with:
-          workflow: build_wheel.yml
+          workflow: build-wheel.yml
           path: wheels
 
       - name: List wheels
