@@ -1,0 +1,40 @@
+name: Releases
+
+on: 
+  push:
+    tags: [ '*' ]
+
+jobs:
+
+  release:
+    name: Publish release
+    runs-on: ubuntu-latest
+    steps:
+
+      # see https://github.com/marketplace/actions/download-workflow-artifact
+      - name: Download artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: build_wheel.yml
+          path: wheels
+
+      - name: List wheels
+        run: |
+          mkdir dist
+          mv wheels/**/*.whl dist
+          rm -rf wheels
+          ls dist
+
+      # see https://github.com/marketplace/actions/create-release
+      - name: Create release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/*.whl"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      # see https://github.com/marketplace/actions/pypi-publish
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PYPI_API_TOKEN }}

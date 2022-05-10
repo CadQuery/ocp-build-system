@@ -297,9 +297,9 @@ setup(
     description="OCP+VTK wheel with shared library dependencies bundled.",
     long_description=open("README.md").read(),
     long_description_content_type='text/markdown',
-    author="fp473, roipoussiere",
-    url='https://github.com/roipoussiere/OCP',
-    download_url="https://github.com/roipoussiere/OCP/releases",
+    author="adam-urbanczyk, fp473 (wheel generation), roipoussiere (wheel generation)",
+    url='https://github.com/CadQuery/OCP',
+    download_url="https://github.com/jmwright/ocp-build-system/releases",
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
