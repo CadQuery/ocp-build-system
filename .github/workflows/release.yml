@@ -12,18 +12,18 @@ jobs:
     steps:
 
       # see https://github.com/marketplace/actions/download-workflow-artifact
-      - name: Download artifact
-        uses: dawidd6/action-download-artifact@v2
-        with:
-          workflow: build-wheel.yml
-          path: wheels
+      # - name: Download artifact
+      #   uses: dawidd6/action-download-artifact@v2
+      #   with:
+      #     workflow: build-wheel.yml
+      #     path: wheels
 
-      - name: List wheels
-        run: |
-          mkdir dist
-          mv wheels/**/*.whl dist
-          rm -rf wheels
-          ls dist
+      # - name: List wheels
+      #   run: |
+      #     mkdir dist
+      #     mv wheels/**/*.whl dist
+      #     rm -rf wheels
+      #     ls dist
 
       # see https://github.com/marketplace/actions/create-release
       - name: Create release
