@@ -23,6 +23,11 @@ jobs:
           mkdir dist
           mv wheels/**/*.whl dist
           rm -rf wheels
+          # for initial PyPi upload only
+          cd dist
+          for f in *7.5.3.0*; do [ -f "$f" ] && mv -- "$f" "${f/7.5.3.0/7.5.3}"; done
+          cd ..
+          # end for initial PyPi upload only
           ls dist
 
       # see https://github.com/marketplace/actions/create-release
