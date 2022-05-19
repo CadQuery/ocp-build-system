@@ -23,11 +23,11 @@ jobs:
           mkdir dist
           mv wheels/**/*.whl dist
           rm -rf wheels
-          # for initial PyPi upload only
+          # use this if the versions in the file names need to be changed for PyPi
           cd dist
           for f in *7.5.3.0*; do [ -f "$f" ] && mv -- "$f" "${f/7.5.3.0/7.5.3}"; done
           cd ..
-          # end for initial PyPi upload only
+          # END use this if the versions in the file names need to be changed for PyPi
           ls dist
 
       # see https://github.com/marketplace/actions/create-release
@@ -43,7 +43,7 @@ jobs:
         with:
           verbose: true
           user: __token__
-          # password: ${{ secrets.PYPI_API_TOKEN }}
+          password: ${{ secrets.PYPI_API_TOKEN }}
           # For releasing to test.pypi.org
-          password: ${{ secrets.PYPI_TEST_API_TOKEN }}
-          repository_url: https://test.pypi.org/legacy/
+          # password: ${{ secrets.PYPI_TEST_API_TOKEN }}
+          # repository_url: https://test.pypi.org/legacy/
