@@ -38,7 +38,7 @@ jobs:
           miniforge-version: latest
           activate-environment: cadquery-ocp
           python-version: ${{ matrix.python-version }}
-          channels: conda-forge
+          channels: conda-forge, defaults
 
       - name: Build wheel
         shell: bash -l {0}
