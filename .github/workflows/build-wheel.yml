@@ -35,10 +35,11 @@ jobs:
       - name: Setup Conda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          miniforge-version: latest
+          #miniforge-version: latest
+          miniconda-version: latest
           activate-environment: cadquery-ocp
           python-version: ${{ matrix.python-version }}
-          channels: conda-forge, defaults
+          channels: cadquery, conda-forge, defaults
 
       - name: Build wheel
         shell: bash -l {0}
