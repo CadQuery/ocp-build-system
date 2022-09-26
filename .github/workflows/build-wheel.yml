@@ -43,7 +43,7 @@ jobs:
       - name: Build wheel
         shell: bash -l {0}
         run: |
-          conda install -n cadquery-ocp -y ocp=v7.6.3.alpha vtk=9.1.0
+          conda install -n cadquery-ocp -y ocp=7.6.* vtk=9.1.0
           pip install --upgrade pip
           pip install build setuptools wheel requests auditwheel delocate delvewheel
           python -m build --no-isolation
