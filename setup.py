@@ -129,9 +129,11 @@ def repair_wheel_linux(lib_path, whl, out_dir):
         sys.executable,
         "-m",
         "auditwheel",
+        "--verbose",
         "show",
         whl,
     ]
+    print(args)
     subprocess.check_call(args)
 
     args = [
@@ -140,6 +142,7 @@ def repair_wheel_linux(lib_path, whl, out_dir):
         sys.executable,
         "-m",
         "auditwheel",
+        "--verbose",
         "repair",
         f"--plat={plat}",
         f"--wheel-dir={out_dir}",
