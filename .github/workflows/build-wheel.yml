@@ -41,12 +41,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
           channels: cadquery, conda-forge, defaults
 
-      #- name: Ubuntu Deps Setup
-      #  shell: bash -l {0}
-      #  run: |
-      #    if [ "$RUNNER_OS" == "Linux" ]; then
-      #      sudo apt install -y libegl1 libegl-dev
-      #    fi
+      - name: Ubuntu Deps Setup
+        shell: bash -l {0}
+        run: |
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt install -y libegl1 libegl1-mesa-dev
+          fi
 
       - name: Build wheel
         shell: bash -l {0}
