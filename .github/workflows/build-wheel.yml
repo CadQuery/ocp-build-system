@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ 'ubuntu-22.04', 'macos-latest', 'windows-latest' ]
+        os: [ 'ubuntu-18.04', 'macos-latest', 'windows-latest' ]
         python-version: [ '3.8', '3.9', '3.10' ]
 
     steps:
@@ -41,12 +41,12 @@ jobs:
           python-version: ${{ matrix.python-version }}
           channels: cadquery, conda-forge, defaults
 
-      - name: Ubuntu Deps Setup
-        shell: bash -l {0}
-        run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-            sudo apt install -y libegl1 libegl-dev
-          fi
+      #- name: Ubuntu Deps Setup
+      #  shell: bash -l {0}
+      #  run: |
+      #    if [ "$RUNNER_OS" == "Linux" ]; then
+      #      sudo apt install -y libegl1 libegl-dev
+      #    fi
 
       - name: Build wheel
         shell: bash -l {0}
