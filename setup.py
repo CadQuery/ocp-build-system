@@ -1,10 +1,6 @@
 """
 Build OCP+VTK wheel with shared library dependencies bundled
 
-    *** This proof-of-concept wheel MAY NOT BE DISTRIBUTED ***
-    *** as it does not include the requisite license texts ***
-    *** of the bundled libraries.                          ***
-
 From the directory containing this file, and with an appropriate conda
 environment activated:
 
