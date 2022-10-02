@@ -54,7 +54,11 @@ jobs:
           conda install -n cadquery-ocp -y ocp=7.6.* vtk=9.1.0
           pip install --upgrade pip
           pip install build setuptools wheel requests auditwheel delocate delvewheel
-          python -m build --no-isolation
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            export VTK_MANYLINUX=/tmp/vtk-manylinux
+            pip install -t $VTK_MANYLINUX --no-deps vtk~=9.1.0
+          fi
+          python -m build --no-isolation --wheel
 
       - name: Print info
         shell: bash -l {0}

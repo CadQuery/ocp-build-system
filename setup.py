@@ -1,14 +1,10 @@
 """
 Build OCP+VTK wheel with shared library dependencies bundled
 
-    *** This proof-of-concept wheel MAY NOT BE DISTRIBUTED ***
-    *** as it does not include the requisite license texts ***
-    *** of the bundled libraries.                          ***
-
 From the directory containing this file, and with an appropriate conda
 environment activated:
 
-    $ python -m build --no-isolation
+    $ python -m build --no-isolation --wheel
 
 will build a manylinux wheel into `dist/`.
 
@@ -18,6 +14,16 @@ package builder) python packages is required, as well as the
 `patchelf` binary.  Note that the vtk package needs to be bundled to
 avoid multiple copies of the VTK shared libraries, which appears to
 cause errors.
+
+On Linux, a VTK manylinux wheel can be used instead of the VTK conda
+package.  This may allow for a more compatible manylinux wheel to be
+built.  Install the VTK manylinux wheel somewhere, e.g.:
+
+    pip install -t /foo --no-deps vtk~=9.1.0
+
+and then set VTK_MANYLINUX=/foo before building.  (We use the
+VTK_MANYLINUX envvar instead of wrangling with custom setuptools build
+option.)
 
 This setuptools build script works by first adding the installed `OCP`
 and `vtk` python package files into a wheel.  This wheel is not
@@ -35,6 +41,7 @@ import OCP
 import glob
 import json
 import os.path
+import pathlib
 import platform
 import re
 from setuptools import Extension, setup
@@ -42,9 +49,60 @@ import setuptools.command.build_ext
 import shutil
 import subprocess
 import sys
+import tempfile
 import vtkmodules
 import wheel.bdist_wheel
 import zipfile
+
+
+VTK_MANYLINUX = None
+if platform.system() == "Linux" and os.getenv("VTK_MANYLINUX"):
+    VTK_MANYLINUX = pathlib.Path(os.getenv("VTK_MANYLINUX")).resolve()
+    if not (VTK_MANYLINUX / "vtkmodules" / "__init__.py").exists():
+        raise Exception(f"invalid VTK_MANYLINUX: {VTK_MANYLINUX}")
+
+
+def populate_lib_dir(conda_prefix, vtk_manylinux, out_dir):
+    """Merge non-vtk conda libs and vtk manylinux libs into a single directory"""
+
+    conda_prefix = pathlib.Path(conda_prefix)
+    vtk_manylinux = pathlib.Path(vtk_manylinux)
+    out_dir = pathlib.Path(out_dir)
+
+    fns = list((conda_prefix / "conda-meta").glob("vtk-*.json"))
+    if len(fns) != 1:
+        raise Exception(f"could not find unique vtk meta: {fns}")
+    vtk_meta = json.loads(fns[0].read_text())
+    vtk_files = {conda_prefix / f for f in vtk_meta["files"]}
+
+    # Do not copy regular VTK files because we will use manylinux
+    # files instead.  Do copy VTK symlinks because they're expected by
+    # other conda packages which we may bundle into the wheel.
+    vtk_skipped_files = []
+    for f in (conda_prefix / "lib").iterdir():
+        if f.is_dir():
+            continue
+        if f in vtk_files and not f.is_symlink():
+            vtk_skipped_files.append(f)
+        else:
+            shutil.copy2(f, out_dir, follow_symlinks=False)
+
+    # Copy VTK files.  Symlinks in the target will be followed so we
+    # are fixing broken symlinks.
+    for f in (vtk_manylinux / "vtkmodules").glob("lib*.so*"):
+        shutil.copy2(f, out_dir, follow_symlinks=False)
+
+    # The VTK manylinux wheel may not provide all the libraries of the
+    # VTK conda pkg, so there may be missing files or broken symlinks.
+    # If this is problematic then auditwheel will fail.  For now,
+    # print some helpful information.
+    for f in vtk_skipped_files:
+        if not (out_dir / f.name).exists():
+            print("manylinux whl did not provide:", f)
+
+    # Copy the rest of the libraries bundled in the VTK wheel.
+    for f in (vtk_manylinux / "vtk.libs").glob("lib*.so*"):
+        shutil.copy2(f, out_dir, follow_symlinks=False)
 
 
 class copy_installed(setuptools.command.build_ext.build_ext):
@@ -58,12 +116,22 @@ class copy_installed(setuptools.command.build_ext.build_ext):
         # OCP is a single-file extension; just copy it
         shutil.copy(OCP.__file__, self.build_lib)
         # vtkmodules is a package; copy it while excluding __pycache__
-        assert vtkmodules.__file__.endswith(os.path.join(os.sep, "vtkmodules", "__init__.py"))
-        shutil.copytree(
-            os.path.dirname(vtkmodules.__file__),
-            os.path.join(self.build_lib, "vtkmodules"),
-            ignore=shutil.ignore_patterns("__pycache__"),
-        )
+        if VTK_MANYLINUX:
+            # Copy python source files and python extensions, but not
+            # shared libraries.  We will point auditwheel to them
+            # separately to be bundled in.
+            shutil.copytree(
+                os.path.join(VTK_MANYLINUX, "vtkmodules"),
+                os.path.join(self.build_lib, "vtkmodules"),
+                ignore=shutil.ignore_patterns("__pycache__", "libvtk*.so*"),
+            )
+        else:
+            assert vtkmodules.__file__.endswith(os.path.join(os.sep, "vtkmodules", "__init__.py"))
+            shutil.copytree(
+                os.path.dirname(vtkmodules.__file__),
+                os.path.join(self.build_lib, "vtkmodules"),
+                ignore=shutil.ignore_patterns("__pycache__"),
+            )
 
 
 class bdist_wheel_repaired(wheel.bdist_wheel.bdist_wheel):
@@ -95,6 +163,12 @@ class bdist_wheel_repaired(wheel.bdist_wheel.bdist_wheel):
         out_dir = os.path.join(self.dist_dir, "repaired")
         system = platform.system()
         if system == "Linux":
+            if VTK_MANYLINUX:
+                # Create a lib dir with VTK manylinux files merged in,
+                # and point auditwheel to it.
+                merged_lib_dir = tempfile.mkdtemp()
+                populate_lib_dir(conda_prefix, VTK_MANYLINUX, merged_lib_dir)
+                lib_path = merged_lib_dir
             repair_wheel_linux(lib_path, bad_whl, out_dir)
         elif system == "Darwin":
             repair_wheel_macos(lib_path, bad_whl, out_dir)
@@ -122,19 +196,6 @@ class bdist_wheel_repaired(wheel.bdist_wheel.bdist_wheel):
 def repair_wheel_linux(lib_path, whl, out_dir):
 
     plat = "manylinux_2_31_x86_64"
-
-    args = [
-        "env",
-        f"LD_LIBRARY_PATH={lib_path}",
-        sys.executable,
-        "-m",
-        "auditwheel",
-        "--verbose",
-        "show",
-        whl,
-    ]
-    print(args)
-    subprocess.check_call(args)
 
     args = [
         "env",
