@@ -59,24 +59,27 @@ jobs:
           pip install --upgrade pip
           pip install build setuptools wheel requests auditwheel delocate delvewheel
 
-      - name: Manylinux Setup 1
+      - name: Manylinux Build 1
         shell: bash -l {0}
         if: ${{ matrix.os == 'ubuntu-18.04' && matrix.python-version != '3.10' }}
         run: |
           export VTK_MANYLINUX=/tmp/vtk-manylinux
           pip install -t $VTK_MANYLINUX --no-deps vtk~=9.1.0
+          python -m build --no-isolation --wheel
 
       # vtk 9.1 py3.10 manylinux wheel not available on PyPI.
       # Use pyvista build: https://gitlab.kitware.com/vtk/vtk/-/issues/18335
-      - name: Manylinux Setup 2
+      - name: Manylinux Build 2
         shell: bash -l {0}
         if: ${{ matrix.os == 'ubuntu-18.04' && matrix.python-version == '3.10' }}
         run: |
           export VTK_MANYLINUX=/tmp/vtk-manylinux
           pip install -t $VTK_MANYLINUX --no-deps https://github.com/pyvista/pyvista-wheels/raw/main/vtk-9.1.0.dev0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
+          python -m build --no-isolation --wheel
 
-      - name: Build wheel
+      - name: Conda-only Build
         shell: bash -l {0}
+        if: ${{ matrix.os != 'ubuntu-18.04' }}
         run: |
           python -m build --no-isolation --wheel
 
