@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ 'ubuntu-18.04', 'macos-latest', 'windows-latest' ]
+        os: [ 'ubuntu-20.04', 'macos-latest', 'windows-latest' ]
         python-version: [ '3.8', '3.9', '3.10' ]
 
     steps:
@@ -61,7 +61,7 @@ jobs:
 
       - name: Manylinux Build 1
         shell: bash -l {0}
-        if: ${{ matrix.os == 'ubuntu-18.04' && matrix.python-version != '3.10' }}
+        if: ${{ matrix.os == 'ubuntu-20.04' && matrix.python-version != '3.10' }}
         run: |
           export VTK_MANYLINUX=/tmp/vtk-manylinux
           pip install -t $VTK_MANYLINUX --no-deps vtk~=9.1.0
@@ -71,7 +71,7 @@ jobs:
       # Use pyvista build: https://gitlab.kitware.com/vtk/vtk/-/issues/18335
       - name: Manylinux Build 2
         shell: bash -l {0}
-        if: ${{ matrix.os == 'ubuntu-18.04' && matrix.python-version == '3.10' }}
+        if: ${{ matrix.os == 'ubuntu-20.04' && matrix.python-version == '3.10' }}
         run: |
           export VTK_MANYLINUX=/tmp/vtk-manylinux
           pip install -t $VTK_MANYLINUX --no-deps https://github.com/pyvista/pyvista-wheels/raw/main/vtk-9.1.0.dev0-cp310-cp310-manylinux_2_17_x86_64.manylinux2014_x86_64.whl
@@ -79,7 +79,7 @@ jobs:
 
       - name: Conda-only Build
         shell: bash -l {0}
-        if: ${{ matrix.os != 'ubuntu-18.04' }}
+        if: ${{ matrix.os != 'ubuntu-20.04' }}
         run: |
           python -m build --no-isolation --wheel
 
