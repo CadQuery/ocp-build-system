@@ -355,9 +355,20 @@ conda_prefix = info["active_prefix"] or info["conda_prefix"]
 args = [conda, "list", "--json", "^ocp$"]
 [ocp_meta] = json.loads(subprocess.check_output(args))
 
+# Massage conda version string, e.g. "7.6.3.0", "7.6.3.alpha" into a
+# wheel version string.  setuptools already converts "X.Y.Z.alpha" to
+# "X.Y.Za0".  For now, just replace "X.Y.Z.0" with "X.Y.Z".
+wheel_version = ocp_meta["version"]
+while wheel_version.count(".") > 2 and wheel_version.endswith(".0"):
+    wheel_version = wheel_version[:-2]
+
+# # Release an alpha wheel as a non-alpha wheel
+# if wheel_version == "7.7.0.alpha":
+#     wheel_version = "7.7.0"
+
 setup(
     name="cadquery-ocp",
-    version=ocp_meta["version"],
+    version=wheel_version,
     description="OCP+VTK wheel with shared library dependencies bundled.",
     long_description=open("README.md").read(),
     long_description_content_type='text/markdown',
