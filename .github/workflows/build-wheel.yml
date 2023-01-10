@@ -53,11 +53,17 @@ jobs:
         run: |
           conda install -n cadquery-ocp -y ocp=7.6.3.0 vtk=9.1.0
 
-      - name: Pip Deps Setup
+      - name: Pip Deps Setup 1
         shell: bash -l {0}
         run: |
           pip install --upgrade pip
-          pip install build setuptools wheel requests auditwheel delocate delvewheel patchelf
+          pip install build setuptools wheel requests delocate delvewheel
+
+      - name: Pip Deps Setup 2
+        shell: bash -l {0}
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        run: |
+          pip install auditwheel patchelf
 
       - name: Manylinux Build 1
         shell: bash -l {0}
