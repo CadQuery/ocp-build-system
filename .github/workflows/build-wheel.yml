@@ -57,7 +57,7 @@ jobs:
         shell: bash -l {0}
         run: |
           pip install --upgrade pip
-          pip install build setuptools wheel requests auditwheel delocate delvewheel
+          pip install build setuptools wheel requests auditwheel delocate delvewheel patchelf
 
       - name: Manylinux Build 1
         shell: bash -l {0}
