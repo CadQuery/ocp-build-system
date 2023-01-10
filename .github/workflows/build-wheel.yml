@@ -59,13 +59,13 @@ jobs:
           pip install --upgrade pip
           pip install build setuptools wheel requests auditwheel delocate delvewheel
 
-      - name: Manylinux Build 1
-        shell: bash -l {0}
-        if: ${{ matrix.os == 'ubuntu-20.04' && matrix.python-version != '3.10' }}
-        run: |
-          export VTK_MANYLINUX=/tmp/vtk-manylinux
-          pip install -t $VTK_MANYLINUX --no-deps vtk~=9.1.0
-          python -m build --no-isolation --wheel
+      # - name: Manylinux Build 1
+      #   shell: bash -l {0}
+      #   if: ${{ matrix.os == 'ubuntu-20.04' && matrix.python-version != '3.10' }}
+      #   run: |
+      #     export VTK_MANYLINUX=/tmp/vtk-manylinux
+      #     pip install -t $VTK_MANYLINUX --no-deps vtk~=9.1.0
+      #     python -m build --no-isolation --wheel
 
       # vtk 9.1 py3.10 manylinux wheel not available on PyPI.
       # Use pyvista build: https://gitlab.kitware.com/vtk/vtk/-/issues/18335
