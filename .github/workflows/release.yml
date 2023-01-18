@@ -25,7 +25,7 @@ jobs:
           rm -rf wheels
           # use this if the versions in the file names need to be changed for PyPi
           cd dist
-          for f in *7.5.3.0*; do [ -f "$f" ] && mv -- "$f" "${f/7.5.3.0/7.5.3}"; done
+          for f in *7.6.3.0*; do [ -f "$f" ] && mv -- "$f" "${f/7.6.3.0/7.6.3}"; done
           cd ..
           # END use this if the versions in the file names need to be changed for PyPi
           ls dist
