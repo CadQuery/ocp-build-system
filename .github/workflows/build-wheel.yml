@@ -51,7 +51,7 @@ jobs:
       - name: Conda Deps Setup
         shell: bash -l {0}
         run: |
-          conda install -c cadquery -n cadquery-ocp -y ocp==7.7.0.alpha vtk=9.2.5
+          conda install -c cadquery -n cadquery-ocp -y ocp==7.7.0.alpha vtk=9.2.*
 
       - name: Pip Deps Setup 1
         shell: bash -l {0}
