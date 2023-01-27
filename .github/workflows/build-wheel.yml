@@ -78,7 +78,7 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
           export VTK_MANYLINUX=/tmp/vtk-manylinux
-          pip install -t $VTK_MANYLINUX --no-deps vtk-wheels/**/cadquery-vtk-${{ matrix.os }}-cp${{ matrix.python-version }}.whl
+          pip install -t $VTK_MANYLINUX --no-deps ./vtk-wheels/**/vtk-*.whl
           python -m build --no-isolation --wheel
 
       - name: Conda-only Build
