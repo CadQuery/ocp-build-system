@@ -28,6 +28,14 @@ jobs:
           workflow: build-vtk.yml
           path: vtk-wheels
 
+      - name: List downloaded wheels
+        run: |
+          pwd
+          ls -lR
+          ls -ld ./vtk-wheels/**/vtk-*.whl
+          ls -ld ./vtk-wheels/**/vtk-*-cp${{ matrix.python-version }}-*.whl
+          false
+          
       - name: Checkout project
         uses: actions/checkout@v2
 
