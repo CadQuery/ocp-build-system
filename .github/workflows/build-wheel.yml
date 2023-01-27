@@ -15,10 +15,18 @@ jobs:
 
     strategy:
       matrix:
-        os: [ 'ubuntu-20.04', 'macos-latest', 'windows-latest' ]
-        python-version: [ '3.8', '3.9', '3.10' ]
+        os: [ 'ubuntu-20.04' ] #, 'macos-latest', 'windows-latest' ]
+        python-version: [ '3.8', '3.9', '3.10', '3.11' ]
 
     steps:
+
+      # see https://github.com/marketplace/actions/download-workflow-artifact
+      - name: Download artifact
+        uses: dawidd6/action-download-artifact@v2
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        with:
+          workflow: build-vtk.yml
+          path: vtk-wheels
 
       - name: Checkout project
         uses: actions/checkout@v2
@@ -70,7 +78,7 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
           export VTK_MANYLINUX=/tmp/vtk-manylinux
-          pip install -t $VTK_MANYLINUX --no-deps vtk~=9.2.0
+          pip install -t $VTK_MANYLINUX --no-deps vtk-wheels/**/cadquery-vtk-${{ matrix.os }}-cp${{ matrix.python-version }}.whl
           python -m build --no-isolation --wheel
 
       - name: Conda-only Build
