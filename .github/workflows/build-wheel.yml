@@ -32,7 +32,7 @@ jobs:
         run: |
           pwd
           find -ls
-          ls -ld ./vtk-wheels/*/vtk-*-cp${{ matrix.python-version }}-*.whl
+          ls -ld ./vtk-wheels/*-cp${{ matrix.python-version }}-/vtk-.whl
           
       - name: Checkout project
         uses: actions/checkout@v2
@@ -84,7 +84,7 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
           export VTK_MANYLINUX=/tmp/vtk-manylinux
-          pip install -t $VTK_MANYLINUX --no-deps ./vtk-wheels/*/vtk-*-cp${{ matrix.python-version }}-*.whl
+          pip install -t $VTK_MANYLINUX --no-deps ./vtk-wheels/*-cp${{ matrix.python-version }}-/vtk-.whl
           python -m build --no-isolation --wheel
 
       - name: Conda-only Build
