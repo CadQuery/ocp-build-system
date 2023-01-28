@@ -38,7 +38,7 @@ jobs:
           wget https://www.vtk.org/files/release/9.2/VTK-9.2.5.tar.gz  # Update this for newer releases of VTK
           tar -zxf VTK-9.2.5.tar.gz --directory ./vtk/
           cd ./vtk/build
-          cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON ../VTK-9.2.5
+          cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON -DCMAKE_BUILD_TYPE=Release ../VTK-9.2.5
           ninja
           python3 setup.py bdist_wheel
           cd ../../
