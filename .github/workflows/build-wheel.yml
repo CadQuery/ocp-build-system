@@ -29,6 +29,7 @@ jobs:
           path: /tmp/vtk-wheels
 
       - name: List downloaded wheels
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
           find /tmp/vtk-wheels -ls
           ls -ld /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
