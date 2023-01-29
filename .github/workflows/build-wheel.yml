@@ -90,7 +90,7 @@ jobs:
       - name: Conda-only Build
         shell: bash -l {0}
         env:
-          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.14
+          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.15
         if: ${{ matrix.os != 'ubuntu-20.04' }}
         run: |
           python -m build --no-isolation --wheel
