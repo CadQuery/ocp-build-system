@@ -7,6 +7,7 @@ on:
 
 env:
   PYTHONUTF8: 1
+  MACOSX_DEPLOYMENT_TARGET: 10_15
 
 jobs:
   build:
@@ -89,8 +90,6 @@ jobs:
 
       - name: Conda-only Build
         shell: bash -l {0}
-        env:
-          CIBW_ENVIRONMENT_MACOS: MACOSX_DEPLOYMENT_TARGET=10.15
         if: ${{ matrix.os != 'ubuntu-20.04' }}
         run: |
           python -m build --no-isolation --wheel
