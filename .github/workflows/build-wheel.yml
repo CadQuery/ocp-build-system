@@ -7,7 +7,6 @@ on:
 
 env:
   PYTHONUTF8: 1
-  MACOSX_DEPLOYMENT_TARGET: 10_15
 
 jobs:
   build:
