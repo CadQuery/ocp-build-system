@@ -260,12 +260,18 @@ def add_licenses_bundled(conda_prefix, whl, added_files):
     information is taken from metadata in the conda env.
 
     """
-    with open("LICENSES_bundled.txt", "w") as f:
+    tmp = tempfile.mkdtemp()
+    subprocess.check_call(["wheel", "unpack", "-d", tmp, whl])
+    dist_infos = glob.glob(os.path.join(tmp, "*","*.dist-info"))
+    if len(dist_infos) != 1:
+        raise Exception(f"unexpected dist_infos: {dist_infos}")
+    dist_info = dist_infos[0]
+    with open(os.path.join(dist_info,"LICENSES_bundled"), "w") as f:
         f.write("This wheel distribution bundles a number of libraries that\n")
         f.write("are compatibly licensed.  We list them here.\n")
         write_licenses(conda_prefix, whl, ["ocp", "vtk"], added_files, f)
-    with zipfile.ZipFile(whl, mode="a") as f:
-        f.write("LICENSES_bundled.txt")
+
+    subprocess.check_call(["wheel", "pack", "-d", os.path.dirname(whl), os.path.dirname(dist_info)])
 
 
 def write_licenses(prefix, whl, always_pkgs, added_files, out):
