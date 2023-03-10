@@ -63,9 +63,16 @@ jobs:
           fi
 
       - name: Conda Deps Setup
+        if: ${{ matrix.os != 'ubuntu-20.04' }}
         shell: bash -l {0}
         run: |
           conda install -c cadquery -n cadquery-ocp -y ocp==7.7.0.0 vtk=9.2.*
+
+      - name: Conda Deps Setup Linux
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        shell: bash -l {0}
+        run: |
+          conda install -c cadquery -n cadquery-ocp -y ocp==7.7.0.0 vtk=9.2.* occt=7.7.0=h244afa2_1
 
       - name: Pip Deps Setup 1
         shell: bash -l {0}
