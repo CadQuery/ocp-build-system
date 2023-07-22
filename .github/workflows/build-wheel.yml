@@ -85,21 +85,14 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
           pip install auditwheel patchelf
+
+      - name: Manylinux Build 1
+        shell: bash -l {0}
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        run: |
           export VTK_MANYLINUX=/tmp/vtk-manylinux
           pip install -t $VTK_MANYLINUX --no-deps /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
-
-      # - name: Manylinux Build 1
-      #   shell: bash -l {0}
-      #   if: ${{ matrix.os == 'ubuntu-20.04' }}
-      #   run: |
-      #     export VTK_MANYLINUX=/tmp/vtk-manylinux
-      #     pip install -t $VTK_MANYLINUX --no-deps /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
-      #     python -m build --no-isolation --wheel
-
-      - name: Build wheels
-        uses: pypa/cibuildwheel@v2.4.0
-        with:
-          output-dir: dist
+          python -m build --no-isolation --wheel
 
       - name: Conda-only Build
         shell: bash -l {0}
