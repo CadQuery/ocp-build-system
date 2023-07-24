@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ 'ubuntu-20.04', 'macos-11', 'windows-2019' ]
+        os: [ 'ubuntu-22.04', 'macos-11', 'windows-2019' ]
         python-version: [ '3.8', '3.9', '3.10', '3.11' ]
 
     steps:
@@ -23,13 +23,13 @@ jobs:
       # see https://github.com/marketplace/actions/download-workflow-artifact
       - name: Download artifact
         uses: dawidd6/action-download-artifact@v2
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         with:
           workflow: build-vtk.yml
           path: /tmp/vtk-wheels
 
       - name: List downloaded wheels
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: |
           find /tmp/vtk-wheels -ls
           ls -ld /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
@@ -63,13 +63,13 @@ jobs:
           fi
 
       - name: Conda Deps Setup
-        if: ${{ matrix.os != 'ubuntu-20.04' }}
+        if: ${{ matrix.os != 'ubuntu-22.04' }}
         shell: bash -l {0}
         run: |
           conda install -c cadquery -n cadquery-ocp -y ocp==7.7.1.* vtk=9.2.*
 
       - name: Conda Deps Setup Linux
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         shell: bash -l {0}
         run: |
           conda install -c cadquery -n cadquery-ocp -y ocp==7.7.1.* vtk=9.2.* occt=7.7.1.*
@@ -82,13 +82,13 @@ jobs:
 
       - name: Pip Deps Setup 2
         shell: bash -l {0}
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: |
           pip install auditwheel patchelf
 
       - name: Manylinux Build 1
         shell: bash -l {0}
-        if: ${{ matrix.os == 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: |
           export VTK_MANYLINUX=/tmp/vtk-manylinux
           pip install -t $VTK_MANYLINUX --no-deps /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
@@ -96,7 +96,7 @@ jobs:
 
       - name: Conda-only Build
         shell: bash -l {0}
-        if: ${{ matrix.os != 'ubuntu-20.04' }}
+        if: ${{ matrix.os != 'ubuntu-22.04' }}
         run: |
           python -m build --no-isolation --wheel
 
