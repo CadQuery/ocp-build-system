@@ -42,6 +42,7 @@ jobs:
       - name: Build Wheel from Scratch
         shell: bash -l {0}
         run: |
+          pip3 install --upgrade setuptools
           mkdir -p ./vtk/build
           wget https://www.vtk.org/files/release/9.2/VTK-9.2.6.tar.gz  # Update this for newer releases of VTK
           tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/
