@@ -69,7 +69,7 @@ def populate_lib_dir(conda_prefix, vtk_manylinux, out_dir):
     vtk_manylinux = pathlib.Path(vtk_manylinux)
     out_dir = pathlib.Path(out_dir)
 
-    fns = list((conda_prefix / "conda-meta").glob("vtk-*.json"))
+    fns = list((conda_prefix / "conda-meta").glob("vtk-9*-qt_*.json"))
     if len(fns) != 1:
         raise Exception(f"could not find unique vtk meta: {fns}")
     vtk_meta = json.loads(fns[0].read_text())
