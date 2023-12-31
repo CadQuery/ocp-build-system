@@ -195,7 +195,10 @@ class bdist_wheel_repaired(wheel.bdist_wheel.bdist_wheel):
 
 def repair_wheel_linux(lib_path, whl, out_dir):
 
-    plat = "manylinux_2_35_x86_64"
+    if os.uname()[4] == "aarch64":
+        plat = "manylinux_2_35_aarch64"
+    else:
+        plat = "manylinux_2_35_x86_64"
 
     args = [
         "env",

@@ -7,7 +7,7 @@ function info() {
 
 trap "info Exited!; exit;" SIGINT SIGTERM
 
-for python_version in '3.8' '3.9' '3.10' '3.11'
+for python_version in '3.8' '3.9' '3.10' '3.11' '3.12'
 do
     info "Building wheel for Python $python_version..."
     info "Removing temp files..."
@@ -16,7 +16,7 @@ do
     info "Conda Deps Setup..."
     conda create --yes -n ocp-build-system -c cadquery -c conda-forge \
         python=$python_version \
-        ocp=7.7.1.* \
+        ocp=7.7.2.* \
         vtk=9.2.* \
         pip
     info "Pip Deps Setup..."
@@ -26,6 +26,7 @@ do
         wheel \
         requests \
         delocate \
+        auditwheel \
         delvewheel
     info "Conda-only Build..."
     conda run --live-stream -n ocp-build-system \
