@@ -51,7 +51,7 @@ jobs:
         with:
           #miniforge-version: latest
           miniconda-version: latest
-          activate-environment: cadquery-ocp
+          activate-environment: base
           python-version: ${{ matrix.python-version }}
           channels: cadquery, conda-forge, defaults
 
