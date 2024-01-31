@@ -15,7 +15,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ 'ubuntu-22.04', 'macos-11', 'macos-14', 'windows-2019' ]
+        os: [ 'macos-14' ]  #[ 'ubuntu-22.04', 'macos-11', 'macos-14', 'windows-2019' ]
         # python-version: [ '3.9', '3.10', '3.11', '3.12' ]
 
     steps:
@@ -77,14 +77,14 @@ jobs:
       - name: Pip Deps Setup 1
         shell: bash -l {0}
         run: |
-          pip install --upgrade pip
-          pip install build setuptools wheel requests delocate delvewheel
+          python -m pip install --upgrade pip
+          python -m pip install build setuptools wheel requests delocate delvewheel
 
       - name: Pip Deps Setup 2
         shell: bash -l {0}
         if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: |
-          pip install auditwheel patchelf
+          python -m pip install auditwheel patchelf
 
       # - name: Manylinux Build 1
       #   shell: bash -l {0}
@@ -117,7 +117,7 @@ jobs:
           conda deactivate
           conda create --yes -n cadquerytest python=${{ matrix.python-version }}
           conda activate cadquerytest
-          pip install dist/*.whl
+          python -m pip install dist/*.whl
           python -c "import OCP;print('OCP imported successfully')"
 
       # see https://github.com/marketplace/actions/upload-a-build-artifact
