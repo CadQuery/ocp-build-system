@@ -1,4 +1,4 @@
-name: Create Python wheel using Conda
+name: Local Build Method of Creating Python wheels
 
 on:
   workflow_dispatch
