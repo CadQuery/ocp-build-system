@@ -14,11 +14,13 @@ do
     rm -rf -v ./build
     rm -rf -v ./cadquery_ocp.egg-info
     info "Conda Deps Setup..."
-    conda create --yes -n ocp-build-system -c cadquery -c conda-forge \
+    CONDA_SUBDIR=osx-arm64 conda create --yes -n ocp-build-system -c cadquery -c conda-forge \
         python=$python_version \
         ocp=7.7.2.* \
         vtk=9.2.* \
         pip
+    info "Conda Arch Setup..."
+    conda run -n ocp-build-system config --env --set subdir osx-arm64
     info "Pip Deps Setup..."
     conda run -n ocp-build-system pip install \
         build \
