@@ -20,7 +20,7 @@ do
         vtk=9.2.* \
         pip
     info "Conda Arch Setup..."
-    conda run -n ocp-build-system config --env --set subdir osx-arm64
+    conda run -n ocp-build-system conda config --env --set subdir osx-arm64
     info "Pip Deps Setup..."
     conda run -n ocp-build-system pip install \
         build \
