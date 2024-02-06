@@ -7,18 +7,20 @@ function info() {
 
 trap "info Exited!; exit;" SIGINT SIGTERM
 
-for python_version in '3.9' '3.10' '3.11' '3.12'
+for python_version in '3.10'
 do
     info "Building wheel for Python $python_version..."
     info "Removing temp files..."
     rm -rf -v ./build
     rm -rf -v ./cadquery_ocp.egg-info
     info "Conda Deps Setup..."
-    conda create --yes -n ocp-build-system -c cadquery -c conda-forge \
+    CONDA_SUBDIR=osx-arm64 conda create --yes -n ocp-build-system -c cadquery -c conda-forge \
         python=$python_version \
         ocp=7.7.2.* \
         vtk=9.2.* \
         pip
+    info "Conda Arch Setup..."
+    conda run -n ocp-build-system conda config --env --set subdir osx-arm64
     info "Pip Deps Setup..."
     conda run -n ocp-build-system pip install \
         build \

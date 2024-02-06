@@ -17,6 +17,7 @@ jobs:
       matrix:
         os: [ 'macos-14' ]  #[ 'ubuntu-22.04', 'macos-11', 'macos-14', 'windows-2019' ]
         # python-version: [ '3.9', '3.10', '3.11', '3.12' ]
+        python-version: [ '3.10' ]
 
     steps:
 
@@ -116,7 +117,8 @@ jobs:
         shell: bash -l {0}
         run: |
           conda deactivate
-          conda create --yes -n cadquerytest python=${{ matrix.python-version }}
+          CONDA_SUBDIR=osx-arm64 conda create --yes -n cadquerytest python=3.10
+          conda run -n cadquerytest conda config --env --set subdir osx-arm64
           conda activate cadquerytest
           python -m pip install dist/*.whl
           python -c "import OCP;print('OCP imported successfully')"
