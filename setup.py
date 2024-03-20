@@ -55,54 +55,54 @@ import wheel.bdist_wheel
 import zipfile
 
 
-VTK_MANYLINUX = None
-if platform.system() == "Linux" and os.getenv("VTK_MANYLINUX"):
-    VTK_MANYLINUX = pathlib.Path(os.getenv("VTK_MANYLINUX")).resolve()
-    if not (VTK_MANYLINUX / "vtkmodules" / "__init__.py").exists():
-        raise Exception(f"invalid VTK_MANYLINUX: {VTK_MANYLINUX}")
+# VTK_MANYLINUX = None
+# if platform.system() == "Linux" and os.getenv("VTK_MANYLINUX"):
+#     VTK_MANYLINUX = pathlib.Path(os.getenv("VTK_MANYLINUX")).resolve()
+#     if not (VTK_MANYLINUX / "vtkmodules" / "__init__.py").exists():
+#         raise Exception(f"invalid VTK_MANYLINUX: {VTK_MANYLINUX}")
 
 
-def populate_lib_dir(conda_prefix, vtk_manylinux, out_dir):
-    """Merge non-vtk conda libs and vtk manylinux libs into a single directory"""
+# def populate_lib_dir(conda_prefix, vtk_manylinux, out_dir):
+#     """Merge non-vtk conda libs and vtk manylinux libs into a single directory"""
 
-    conda_prefix = pathlib.Path(conda_prefix)
-    vtk_manylinux = pathlib.Path(vtk_manylinux)
-    out_dir = pathlib.Path(out_dir)
+#     conda_prefix = pathlib.Path(conda_prefix)
+#     vtk_manylinux = pathlib.Path(vtk_manylinux)
+#     out_dir = pathlib.Path(out_dir)
 
-    fns = list((conda_prefix / "conda-meta").glob("vtk-9*-qt_*.json"))
-    if len(fns) != 1:
-        raise Exception(f"could not find unique vtk meta: {fns}")
-    vtk_meta = json.loads(fns[0].read_text())
-    vtk_files = {conda_prefix / f for f in vtk_meta["files"]}
+#     fns = list((conda_prefix / "conda-meta").glob("vtk-9*-qt_*.json"))
+#     if len(fns) != 1:
+#         raise Exception(f"could not find unique vtk meta: {fns}")
+#     vtk_meta = json.loads(fns[0].read_text())
+#     vtk_files = {conda_prefix / f for f in vtk_meta["files"]}
 
-    # Do not copy regular VTK files because we will use manylinux
-    # files instead.  Do copy VTK symlinks because they're expected by
-    # other conda packages which we may bundle into the wheel.
-    vtk_skipped_files = []
-    for f in (conda_prefix / "lib").iterdir():
-        if f.is_dir():
-            continue
-        if f in vtk_files and not f.is_symlink():
-            vtk_skipped_files.append(f)
-        else:
-            shutil.copy2(f, out_dir, follow_symlinks=False)
+#     # Do not copy regular VTK files because we will use manylinux
+#     # files instead.  Do copy VTK symlinks because they're expected by
+#     # other conda packages which we may bundle into the wheel.
+#     vtk_skipped_files = []
+#     for f in (conda_prefix / "lib").iterdir():
+#         if f.is_dir():
+#             continue
+#         if f in vtk_files and not f.is_symlink():
+#             vtk_skipped_files.append(f)
+#         else:
+#             shutil.copy2(f, out_dir, follow_symlinks=False)
 
-    # Copy VTK files.  Symlinks in the target will be followed so we
-    # are fixing broken symlinks.
-    for f in (vtk_manylinux / "vtkmodules").glob("lib*.so*"):
-        shutil.copy2(f, out_dir, follow_symlinks=False)
+#     # Copy VTK files.  Symlinks in the target will be followed so we
+#     # are fixing broken symlinks.
+#     for f in (vtk_manylinux / "vtkmodules").glob("lib*.so*"):
+#         shutil.copy2(f, out_dir, follow_symlinks=False)
 
-    # The VTK manylinux wheel may not provide all the libraries of the
-    # VTK conda pkg, so there may be missing files or broken symlinks.
-    # If this is problematic then auditwheel will fail.  For now,
-    # print some helpful information.
-    for f in vtk_skipped_files:
-        if not (out_dir / f.name).exists():
-            print("manylinux whl did not provide:", f)
+#     # The VTK manylinux wheel may not provide all the libraries of the
+#     # VTK conda pkg, so there may be missing files or broken symlinks.
+#     # If this is problematic then auditwheel will fail.  For now,
+#     # print some helpful information.
+#     for f in vtk_skipped_files:
+#         if not (out_dir / f.name).exists():
+#             print("manylinux whl did not provide:", f)
 
-    # Copy the rest of the libraries bundled in the VTK wheel.
-    for f in (vtk_manylinux / "vtk.libs").glob("lib*.so*"):
-        shutil.copy2(f, out_dir, follow_symlinks=False)
+#     # Copy the rest of the libraries bundled in the VTK wheel.
+#     for f in (vtk_manylinux / "vtk.libs").glob("lib*.so*"):
+#         shutil.copy2(f, out_dir, follow_symlinks=False)
 
 
 class copy_installed(setuptools.command.build_ext.build_ext):
@@ -116,22 +116,22 @@ class copy_installed(setuptools.command.build_ext.build_ext):
         # OCP is a single-file extension; just copy it
         shutil.copy(OCP.__file__, self.build_lib)
         # vtkmodules is a package; copy it while excluding __pycache__
-        if VTK_MANYLINUX:
-            # Copy python source files and python extensions, but not
-            # shared libraries.  We will point auditwheel to them
-            # separately to be bundled in.
-            shutil.copytree(
-                os.path.join(VTK_MANYLINUX, "vtkmodules"),
-                os.path.join(self.build_lib, "vtkmodules"),
-                ignore=shutil.ignore_patterns("__pycache__", "libvtk*.so*"),
-            )
-        else:
-            assert vtkmodules.__file__.endswith(os.path.join(os.sep, "vtkmodules", "__init__.py"))
-            shutil.copytree(
-                os.path.dirname(vtkmodules.__file__),
-                os.path.join(self.build_lib, "vtkmodules"),
-                ignore=shutil.ignore_patterns("__pycache__"),
-            )
+        # if VTK_MANYLINUX:
+        #     # Copy python source files and python extensions, but not
+        #     # shared libraries.  We will point auditwheel to them
+        #     # separately to be bundled in.
+        #     shutil.copytree(
+        #         os.path.join(VTK_MANYLINUX, "vtkmodules"),
+        #         os.path.join(self.build_lib, "vtkmodules"),
+        #         ignore=shutil.ignore_patterns("__pycache__", "libvtk*.so*"),
+        #     )
+        # else:
+        #     assert vtkmodules.__file__.endswith(os.path.join(os.sep, "vtkmodules", "__init__.py"))
+        #     shutil.copytree(
+        #         os.path.dirname(vtkmodules.__file__),
+        #         os.path.join(self.build_lib, "vtkmodules"),
+        #         ignore=shutil.ignore_patterns("__pycache__"),
+        #     )
 
 
 class bdist_wheel_repaired(wheel.bdist_wheel.bdist_wheel):
@@ -163,12 +163,12 @@ class bdist_wheel_repaired(wheel.bdist_wheel.bdist_wheel):
         out_dir = os.path.join(self.dist_dir, "repaired")
         system = platform.system()
         if system == "Linux":
-            if VTK_MANYLINUX:
-                # Create a lib dir with VTK manylinux files merged in,
-                # and point auditwheel to it.
-                merged_lib_dir = tempfile.mkdtemp()
-                populate_lib_dir(conda_prefix, VTK_MANYLINUX, merged_lib_dir)
-                lib_path = merged_lib_dir
+            # if VTK_MANYLINUX:
+            #     # Create a lib dir with VTK manylinux files merged in,
+            #     # and point auditwheel to it.
+            #     merged_lib_dir = tempfile.mkdtemp()
+            #     populate_lib_dir(conda_prefix, VTK_MANYLINUX, merged_lib_dir)
+            #     lib_path = merged_lib_dir
             repair_wheel_linux(lib_path, bad_whl, out_dir)
         elif system == "Darwin":
             repair_wheel_macos(lib_path, bad_whl, out_dir)
@@ -272,7 +272,7 @@ def add_licenses_bundled(conda_prefix, whl, added_files):
     with open(os.path.join(dist_info,"LICENSES_bundled"), "w") as f:
         f.write("This wheel distribution bundles a number of libraries that\n")
         f.write("are compatibly licensed.  We list them here.\n")
-        write_licenses(conda_prefix, whl, ["ocp", "vtk"], added_files, f)
+        write_licenses(conda_prefix, whl, ["ocp"], added_files, f)  # , "vtk"
 
     subprocess.check_call(["wheel", "pack", "-d", os.path.dirname(whl), os.path.dirname(dist_info)])
 
@@ -378,7 +378,7 @@ while wheel_version.count(".") > 2 and wheel_version.endswith(".0"):
 setup(
     name="cadquery-ocp",
     version=wheel_version,
-    description="OCP+VTK wheel with shared library dependencies bundled.",
+    description="OCP wheel with shared library dependencies bundled.",
     long_description=open("README.md").read(),
     long_description_content_type='text/markdown',
     author="adam-urbanczyk, fp473 (wheel generation), roipoussiere (wheel generation)",
@@ -396,6 +396,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Scientific/Engineering"
     ],
+    install_requires=["vtk"],
     # Dummy extension to trigger build_ext
     ext_modules=[Extension("__dummy__", sources=[])],
     cmdclass={"bdist_wheel": bdist_wheel_repaired, "build_ext": copy_installed},

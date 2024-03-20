@@ -21,18 +21,18 @@ jobs:
     steps:
 
       # see https://github.com/marketplace/actions/download-workflow-artifact
-      - name: Download artifact
-        uses: dawidd6/action-download-artifact@v2
-        if: ${{ matrix.os == 'ubuntu-22.04' }}
-        with:
-          workflow: build-vtk.yml
-          path: /tmp/vtk-wheels
+      # - name: Download artifact
+      #   uses: dawidd6/action-download-artifact@v2
+      #   if: ${{ matrix.os == 'ubuntu-22.04' }}
+      #   with:
+      #     workflow: build-vtk.yml
+      #     path: /tmp/vtk-wheels
 
-      - name: List downloaded wheels
-        if: ${{ matrix.os == 'ubuntu-22.04' }}
-        run: |
-          find /tmp/vtk-wheels -ls
-          ls -ld /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
+      # - name: List downloaded wheels
+      #   if: ${{ matrix.os == 'ubuntu-22.04' }}
+      #   run: |
+      #     find /tmp/vtk-wheels -ls
+      #     ls -ld /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
           
       - name: Checkout project
         uses: actions/checkout@v2
@@ -59,6 +59,7 @@ jobs:
         shell: bash -l {0}
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
+            sudo apt update
             sudo apt install -y libegl1 libegl1-mesa-dev
           fi
 
@@ -72,7 +73,7 @@ jobs:
         if: ${{ matrix.os == 'ubuntu-22.04' }}
         shell: bash -l {0}
         run: |
-          conda install -c cadquery -n cadquery-ocp -y ocp=7.7.2.* vtk=9.2.* occt=7.7.2=all*
+          conda install -c cadquery -n cadquery-ocp -y ocp=7.7.2.* vtk=9.2.* occt=7.7.2=all* auditwheel
 
       - name: Pip Deps Setup 1
         shell: bash -l {0}
@@ -86,17 +87,16 @@ jobs:
         run: |
           pip install auditwheel patchelf
 
-      - name: Manylinux Build 1
-        shell: bash -l {0}
-        if: ${{ matrix.os == 'ubuntu-22.04' }}
-        run: |
-          export VTK_MANYLINUX=/tmp/vtk-manylinux
-          pip install -t $VTK_MANYLINUX --no-deps /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
-          python -m build --no-isolation --wheel
+      # - name: Manylinux Build 1
+      #   shell: bash -l {0}
+      #   if: ${{ matrix.os == 'ubuntu-22.04' }}
+      #   run: |
+      #     export VTK_MANYLINUX=/tmp/vtk-manylinux
+      #     pip install -t $VTK_MANYLINUX --no-deps /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
+      #     python -m build --no-isolation --wheel
 
       - name: Conda-only Build
         shell: bash -l {0}
-        if: ${{ matrix.os != 'ubuntu-22.04' }}
         run: |
           python -m build --no-isolation --wheel
 
@@ -113,6 +113,7 @@ jobs:
           conda deactivate
           conda create --yes -n cadquerytest python=${{ matrix.python-version }}
           conda activate cadquerytest
+          ls dist/*
           pip install dist/*.whl
           python -c "import OCP;print('OCP imported successfully')"
 
