@@ -21,18 +21,18 @@ jobs:
     steps:
 
       # see https://github.com/marketplace/actions/download-workflow-artifact
-      - name: Download artifact
-        uses: dawidd6/action-download-artifact@v2
-        if: ${{ matrix.os == 'ubuntu-22.04' }}
-        with:
-          workflow: build-vtk.yml
-          path: /tmp/vtk-wheels
+      # - name: Download artifact
+      #   uses: dawidd6/action-download-artifact@v2
+      #   if: ${{ matrix.os == 'ubuntu-22.04' }}
+      #   with:
+      #     workflow: build-vtk.yml
+      #     path: /tmp/vtk-wheels
 
-      - name: List downloaded wheels
-        if: ${{ matrix.os == 'ubuntu-22.04' }}
-        run: |
-          find /tmp/vtk-wheels -ls
-          ls -ld /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
+      # - name: List downloaded wheels
+      #   if: ${{ matrix.os == 'ubuntu-22.04' }}
+      #   run: |
+      #     find /tmp/vtk-wheels -ls
+      #     ls -ld /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
           
       - name: Checkout project
         uses: actions/checkout@v2
@@ -90,8 +90,8 @@ jobs:
         shell: bash -l {0}
         if: ${{ matrix.os == 'ubuntu-22.04' }}
         run: |
-          export VTK_MANYLINUX=/tmp/vtk-manylinux
-          pip install -t $VTK_MANYLINUX --no-deps /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
+          # export VTK_MANYLINUX=/tmp/vtk-manylinux
+          # pip install -t $VTK_MANYLINUX --no-deps /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
           python -m build --no-isolation --wheel
 
       - name: Conda-only Build
