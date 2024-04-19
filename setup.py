@@ -248,6 +248,8 @@ def repair_wheel_windows(lib_path, whl, out_dir):
         "-m",
         "delvewheel",
         "repair",
+        "-vv",
+        "--no-mangle-all",
         f"--wheel-dir={out_dir}",
         whl,
     ]
@@ -346,10 +348,6 @@ def write_licenses(prefix, whl, always_pkgs, added_files, out):
 
 
 def try_unmangle(n):
-    # delvewheel mangling example: "vtkCommonColor-9.0.dll" => "vtkCommonColor-9.0-87ee4902.dll"
-    m = re.match("^(.+)-[0-9A-Fa-f]{8,}([.]dll)$", n)
-    if m:
-        return m.group(1) + m.group(2)
     # auditwheel mangling example: "libvtkCommonColor-9.0.so.9.0.1" => "libvtkCommonColor-9-9810eeb7.0.so.9.0.1"
     m = re.match("^([^.]+)-[0-9A-Fa-f]{8,}([.].+)$", n)
     if m:
