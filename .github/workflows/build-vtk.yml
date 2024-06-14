@@ -45,7 +45,7 @@ jobs:
           pip3 install --upgrade setuptools
           mkdir -p ./vtk/build
           if [ "$RUNNER_OS" == "Windows" ]; then
-            bitsadmin /addfile job1 https://www.vtk.org/files/release/9.2/VTK-9.2.6.tar.gz D:/a/ocp-build-system/ocp-build-system/vtk/VTK-9.2.6.tar.gz  # Update this for newer releases of VTK
+            bitsadmin /transfer myDownloadJob /download /priority normal https://www.vtk.org/files/release/9.2/VTK-9.2.6.tar.gz D:/a/ocp-build-system/ocp-build-system/vtk/VTK-9.2.6.tar.gz  # Update this for newer releases of VTK
           else
             wget https://www.vtk.org/files/release/9.2/VTK-9.2.6.tar.gz  # Update this for newer releases of VTK
           fi
