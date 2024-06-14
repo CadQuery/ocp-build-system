@@ -14,7 +14,9 @@ jobs:
     strategy:
       matrix:
         os: [ 'ubuntu-20.04', 'macos-11', 'macos-14', 'windows-2019' ]
-        python-version: [ '3.9', '3.10', '3.11', '3.12' ]
+        # os: [ 'ubuntu-20.04', 'macos-11', 'macos-14', 'windows-2019' ]
+        python-version: [ '3.11' ]
+        # python-version: [ '3.9', '3.10', '3.11', '3.12' ]
 
     steps:
       - name: Checkout project
@@ -37,6 +39,13 @@ jobs:
         run: |
           if [ "$RUNNER_OS" == "Linux" ]; then
             sudo apt install -y build-essential cmake mesa-common-dev mesa-utils freeglut3-dev python3-dev python3-venv git-core ninja-build cmake wget libglvnd0 libglvnd-dev
+          fi
+
+      - name: Windows Deps
+        shell: bash -l {0}
+        run: |
+          if [ "$RUNNER_OS" == "Windows" ]; then
+            choco install ninja
           fi
 
       - name: Build Wheel from Scratch
