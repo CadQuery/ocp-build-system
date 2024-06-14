@@ -45,8 +45,6 @@ jobs:
           pip3 install --upgrade setuptools
           mkdir -p ./vtk/build
           curl -L -O https://www.vtk.org/files/release/9.2/VTK-9.2.6.tar.gz  # Update this for newer releases of VTK
-          ls
-          ls ./vtk
           tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/
           cd ./vtk/build
           cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON -DCMAKE_BUILD_TYPE=Release ../VTK-9.2.6
