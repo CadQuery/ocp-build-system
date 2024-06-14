@@ -35,7 +35,7 @@ jobs:
       #     ls -ld /tmp/vtk-wheels/*-cp${{ matrix.python-version }}/vtk-*.whl
           
       - name: Checkout project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       # See https://cibuildwheel.readthedocs.io/en/stable/
       # Not usable for now, because cadquery libraries require glibc 2.31,
