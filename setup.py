@@ -394,7 +394,10 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Scientific/Engineering"
     ],
-    install_requires=["vtk==9.2.*"],
+    install_requires=["vtk==9.2.6"],
+    dependency_links=[
+        'https://wheels.vtk.org'
+    ],
     # Dummy extension to trigger build_ext
     ext_modules=[Extension("__dummy__", sources=[])],
     cmdclass={"bdist_wheel": bdist_wheel_repaired, "build_ext": copy_installed},
