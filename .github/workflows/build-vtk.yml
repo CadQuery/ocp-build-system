@@ -119,6 +119,13 @@ jobs:
           cd ..\..\
           dir /s
 
+      - name: Test wheel
+        shell: bash -l {0}
+        run: |
+          python -V
+          pip install vtk/build/dist/*.whl
+          python -c "import vtk;print('vtk imported successfully')"
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
