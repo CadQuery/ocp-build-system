@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ 'ubuntu-20.04', 'macos-13', 'macos-14', 'windows-2019' ]
+        os: [ 'ubuntu-20.04', 'macos-13', 'macos-14', 'windows-2019', 'debian-12-arm64' ]
         python-version: [ '3.9', '3.10', '3.11', '3.12' ]
 
     steps:
@@ -127,25 +127,30 @@ jobs:
         shell: bash -l {0}
         if: ${{ matrix.os == 'macos-14' }}
         run: |
-          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-macosx_14_0_arm64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-macosx_14_0_arm64.whl
+          echo "WHEEL_OS_VERSION=macosx_14_0_arm64" >> $GITHUB_ENV
 
       - name: Rename MacOS AMD64 wheel
         shell: bash -l {0}
         if: ${{ matrix.os == 'macos-13' }}
         run: |
-          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-macosx_13_0_x86_64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-macosx_13_0_x86_64.whl
+          echo "WHEEL_OS_VERSION=macosx_13_0_x86_64" >> $GITHUB_ENV
 
       - name: Rename Linux AMD64 wheel
         shell: bash -l {0}
         if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
-          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-linux_x86_64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-linux_x86_64.whl
+          echo "WHEEL_OS_VERSION=linux_x86_64" >> $GITHUB_ENV
 
       - name: Rename Windows AMD64 wheel
         shell: bash -l {0}
         if: ${{ matrix.os == 'windows-2019' }}
         run: |
-          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-win_amd64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-win_amd64.whl
+          echo "WHEEL_OS_VERSION=win_amd64" >> $GITHUB_ENV
+
+      - name: Move wheel
+        shell: bash -l {0}
+        run: |
+          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-${{ env.WHEEL_OS_VERSION }}.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-${{ env.WHEEL_OS_VERSION }}.whl
 
       - name: Test wheel
         shell: bash -l {0}
