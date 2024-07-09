@@ -119,6 +119,11 @@ jobs:
           cd ..\..\
           dir /s
 
+      - name: Rename wheel
+        shell: bash -l {0}
+        run: |
+          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ matrix.python-version }}-cp${{ matrix.python-version }}-${{ matrix.os }}.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ matrix.python-version }}-${{ matrix.os }}.whl
+
       - name: Test wheel
         shell: bash -l {0}
         run: |
