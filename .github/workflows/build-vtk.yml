@@ -119,29 +119,33 @@ jobs:
           cd ..\..\
           dir /s
 
+      - name: Prepare Python version string
+        shell: bash -l {0}
+        run: echo "PYTHON_VERSION_NO_DOTS=$(echo ${{ matrix.python-version }} | tr -d '.')" >> $GITHUB_ENV
+
       - name: Rename MacOS ARM64 wheel
         shell: bash -l {0}
-        if: ${{ matrix.os != 'macos-14' }}
+        if: ${{ matrix.os == 'macos-14' }}
         run: |
-          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ matrix.python-version//./ }}-cp${{ matrix.python-version//./ }}-macosx_14_0_arm64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ matrix.python-version//./ }}-cp${{ matrix.python-version//./ }}-macosx_14_0_arm64.whl
+          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-macosx_14_0_arm64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-macosx_14_0_arm64.whl
 
       - name: Rename MacOS AMD64 wheel
         shell: bash -l {0}
-        if: ${{ matrix.os != 'macos-13' }}
+        if: ${{ matrix.os == 'macos-13' }}
         run: |
-          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ matrix.python-version//./ }}-cp${{ matrix.python-version//./ }}-macosx_13_0_x86_64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ matrix.python-version//./ }}-cp${{ matrix.python-version//./ }}-macosx_13_0_x86_64.whl
+          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-macosx_13_0_x86_64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-macosx_13_0_x86_64.whl
 
       - name: Rename Linux AMD64 wheel
         shell: bash -l {0}
-        if: ${{ matrix.os != 'ubuntu-20.04' }}
+        if: ${{ matrix.os == 'ubuntu-20.04' }}
         run: |
-          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ matrix.python-version//./ }}-cp${{ matrix.python-version//./ }}-linux_x86_64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ matrix.python-version//./ }}-cp${{ matrix.python-version//./ }}-linux_x86_64.whl
+          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-linux_x86_64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-linux_x86_64.whl
 
       - name: Rename Windows AMD64 wheel
         shell: bash -l {0}
-        if: ${{ matrix.os != 'windows-2019' }}
+        if: ${{ matrix.os == 'windows-2019' }}
         run: |
-          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ matrix.python-version//./ }}-cp${{ matrix.python-version//./ }}-win_amd64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ matrix.python-version//./ }}-cp${{ matrix.python-version//./ }}-win_amd64.whl
+          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-win_amd64.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-win_amd64.whl
 
       - name: Test wheel
         shell: bash -l {0}
