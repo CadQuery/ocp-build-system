@@ -160,7 +160,7 @@ jobs:
           cd wheel_build/
           zip -r cadquery_${wheel_file} *  # Create a new wheel file with the new name by prepending "cadquery_" to the name
           rm ../vtk/build/dist/*.whl  # Remove the old wheel file
-          # mv cadquery_${wheel_file} ../vtk/build/dist/  # Move the new wheel file to the dist directory
+          mv cadquery_${wheel_file} ../vtk/build/dist/  # Move the new wheel file to the dist directory
           cd ../
           # mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-${{ env.WHEEL_OS_VERSION }}.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-${{ env.WHEEL_OS_VERSION }}.whl
 
