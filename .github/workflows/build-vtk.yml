@@ -151,6 +151,7 @@ jobs:
         shell: bash -l {0}
         run: |
           wheel_file=$(ls vtk/build/dist/*.whl | xargs -n 1 basename)  # Get the wheel file name from an ls of the dist directory
+          echo $wheel_file
           mkdir wheel_build/  # Make a separate build directory
           unzip $wheel_file -d wheel_build/  # Extract the wheel file
           sed -i 's/Name:.*$/Name: cadquery_vtk/' wheel_build/*.dist-info/METADATA  # Change the name in the METADATA file
@@ -159,7 +160,7 @@ jobs:
           cd wheel_build/
           zip -r cadquery_${wheel_file} *  # Create a new wheel file with the new name by prepending "cadquery_" to the name
           rm ../vtk/build/dist/*.whl  # Remove the old wheel file
-          mv cadquery_${wheel_file} ../vtk/build/dist/  # Move the new wheel file to the dist directory
+          # mv cadquery_${wheel_file} ../vtk/build/dist/  # Move the new wheel file to the dist directory
           cd ../
           # mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-${{ env.WHEEL_OS_VERSION }}.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-${{ env.WHEEL_OS_VERSION }}.whl
 
