@@ -78,8 +78,8 @@ jobs:
       - name: Pip Deps Setup 1
         shell: bash -l {0}
         run: |
-          pip install --upgrade pip
-          pip install build setuptools wheel requests delocate delvewheel
+          python -m pip install --upgrade pip
+          python -m pip install build setuptools wheel requests delocate delvewheel
 
       - name: Pip Deps Setup 2
         shell: bash -l {0}
