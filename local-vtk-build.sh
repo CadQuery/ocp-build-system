@@ -47,8 +47,8 @@ do
         sed -i 's/Name:.*$/Name: cadquery_vtk/' wheel_build/*.dist-info/METADATA; \
         sed -i 's/Version:.9.2.6.dev0$/Version: 9.2.6/' wheel_build/*.dist-info/METADATA; \
         mv wheel_build/*.dist-info wheel_build/cadquery_vtk-9.2.6.dist-info; \
-        cd wheel_build/; \
-        zip -r cadquery_${wheel_file} *; \
+        cd ..; \
+        wheel pack wheel_build/; \
         rm ../vtk/build/dist/*.whl; \
         mv cadquery_${wheel_file} ../vtk/build/dist/; \
         cd ../; \
