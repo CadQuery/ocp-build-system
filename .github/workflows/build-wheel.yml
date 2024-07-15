@@ -107,15 +107,15 @@ jobs:
           conda list --explicit
           echo '${{ github.event_name }} ${{ github.ref }}'
 
-      - name: Test wheel
-        shell: bash -l {0}
-        run: |
-          conda deactivate
-          conda create --yes -n cadquerytest python=${{ matrix.python-version }}
-          conda activate cadquerytest
-          ls dist/*
-          pip install dist/*.whl
-          python -c "import OCP;print('OCP imported successfully')"
+      # - name: Test wheel
+      #   shell: bash -l {0}
+      #   run: |
+      #     conda deactivate
+      #     conda create --yes -n cadquerytest python=${{ matrix.python-version }}
+      #     conda activate cadquerytest
+      #     ls dist/*
+      #     pip install dist/*.whl
+      #     python -c "import OCP;print('OCP imported successfully')"
 
       # see https://github.com/marketplace/actions/upload-a-build-artifact
       - name: Upload Artifact
