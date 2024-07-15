@@ -159,8 +159,10 @@ jobs:
           mv wheel_build/*.dist-info wheel_build/cadquery_vtk-9.2.6.dist-info  # Rename the dist-info file to the new name
           wheel pack wheel_build/;  # Create a new wheel file with the new name by prepending "cadquery_" to the name
           rm ./vtk/build/dist/*.whl  # Remove the old wheel file
-          mv ./wheel_build/cadquery_${wheel_file} ./vtk/build/dist/  # Move the new wheel file to the dist directory
-          mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-${{ env.WHEEL_OS_VERSION }}.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-${{ env.WHEEL_OS_VERSION }}.whl
+          new_wheel_file=(ls wheel_build/*.whl | xargs -n 1 basename)
+          mv wheel_build/*.whl ./vtk/build/dist/  # Move the new wheel file to the dist directory
+          # mv ./wheel_build/cadquery_${wheel_file} ./vtk/build/dist/  # Move the new wheel file to the dist directory
+          # mv vtk/build/dist/vtk-9.2.6.dev0-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-${{ env.WHEEL_OS_VERSION }}.whl vtk/build/dist/cadquery-vtk-9.2.6-cp${{ env.PYTHON_VERSION_NO_DOTS }}-cp${{ env.PYTHON_VERSION_NO_DOTS }}-${{ env.WHEEL_OS_VERSION }}.whl
 
       - name: Test wheel
         shell: bash -l {0}
