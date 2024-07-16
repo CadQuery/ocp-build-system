@@ -154,8 +154,8 @@ jobs:
           echo $wheel_file
           mkdir ./wheel_build/  # Make a separate build directory
           unzip vtk/build/dist/${wheel_file} -d ./wheel_build/  # Extract the wheel file
-          sed -i 's/Name:.*$/Name: cadquery_vtk/' ./wheel_build/*.dist-info/METADATA  # Change the name in the METADATA file
-          sed -i 's/Version:.9.2.6.dev0$/Version: 9.2.6/' ./wheel_build/*.dist-info/METADATA  # Remove the .dev0 from the version in the METADATA file
+          sed -i'' -e 's/Name:.*$/Name: cadquery_vtk/' ./wheel_build/*.dist-info/METADATA  # Change the name in the METADATA file
+          sed -i'' -e 's/Version:.9.2.6.dev0$/Version: 9.2.6/' ./wheel_build/*.dist-info/METADATA  # Remove the .dev0 from the version in the METADATA file
           mv ./wheel_build/*.dist-info ./wheel_build/cadquery_vtk-9.2.6.dist-info  # Rename the dist-info file to the new name
           wheel pack ./wheel_build/;  # Create a new wheel file with the new name by prepending "cadquery_" to the name
           rm ./vtk/build/dist/*.whl  # Remove the old wheel file
