@@ -39,19 +39,16 @@ do
         ninja; \
         python setup.py bdist_wheel; \
         cd ../../; \
-        find ./ -iname *.whl; \
         wheel_file=$(ls vtk/build/dist/*.whl | xargs -n 1 basename); \
         echo $wheel_file; \
-        mkdir wheel_build/; \
-        unzip vtk/build/dist/${wheel_file} -d wheel_build/; \
-        sed -i 's/Name:.*$/Name: cadquery_vtk/' wheel_build/*.dist-info/METADATA; \
-        sed -i 's/Version:.9.2.6.dev0$/Version: 9.2.6/' wheel_build/*.dist-info/METADATA; \
-        mv wheel_build/*.dist-info wheel_build/cadquery_vtk-9.2.6.dist-info; \
-        cd ..; \
-        wheel pack wheel_build/; \
-        rm ../vtk/build/dist/*.whl; \
-        mv cadquery_${wheel_file} ../vtk/build/dist/; \
-        cd ../; \
+        mkdir ./wheel_build/; \
+        unzip vtk/build/dist/${wheel_file} -d ./wheel_build/; \
+        sed -i'' -e 's/Name:.*$/Name: cadquery_vtk/' ./wheel_build/*.dist-info/METADATA; \
+        sed -i'' -e 's/Version:.9.2.6.dev0$/Version: 9.2.6/' ./wheel_build/*.dist-info/METADATA; \
+        mv ./wheel_build/*.dist-info ./wheel_build/cadquery_vtk-9.2.6.dist-info; \
+        wheel pack ./wheel_build/; \
+        rm ./vtk/build/dist/*.whl; \
+        mv *.whl ./vtk/build/dist/; \
         pip install vtk/build/dist/*.whl; \
         python -c "import vtk;print('vtk imported successfully')"
 done
