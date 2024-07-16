@@ -35,7 +35,13 @@ do
         curl -L -O https://vtk.org/files/release/9.2/VTK-9.2.6.tar.gz; \
         tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/; \
         cd ./vtk/build; \
-        cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON -DCMAKE_BUILD_TYPE=Release ../VTK-9.2.6; \
+        cmake -GNinja \
+              -DVTK_WHEEL_BUILD=ON \
+              -DVTK_WRAP_PYTHON=ON \
+              -DCMAKE_BUILD_TYPE=Release \
+              -DPython3_EXECUTABLE=$(which python) \
+              -DPython3_INCLUDE_DIR=$(python -c "import sysconfig; print(sysconfig.get_paths()['include'])") \
+              ../VTK-9.2.6; \
         ninja; \
         python setup.py bdist_wheel; \
         cd ../../; \
