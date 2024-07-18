@@ -11,6 +11,10 @@ for python_version in '3.9' '3.10' '3.11' '3.12'
 do
     info "Building wheel for Python $python_version..."
     info "Removing temp files..."
+    conda env remove -n ocp-build-system
+    rm -rf ./wheel_build || true
+    rm -rf ./vtk || true
+    rm ./VTK-*.zip || true
     rm -rf -v ./build
     rm -rf -v ./cadquery_ocp.egg-info
     info "Conda Deps Setup..."
@@ -57,4 +61,6 @@ do
         mv *.whl ./vtk/build/dist/; \
         pip install vtk/build/dist/*.whl; \
         python -c "import vtk;print('vtk imported successfully')"
+	mkdir -p ./saved_wheels/
+	mv vtk/build/dist/*.whl ./saved_wheels/
 done
