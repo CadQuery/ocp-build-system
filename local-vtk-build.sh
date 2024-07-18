@@ -14,7 +14,7 @@ do
     conda env remove -n ocp-build-system
     rm -rf ./wheel_build || true
     rm -rf ./vtk || true
-    rm ./VTK-*.zip || true
+    rm ./VTK-*.tar.gz || true
     rm -rf -v ./build
     rm -rf -v ./cadquery_ocp.egg-info
     info "Conda Deps Setup..."
@@ -43,8 +43,8 @@ do
               -DVTK_WHEEL_BUILD=ON \
               -DVTK_WRAP_PYTHON=ON \
               -DCMAKE_BUILD_TYPE=Release \
-              -DPython3_EXECUTABLE=$(which python) \
-              -DPython3_INCLUDE_DIR=$(python -c "import sysconfig; print(sysconfig.get_paths()['include'])") \
+              -DPython3_EXECUTABLE=$HOME/mambaforge/envs/ocp-build-system/bin/python \
+              -DPython3_INCLUDE_DIR=$HOME/mambaforge/envs/ocp-build-system/include/python$python_version \
               ../VTK-9.2.6; \
         ninja; \
         python setup.py bdist_wheel; \
