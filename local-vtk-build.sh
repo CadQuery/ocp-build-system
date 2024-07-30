@@ -9,19 +9,21 @@ trap "info Exited!; exit;" SIGINT SIGTERM
 
 for python_version in '3.9' '3.10' '3.11' '3.12'
 do
+    env_name="ocp-build-system-$python_version"
+
     info "Building wheel for Python $python_version..."
     info "Removing temp files..."
     rm -rf -v ./build
     rm -rf -v ./cadquery_ocp.egg-info
     info "Conda Deps Setup..."
-    conda create --yes -n ocp-build-system -c cadquery -c conda-forge \
+    conda create --yes -n $env_name -c cadquery -c conda-forge \
         python=$python_version \
         pip
     info "DONE"
     info "Conda Arch Setup..."
-    conda run -n ocp-build-system conda config --env --set subdir local-vtk-build
+    conda run -n $env_name conda config --env --set subdir local-vtk-build
     info "Pip Deps Setup..."
-    conda run -n ocp-build-system pip install \
+    conda run -n $env_name pip install \
         build \
         setuptools \
         wheel \
@@ -30,7 +32,7 @@ do
         auditwheel \
         delvewheel
     info "Conda-only Build..."
-    conda run --live-stream -n ocp-build-system \
+    conda run --live-stream -n $env_name \
         mkdir -p ./vtk/build; \
         curl -L -O https://vtk.org/files/release/9.2/VTK-9.2.6.tar.gz; \
         tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/; \
