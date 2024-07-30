@@ -13,7 +13,7 @@ do
 
     info "Building wheel for Python $python_version..."
     info "Removing temp files..."
-    conda env remove -n ocp-build-system
+    # conda env remove -n ocp-build-system
     rm -rf ./wheel_build || true
     rm -rf ./vtk || true
     rm ./VTK-*.tar.gz || true
@@ -45,8 +45,8 @@ do
               -DVTK_WHEEL_BUILD=ON \
               -DVTK_WRAP_PYTHON=ON \
               -DCMAKE_BUILD_TYPE=Release \
-              -DPython3_EXECUTABLE=$HOME/mambaforge/envs/ocp-build-system/bin/python \
-              -DPython3_INCLUDE_DIR=$HOME/mambaforge/envs/ocp-build-system/include/python$python_version \
+              -DPython3_EXECUTABLE=$HOME/mambaforge/envs/$env_name/bin/python \
+              -DPython3_INCLUDE_DIR=$HOME/mambaforge/envs/$env_name/include/python$python_version \
               ../VTK-9.2.6; \
         ninja; \
         python setup.py bdist_wheel; \
