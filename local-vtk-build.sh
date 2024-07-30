@@ -13,6 +13,10 @@ do
 
     info "Building wheel for Python $python_version..."
     info "Removing temp files..."
+    conda env remove -n ocp-build-system
+    rm -rf ./wheel_build || true
+    rm -rf ./vtk || true
+    rm ./VTK-*.tar.gz || true
     rm -rf -v ./build
     rm -rf -v ./cadquery_ocp.egg-info
     info "Conda Deps Setup..."
@@ -41,8 +45,8 @@ do
               -DVTK_WHEEL_BUILD=ON \
               -DVTK_WRAP_PYTHON=ON \
               -DCMAKE_BUILD_TYPE=Release \
-              -DPython3_EXECUTABLE=$(which python) \
-              -DPython3_INCLUDE_DIR=$(python -c "import sysconfig; print(sysconfig.get_paths()['include'])") \
+              -DPython3_EXECUTABLE=$HOME/mambaforge/envs/ocp-build-system/bin/python \
+              -DPython3_INCLUDE_DIR=$HOME/mambaforge/envs/ocp-build-system/include/python$python_version \
               ../VTK-9.2.6; \
         ninja; \
         python setup.py bdist_wheel; \
@@ -59,4 +63,6 @@ do
         mv *.whl ./vtk/build/dist/; \
         pip install vtk/build/dist/*.whl; \
         python -c "import vtk;print('vtk imported successfully')"
+	mkdir -p ./saved_wheels/
+	mv vtk/build/dist/*.whl ./saved_wheels/
 done
