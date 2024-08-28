@@ -394,7 +394,7 @@ setup(
         "Topic :: Software Development :: Libraries :: Python Modules",
         "Topic :: Scientific/Engineering"
     ],
-    install_requires=["vtk==9.2.6"],
+    install_requires=["cadquery-vtk==9.2.6"],
     dependency_links=[
         'https://wheels.vtk.org'
     ],
