@@ -127,13 +127,13 @@ jobs:
         shell: bash -l {0}
         if: ${{ matrix.os == 'macos-14' }}
         run: |
-          echo "WHEEL_OS_VERSION=macosx_14_0_arm64" >> $GITHUB_ENV
+          echo "WHEEL_OS_VERSION=macosx_11_0_arm64" >> $GITHUB_ENV
 
       - name: Rename MacOS AMD64 wheel
         shell: bash -l {0}
         if: ${{ matrix.os == 'macos-13' }}
         run: |
-          echo "WHEEL_OS_VERSION=macosx_13_0_x86_64" >> $GITHUB_ENV
+          echo "WHEEL_OS_VERSION=macosx_10_13_x86_64" >> $GITHUB_ENV
 
       - name: Rename Linux AMD64 wheel
         shell: bash -l {0}
