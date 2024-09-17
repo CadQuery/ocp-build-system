@@ -74,6 +74,11 @@ jobs:
         shell: bash -l {0}
         run: |
           conda install -c cadquery -n cadquery-ocp -y ocp=7.7.2.* vtk=9.2.* occt=7.7.2=all* auditwheel
+          echo "YO YO YO YO YO"
+          ls -al ~/miniconda3/envs/*/lib/python3*/site-packages/OCP*.so
+          strip ~/miniconda3/envs/*/lib/python3*/site-packages/OCP*.so
+          ls -al ~/miniconda3/envs/*/lib/python3*/site-packages/OCP*.so
+          echo "YO YO YO YO YO done"
 
       - name: Pip Deps Setup 1
         shell: bash -l {0}
