@@ -74,6 +74,13 @@ jobs:
         shell: bash -l {0}
         run: |
           conda install -c cadquery -n cadquery-ocp -y ocp=7.7.2.* vtk=9.2.* occt=7.7.2=all* auditwheel
+          # Save ~100MiB in shared object size by stripping debugging symbols.
+          # See https://github.com/CadQuery/ocp-build-system/issues/33 for details.
+          echo "Before stripping:"
+          ls -l ~/conda_pkgs_dir/ocp-*/lib/python*/site-packages/OCP*.so /usr/share/miniconda3/envs/cadquery-ocp/lib/python*/site-packages/OCP*.so
+          strip ~/conda_pkgs_dir/ocp-*/lib/python*/site-packages/OCP*.so /usr/share/miniconda3/envs/cadquery-ocp/lib/python*/site-packages/OCP*.so
+          echo "After stripping:"
+          ls -l ~/conda_pkgs_dir/ocp-*/lib/python*/site-packages/OCP*.so /usr/share/miniconda3/envs/cadquery-ocp/lib/python*/site-packages/OCP*.so
 
       - name: Pip Deps Setup 1
         shell: bash -l {0}
