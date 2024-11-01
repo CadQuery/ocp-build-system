@@ -47,7 +47,8 @@ jobs:
         # The `bdist_wheel` command requires the `wheel` package
         run: |
           python3 -m pip install --upgrade pip
-          python3 -m pip freeze build
+          python3 -m pip freeze 
+          python3 -m pip build
 
       - name: Cache build folder
         id: cache-cpp
