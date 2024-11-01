@@ -75,7 +75,7 @@ jobs:
       - name: Build wheel
         shell: bash -l {0}
         run: |
-          python3 -m build -n -w
+          python -m build -n -w
           cd ../../
           find ./ -iname *.whl
 
