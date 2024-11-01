@@ -35,7 +35,7 @@ jobs:
         if: matrix.os == 'macos-14'
         run: |
           # Ensure using ARM64 homebrew
-          arch -arm64 brew install python@${{ matrix.python-version }}
+          arch -arm64 brew reinstall python@${{ matrix.python-version }}
           
           # Verify and set the ARM64 Python
           PYTHON_PATH=/opt/homebrew/bin/python${{ matrix.python-version }}
