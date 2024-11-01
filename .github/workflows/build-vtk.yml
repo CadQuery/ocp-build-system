@@ -86,6 +86,7 @@ jobs:
           # Explicitly set ARM64 architecture
           CFLAGS: "-target ${{ matrix.target }}"
           CXXFLAGS: "-target ${{ matrix.target }}"  
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
           cd ./vtk/build
           cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON \
@@ -95,9 +96,14 @@ jobs:
                 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
                 -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} \
                 -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
+                -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
                 -DCMAKE_BUILD_TYPE=Release \
                 ../VTK-9.2.6
-          ninja -j6
+          ninja -j6 -v
+
+      - name: Verify Library Architecture
+        run: |
+          find build -name "*.dylib" -exec lipo -info {} \;
 
       - name: Build wheel
         shell: bash -l {0}
