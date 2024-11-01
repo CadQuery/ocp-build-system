@@ -87,6 +87,7 @@ jobs:
         run: |
           cd ./vtk/VTK-9.2.6
           python CMake/wheel_extract_platlib.py
+          arch -arm64 python CMake/wheel_extract_platlib.py
           cd ..
 
       - name: Cache build folder
