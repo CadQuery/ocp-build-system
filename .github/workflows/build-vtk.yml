@@ -49,6 +49,7 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade wheel
           python -m pip install --upgrade build
+          python -m pip install --upgrade setuptools
           python -m pip freeze 
 
       - name: Cache build folder
