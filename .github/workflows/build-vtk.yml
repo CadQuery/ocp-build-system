@@ -25,7 +25,6 @@ jobs:
           - os: 'macos-14'
             arch: arm64
             target: arm64-apple-darwin
-            ninja_flags: -j6
 
     steps:
 
@@ -75,11 +74,11 @@ jobs:
       - name: Compile from Scratch
         if: steps.cache-cpp.outputs.cache-hit != 'true' && startsWith(matrix.os, 'macos')  
         shell: bash -l {0}
-        env:
-          # Explicitly set ARM64 architecture
-          CFLAGS: "-target ${{ matrix.target }}"
-          CXXFLAGS: "-target ${{ matrix.target }}"  
-          MACOSX_DEPLOYMENT_TARGET: "11.0"
+        # env:
+        #   # Explicitly set ARM64 architecture
+        #   CFLAGS: "-target ${{ matrix.target }}"
+        #   CXXFLAGS: "-target ${{ matrix.target }}"  
+        #   MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
           echo "arch=${{ matrix.arch }}"
           echo "target=${{ matrix.target }}"        
@@ -91,10 +90,11 @@ jobs:
                 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
                 -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} \
                 -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
+                -DCMAKE_CXX_FLAGS="-target ${{ matrix.target }}" \
                 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
                 -DCMAKE_BUILD_TYPE=Release \
                 ../VTK-9.2.6
-          ninja ${{ matrix.ninja_flags }}
+          ninja -j3 -v
 
       - name: Verify Library Architecture
         run: |
