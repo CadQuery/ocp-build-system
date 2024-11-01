@@ -78,6 +78,11 @@ jobs:
           cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_APPLE_SILICON_PROCESSOR="arm64" -DCMAKE_C_FLAGS="-Wno-error=incompatible-function-pointer-types" -DCMAKE_BUILD_TYPE=Release -DVTK_VERSION_SUFFIX="" -DVTK_DIST_NAME_SUFFIX="cadquery" ../VTK-9.2.6
           ninja -j3
 
+      - name: Check Python version after cache hit # Add this to debug
+        run: |
+          which python
+          python --version
+
       - name: Build wheel
         shell: bash -l {0}
         run: |
