@@ -90,6 +90,7 @@ jobs:
                 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
                 -DCMAKE_BUILD_TYPE=Release \
                 ../VTK-9.2.6
+          find . -name '*' -exec grep universal2 {} \;                
           ninja -j3 -v
 
       - name: Verify Library Architecture
