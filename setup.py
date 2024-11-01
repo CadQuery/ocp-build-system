@@ -37,7 +37,7 @@ produce macOS and Windows wheels.
 
 """
 
-import OCP
+# import OCP
 import glob
 import json
 import os.path
@@ -114,7 +114,7 @@ class copy_installed(setuptools.command.build_ext.build_ext):
         os.mkdir(os.path.dirname(self.build_lib))
         os.mkdir(self.build_lib)
         # OCP is a single-file extension; just copy it
-        shutil.copy(OCP.__file__, self.build_lib)
+        # shutil.copy(OCP.__file__, self.build_lib)
         # vtkmodules is a package; copy it while excluding __pycache__
         if VTK_MANYLINUX:
             # Copy python source files and python extensions, but not
