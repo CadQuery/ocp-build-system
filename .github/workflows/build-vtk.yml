@@ -83,15 +83,15 @@ jobs:
                 -DVTK_WRAP_PYTHON=ON \
                 -DVTK_DIST_NAME_SUFFIX=cadquery \
                 -DVTK_VERSION_SUFFIX="" \
-                -DCMAKE_C_FLAGS="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }}" \
+                -DCMAKE_C_FLAGS="-target ${{ matrix.target }}" \
                 -DCMAKE_CXX_FLAGS="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }}" \
                 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
                 -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} \
                 -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
                 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
                 -DCMAKE_BUILD_TYPE=Release \
+                -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="build/lib.macosx-11.0-arm64-cpython-311" \
                 ../VTK-9.2.6
-          find . -name '*' -exec grep universal2 {} \;                
           ninja -j3 -v
 
       - name: Verify Library Architecture
