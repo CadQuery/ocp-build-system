@@ -31,27 +31,33 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - name: Set up ARM64 Python
-        if: matrix.os == 'macos-14'
-        run: |
-          # Ensure using ARM64 homebrew
-          arch -arm64 brew reinstall python@${{ matrix.python-version }}
+      # - name: Set up ARM64 Python
+      #   if: matrix.os == 'macos-14'
+      #   run: |
+      #     # Ensure using ARM64 homebrew
+      #     arch -arm64 brew reinstall python@${{ matrix.python-version }}
           
-          # Verify and set the ARM64 Python
-          PYTHON_PATH=/opt/homebrew/bin/python${{ matrix.python-version }}
-          arch -arm64 $PYTHON_PATH -c "import platform; assert platform.machine() == 'arm64', 'Not ARM64 Python'"
+      #     # Verify and set the ARM64 Python
+      #     PYTHON_PATH=/opt/homebrew/bin/python${{ matrix.python-version }}
+      #     arch -arm64 $PYTHON_PATH -c "import platform; assert platform.machine() == 'arm64', 'Not ARM64 Python'"
           
-          # Set for later steps
-          echo "PYTHON_EXECUTABLE=$PYTHON_PATH" >> $GITHUB_ENV
+      #     # Set for later steps
+      #     echo "PYTHON_EXECUTABLE=$PYTHON_PATH" >> $GITHUB_ENV
           
-          # Verify Python architecture
-          arch -arm64 $PYTHON_PATH -c "import sys; print(f'Python arch: {sys.platform}, {platform.machine()}')"  
+      #     # Verify Python architecture
+      #     arch -arm64 $PYTHON_PATH -c "import sys; print(f'Python arch: {sys.platform}, {platform.machine()}')"  
 
-      # - uses: actions/setup-python@v5
-      #   with:
-      #     python-version: ${{ matrix.python-version }}
-      #     architecture: ${{ matrix.python_arch }}
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.python_arch }}
                     
+
+      - name: Verify Python architecture
+        run: |
+          python -c "import platform; print(platform.machine())"
+          file $(which python)
+          
       - name: Ubuntu Deps
         if: matrix.os == 'ubuntu-20.04'
         shell: bash -l {0}
@@ -71,11 +77,6 @@ jobs:
           python -m pip install --upgrade wheel build setuptools
           python -m pip freeze 
 
-      - name: Verify Python architecture
-        run: |
-          python -c "import platform; print(platform.machine())"
-          file $(which python)
-          
       - name: Download vtk
         run: |
           mkdir -p ./vtk/build
