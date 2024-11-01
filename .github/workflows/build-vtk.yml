@@ -57,6 +57,10 @@ jobs:
           mkdir -p ./vtk/build
           wget https://www.vtk.org/files/release/9.2/VTK-9.2.6.tar.gz  # Update this for newer releases of VTK
           tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/
+          echo "Building VTK"
+          ls -la ./vtk/
+          echo "Entering build directory"
+          ls -la ./vtk/build
           cd ./vtk/build
           cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_APPLE_SILICON_PROCESSOR="arm64" -DCMAKE_C_FLAGS="-Wno-error=incompatible-function-pointer-types" -DCMAKE_BUILD_TYPE=Release -DVTK_VERSION_SUFFIX="" -DVTK_DIST_NAME_SUFFIX="cadquery" ../VTK-9.2.6
           ninja -j3
