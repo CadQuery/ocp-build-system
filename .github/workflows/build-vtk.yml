@@ -86,6 +86,7 @@ jobs:
       - name: Build wheel
         shell: bash -l {0}
         run: |
+          cd ./vtk/build
           python -m build -n -w
           cd ../../
           find ./ -iname *.whl
