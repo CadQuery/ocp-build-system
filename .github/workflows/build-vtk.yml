@@ -76,18 +76,20 @@ jobs:
         run: |
           echo "arch=${{ matrix.arch }}"
           echo "target=${{ matrix.target }}"      
+          echo "PYTHON_VERSION_NO_DOT=$(echo ${{ matrix.python-version }} | tr -d '.')" >> $GITHUB_ENV
           cd ./vtk/build
-          cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON \
-                -DCMAKE_C_FLAGS="-Wno-error=incompatible-function-pointer-types" \
-                -DCMAKE_BUILD_TYPE=Release \
-                -DVTK_VERSION_SUFFIX="" \
+          cmake -GNinja \
+                -DVTK_WHEEL_BUILD=ON \
+                -DVTK_WRAP_PYTHON=ON \
                 -DVTK_DIST_NAME_SUFFIX=cadquery \
+                -DVTK_VERSION_SUFFIX="" \
+                -DCMAKE_C_FLAGS="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }}" \
+                -DCMAKE_CXX_FLAGS="-target ${{ matrix.target }}" \
                 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
                 -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} \
                 -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
-                -DCMAKE_CXX_FLAGS="-target ${{ matrix.target }}" \
-                -DCMAKE_C_FLAGS="-target ${{ matrix.target }}" \
                 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+                -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="build/lib.macosx-11.0-${{ matrix.arch }}-cpython-${PYTHON_VERSION_NO_DOT}" \
                 -DCMAKE_BUILD_TYPE=Release \
                 ../VTK-9.2.6
           find . -name '*' -exec grep universal2 {} \;                
