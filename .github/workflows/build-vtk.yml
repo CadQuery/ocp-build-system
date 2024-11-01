@@ -20,9 +20,11 @@ jobs:
         include:
           # - os: 'macos-13'
           #   arch: x86_64
+          #   python_arch: x64
           #   target: x86_64-apple-macos11
           - os: 'macos-14'
             arch: arm64
+            python_arch: arm64
             target: arm64-apple-macos11
 
     steps:
@@ -32,7 +34,7 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-          architecture: ${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }}
+          architecture: ${{ matrix.python_arch }}
                     
       - name: Ubuntu Deps
         if: matrix.os == 'ubuntu-20.04'
@@ -58,7 +60,9 @@ jobs:
           mkdir -p ./vtk/build
           wget https://www.vtk.org/files/release/9.2/VTK-9.2.6.tar.gz  # Update this for newer releases of VTK
           tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/
-
+          cd ./vtk/VTK-9.2.6
+          python CMake/wheel_extract_platlib.py
+          
       - name: Cache build folder
         id: cache-cpp
         uses: actions/cache@v3
