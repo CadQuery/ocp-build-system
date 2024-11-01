@@ -46,11 +46,11 @@ jobs:
         shell: bash -l {0}
         # The `bdist_wheel` command requires the `wheel` package
         run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade wheel
-          python -m pip install --upgrade build
-          python -m pip install --upgrade setuptools
-          python -m pip freeze 
+          python3 -m pip install --upgrade pip
+          python3 -m pip install --upgrade wheel
+          python3 -m pip install --upgrade build
+          python3 -m pip install --upgrade setuptools
+          python3 -m pip freeze 
 
       - name: Cache build folder
         id: cache-cpp
@@ -76,7 +76,7 @@ jobs:
       - name: Build wheel
         shell: bash -l {0}
         run: |
-          python -m build -n -w
+          python3 -m build -n -w
           cd ../../
           find ./ -iname *.whl
 
