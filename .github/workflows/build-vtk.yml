@@ -20,11 +20,10 @@ jobs:
         include:
           # - os: 'macos-13'
           #   arch: x86_64
-          #   target: x86_64-apple-darwin
-          #   ninja_flags: -j3
+          #   target: x86_64-apple-macos11
           - os: 'macos-14'
             arch: arm64
-            target: arm64-apple-darwin
+            target: arm64-apple-macos11
 
     steps:
 
