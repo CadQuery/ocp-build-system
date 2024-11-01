@@ -13,7 +13,7 @@ jobs:
 
     strategy:
       matrix:
-        # os: ['macos-13', 'macos-14']
+        # os: ['ubuntu-20.04', 'macos-13', 'macos-14', 'windows-2019']
         # python-version: ['3.10', '3.11', '3.12']
         os: ['macos-14']
         python-version: ['3.11']
@@ -21,9 +21,11 @@ jobs:
           # - os: 'macos-13'
           #   arch: x86_64
           #   target: x86_64-apple-darwin
+          #   ninja_flags: -j3
           - os: 'macos-14'
             arch: arm64
             target: arm64-apple-darwin
+            ninja_flags: -j6
 
     steps:
 
@@ -33,27 +35,18 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ matrix.arch == 'x86_64' && 'x64' || 'arm64' }}
-
-      - name: Set Architecture
-        id: set-arch
-        shell: bash
-        run: |
-          echo "arch=${{ matrix.arch }}" >> $GITHUB_OUTPUT
-          echo "target=${{ matrix.target }}" >> $GITHUB_OUTPUT
                     
       - name: Ubuntu Deps
+        if: matrix.os == 'ubuntu-20.04'
         shell: bash -l {0}
         run: |
-          if [ "$RUNNER_OS" == "Linux" ]; then
-            sudo apt install -y build-essential cmake mesa-common-dev mesa-utils freeglut3-dev python-dev python-venv git-core ninja-build cmake wget libglvnd0 libglvnd-dev
-          fi
+          sudo apt install -y build-essential cmake mesa-common-dev mesa-utils freeglut3-dev python-dev python-venv git-core ninja-build cmake wget libglvnd0 libglvnd-dev
 
       - name: MacOS Deps
+        if: startsWith(matrix.os, 'macos')
         shell: bash -l {0}
         run: |
-          if [ "$RUNNER_OS" == "macOS" ]; then
-            brew install ninja
-          fi
+          brew install ninja
 
       - name: Setup Python Env
         shell: bash -l {0}
@@ -80,7 +73,7 @@ jobs:
             ${{ runner.os }}-ninja-
 
       - name: Compile from Scratch
-        if: steps.cache-cpp.outputs.cache-hit != 'true'
+        if: steps.cache-cpp.outputs.cache-hit != 'true' && startsWith(matrix.os, 'macos')  
         shell: bash -l {0}
         env:
           # Explicitly set ARM64 architecture
@@ -88,6 +81,8 @@ jobs:
           CXXFLAGS: "-target ${{ matrix.target }}"  
           MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
+          echo "arch=${{ matrix.arch }}"
+          echo "target=${{ matrix.target }}"        
           cd ./vtk/build
           cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON \
                 -DCMAKE_C_FLAGS="-Wno-error=incompatible-function-pointer-types" \
@@ -99,11 +94,11 @@ jobs:
                 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
                 -DCMAKE_BUILD_TYPE=Release \
                 ../VTK-9.2.6
-          ninja -j6 -v
+          ninja ${{ matrix.ninja_flags }}
 
       - name: Verify Library Architecture
         run: |
-          find build -name "*.dylib" -exec lipo -info {} \;
+          find . -name "*.dylib" -exec lipo -info {} \;
 
       - name: Build wheel
         shell: bash -l {0}
@@ -112,6 +107,13 @@ jobs:
           python -m build -n -w
           cd ../../
           find ./ -iname *.whl
+
+      - name: Test wheel
+        shell: bash -l {0}
+        run: |
+          python -V
+          pip install vtk/build/dist/*.whl
+          python -c "import vtk;print('vtk imported successfully')"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
