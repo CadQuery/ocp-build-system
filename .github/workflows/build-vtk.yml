@@ -28,11 +28,6 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - name: Check Python version  # Add this to debug
-        run: |
-          which python
-          python --version
-
       - name: Ubuntu Deps
         shell: bash -l {0}
         run: |
@@ -60,11 +55,18 @@ jobs:
       - name: Cache build folder
         id: cache-cpp
         uses: actions/cache@v3
+        # with:
+        #   path: ./vtk/build
+        #   key: ${{ runner.os }}-python-${{ matrix.python-version }}-cpp-build-${{ hashFiles('**/CMakeLists.txt', '**/*.cpp', '**/*.h') }}
+        #   restore-keys: |
+        #     ${{ runner.os }}-python-${{ matrix.python-version }}-cpp-build-
         with:
-          path: ./vtk/build
-          key: ${{ runner.os }}-python-${{ matrix.python-version }}-cpp-build-${{ hashFiles('**/CMakeLists.txt', '**/*.cpp', '**/*.h') }}
+          path: |
+            build
+            .ninja_log
+          key: ${{ runner.os }}-ninja-${{ hashFiles('**/*.ninja') }}
           restore-keys: |
-            ${{ runner.os }}-python-${{ matrix.python-version }}-cpp-build-
+            ${{ runner.os }}-ninja-
 
       - name: Compile from Scratch
         if: steps.cache-cpp.outputs.cache-hit != 'true'
@@ -75,13 +77,13 @@ jobs:
           tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/
           echo "Building VTK"
           cd ./vtk/build
-          cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON -DCMAKE_BUILD_TYPE=Release -DCMAKE_APPLE_SILICON_PROCESSOR="arm64" -DCMAKE_C_FLAGS="-Wno-error=incompatible-function-pointer-types" -DCMAKE_BUILD_TYPE=Release -DVTK_VERSION_SUFFIX="" -DVTK_DIST_NAME_SUFFIX="cadquery" ../VTK-9.2.6
-          ninja -j3
-
-      - name: Check Python version after cache hit # Add this to debug
-        run: |
-          which python
-          python --version
+          cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON \
+                -DCMAKE_C_FLAGS="-Wno-error=incompatible-function-pointer-types" \
+                -DCMAKE_BUILD_TYPE=Release -DVTK_VERSION_SUFFIX="" \
+                -DVTK_DIST_NAME_SUFFIX=cadquery \
+                -DCMAKE_OSX_ARCHITECTURES=arm64 \
+                ../VTK-9.2.6
+          ninja -j6
 
       - name: Build wheel
         shell: bash -l {0}
