@@ -89,7 +89,10 @@ jobs:
                 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
                 -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} \
                 -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
+                -DCMAKE_CXX_COMPILER=clang++ \
                 -DCMAKE_CXX_FLAGS="-target ${{ matrix.target }}" \
+                -DCMAKE_C_COMPILER=clang \
+                -DCMAKE_C_FLAGS="-target ${{ matrix.target }}" \
                 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
                 -DCMAKE_BUILD_TYPE=Release \
                 ../VTK-9.2.6
