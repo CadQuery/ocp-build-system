@@ -68,9 +68,9 @@ jobs:
           path: |
             build
             .ninja_log
-          key: ${{ runner.os }}-ninja-${{ hashFiles('**/*.ninja') }}
+          key: ${{ matrix.os }}-ninja-${{ hashFiles('**/*.ninja') }}
           restore-keys: |
-            ${{ runner.os }}-ninja-
+            ${{ matrix.os }}-ninja-
 
       - name: Compile from Scratch
         if: steps.cache-cpp.outputs.cache-hit != 'true' && startsWith(matrix.os, 'macos')  
