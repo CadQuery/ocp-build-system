@@ -116,9 +116,14 @@ jobs:
           restore-keys: |
             ${{ matrix.os }}-${{ matrix.python-version }}-ninja-
 
-      - name: Compile from Scratch
+      - name: Compile from Scratch for Macos
         if: startsWith(matrix.os, 'macos') && (steps.cache-cpp.outputs.cache-hit != 'true')
         shell: bash -l {0}
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
+          CFLAGS: "-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
+          CXXFLAGS: "-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
+          LDFLAGS: "-mmacos-version-min=11.0"        
         run: |
           echo "arch=${{ matrix.arch }}"
           echo "target=${{ matrix.target }}"      
@@ -129,8 +134,11 @@ jobs:
                 -DVTK_WRAP_PYTHON=ON \
                 -DVTK_DIST_NAME_SUFFIX=cadquery \
                 -DVTK_VERSION_SUFFIX="" \
-                -DCMAKE_C_FLAGS="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }}" \
-                -DCMAKE_CXX_FLAGS="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }}" \
+                -DCMAKE_C_FLAGS="$CFLAGS" \
+                -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+                -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
+                -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
+                -DCMAKE_MODULE_LINKER_FLAGS="$LDFLAGS" \
                 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
                 -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} \
                 -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
