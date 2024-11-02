@@ -57,6 +57,7 @@ jobs:
 
           # ensure cmake takes the right Python
           echo "Python3_ROOT=/opt/homebrew/opt/python@${{ matrix.python-version }}" >> $GITHUB_ENV
+          echo "Python_ROOT=/opt/homebrew/opt/python@${{ matrix.python-version }}" >> $GITHUB_ENV
 
       - name: Verify Python
         run: |
