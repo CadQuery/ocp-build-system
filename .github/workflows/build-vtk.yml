@@ -95,9 +95,8 @@ jobs:
           tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/
           
       - name: Verify Python Architecture correct for building VTK
-        env:
-          MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
+          export MACOSX_DEPLOYMENT_TARGET=11.0
           cd ./vtk/VTK-9.2.6
           python CMake/wheel_extract_platlib.py
           # Note: This is how VTK builds library deployment paths
@@ -120,13 +119,12 @@ jobs:
       - name: Compile from Scratch for Macos
         if: startsWith(matrix.os, 'macos') && (steps.cache-cpp.outputs.cache-hit != 'true')
         shell: bash -l {0}
-        env:
-          MACOSX_DEPLOYMENT_TARGET: "11.0"
-          flags: "-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
-          CFLAGS: "$flags"
-          CXXFLAGS: "$flags"
-          LDFLAGS: "-mmacos-version-min=11.0"        
         run: |
+          flags="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
+          export CFLAGS="$flags"
+          export CXXFLAGS="$flags"
+          export LDFLAGS="-mmacos-version-min=11.0"        
+          export MACOSX_DEPLOYMENT_TARGET=11.0
           echo "arch=${{ matrix.arch }}"
           echo "target=${{ matrix.target }}"      
           echo "PYTHON_VERSION_NO_DOT=$(echo ${{ matrix.python-version }} | tr -d '.')" >> $GITHUB_ENV
@@ -160,6 +158,7 @@ jobs:
       - name: Build wheel
         shell: bash -l {0}
         run: |
+          export MACOSX_DEPLOYMENT_TARGET=11.0
           cd ./vtk/build
           python -m build -n -w
           cd ../../
