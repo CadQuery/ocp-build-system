@@ -46,28 +46,14 @@ jobs:
           # Install Python with native arm64 architecture
           arch -arm64 brew install python@${{ matrix.python-version }}
           
+          # Note: Unversioned and major-versioned symlinks `python`, `python3`, `python-config`, `python3-config`, `pip`, `pip3`, etc. 
+          # pointing to `python3.11`, `python3.11-config`, `pip3.11` etc., respectively, are installed into
+          # /opt/homebrew/opt/python@3.11/libexec/bin
           PATH="/opt/homebrew/opt/python@${{ matrix.python-version }}/libexec/bin:$PATH"          
-          echo "PATH: $PATH"
           echo "PATH=$PATH" >> $GITHUB_ENV
 
       - name: Verify Python
         run: |
-          echo "PATH=$PATH"
-
-          
-          echo OPTION "python${{  matrix.python-version }}"
-          command -v python${{  matrix.python-version }}
-          python${{  matrix.python-version }} --version
-          arch -arm64 python${{  matrix.python-version }} -c "import platform; print(f'Architecture: {platform.machine()}')"
-          file $(which python3)
-          
-          echo OPTION python3
-          command -v python3
-          python3 --version
-          python3 -c "import platform; print(f'Architecture: {platform.machine()}')"
-          file $(which python3)
-          
-          echo OPTION python
           command -v python
           python --version
           python -c "import platform; print(f'Architecture: {platform.machine()}')"
@@ -128,7 +114,6 @@ jobs:
                 -DVTK_WRAP_PYTHON=ON \
                 -DVTK_DIST_NAME_SUFFIX=cadquery \
                 -DVTK_VERSION_SUFFIX="" \
-                -DPYTHON_EXECUTABLE=${{ env.PYTHON_EXECUTABLE }} \
                 -DCMAKE_C_FLAGS="-target ${{ matrix.target }}" \
                 -DCMAKE_CXX_FLAGS="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }}" \
                 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
