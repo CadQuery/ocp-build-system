@@ -41,6 +41,7 @@ jobs:
         # We need an arm64 or x86_64 only Python for macos. The python-action Python is universal2
         if: ${{ runner.os == 'macOS' }}
         run: |
+          ls -l /usr/local/bin
           # Uninstall any existing Python to avoid conflicts
           brew uninstall --ignore-dependencies python@3.11 || true
           
