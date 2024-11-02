@@ -119,7 +119,7 @@ jobs:
             .ninja_log
           key: ${{ matrix.os }}-${{ matrix.python-version }}-ninja-
 
-      - name: Compile from Scratch for Macos
+      - name: Compile from Scratch
         if: steps.cache-cpp.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
