@@ -172,11 +172,19 @@ jobs:
           find . -name "*.dylib" -exec lipo -archs {} \; | uniq
           find . -name "*.dylib" -exec bash -c 'otool -l {} | grep minos' \; | uniq
 
+      - name: Update dist_name in setup.py
+        shell: python
+        run: |
+          with open('./vtk/build/setup.py', 'r') as file:
+              content = file.read()
+          content = content.replace("dist_name = 'vtk'", "dist_name = 'cadquery_vtk'")
+          with open('./vtk/build/setup.py', 'w') as file:
+              file.write(content)
+              
       - name: Build wheel
         run: |
           command -v python
           cd ./vtk/build
-          sed -i"" "s/dist_name = 'vtk'/dist_name = 'cadquery_vtk'/" setup.py
           python -m build -n -w
           cd ../../
           find ./ -iname *.whl
