@@ -32,7 +32,11 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - name: Install Python on other platforms than MacOS
+      # = = = = = = = = = = = = = = = = = = 
+      # STEP 1: Install Python
+      # = = = = = = = = = = = = = = = = = = 
+
+      - name: Install Python on Linux and Windows
         if: ${{ runner.os != 'macOS' }}
         uses: actions/setup-python@v5
         with:
@@ -72,12 +76,20 @@ jobs:
           command -v python
           python --version
           python -c "import platform; print(f'Architecture: {platform.machine()}')"
-            
+      
+      # = = = = = = = = = = = = = = = = = = 
+      # STEP 2: Install Python dependencies
+      # = = = = = = = = = = = = = = = = = = 
+
       - name: Install Python dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install --upgrade wheel build setuptools
           python -m pip freeze
+
+      # = = = = = = = = = = = = = = = = = = 
+      # STEP 3: Install build dependencies
+      # = = = = = = = = = = = = = = = = = = 
 
       - name: Ubuntu Deps
         if: matrix.os == 'ubuntu-20.04'
@@ -94,6 +106,10 @@ jobs:
         if: ${{ runner.os == 'Windows' }}
         uses: ilammy/msvc-dev-cmd@v1
 
+      # = = = = = = = = = = = = = = = = = = 
+      # RESTORE CACHE IF POSSIBLE
+      # = = = = = = = = = = = = = = = = = = 
+
       - name: Restore cached build files
         # works on Windows, since github actions replace the '/' with '\'
         id: cache-build
@@ -104,6 +120,10 @@ jobs:
             ./vtk/build
             ./vtk/build/.ninja_log
           key:  ${{ matrix.os }}-${{ matrix.python-version }}-ninja-${{ env.VTK_VERSION }}-
+
+      # = = = = = = = = = = = = = = = = = = 
+      # STEP 4: Download VTK
+      # = = = = = = = = = = = = = = = = = = 
 
       - name: Download vtk
         if: steps.cache-build.outputs.cache-hit != 'true'
@@ -123,7 +143,11 @@ jobs:
           # Extract the archive
           with tarfile.open("VTK.tar.gz", "r:gz") as tar:
               tar.extractall(path="./vtk/")
-      
+
+      # = = = = = = = = = = = = = = = = = = 
+      # STEP 5: Verify Python lib path
+      # = = = = = = = = = = = = = = = = = = 
+
       - name: Verify Python lib path is correct for building VTK
         if: steps.cache-build.outputs.cache-hit != 'true'
         shell: python
@@ -138,6 +162,10 @@ jobs:
             import subprocess
             script_path = os.path.join('CMake', 'wheel_extract_platlib.py')
             subprocess.run(['python', script_path], check=True)
+
+      # = = = = = = = = = = = = = = = = = = 
+      # STEP 6: Compile VTK
+      # = = = = = = = = = = = = = = = = = = 
 
       - name: Compile from Scratch for Macos
         if: steps.cache-build.outputs.cache-hit != 'true' && startsWith(matrix.os, 'macos')
@@ -197,6 +225,10 @@ jobs:
 
           ninja -j4
 
+      # = = = = = = = = = = = = = = = = = = 
+      # CACHE BUILD FILES IF NEEDED
+      # = = = = = = = = = = = = = = = = = = 
+
       - name: Cache build folder
         # works on Windows, since github actions replace the '/' with '\'
         id: cache-cpp
@@ -207,7 +239,11 @@ jobs:
             ./vtk/build
             ./vtk/build/.ninja_log
           key: ${{ steps.cache-build.outputs.cache-primary-key }}
-            
+      
+      # = = = = = = = = = = = = = = = = = = 
+      # STEP 7: BUILD WHEEL
+      # = = = = = = = = = = = = = = = = = = 
+
       - name: Verify Library Architecture
         if: ${{ runner.os == 'macOS' }}
         run: |
