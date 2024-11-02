@@ -95,6 +95,8 @@ jobs:
           tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/
           
       - name: Verify Python Architecture correct for building VTK
+        env:
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
         run: |
           cd ./vtk/VTK-9.2.6
           python CMake/wheel_extract_platlib.py
@@ -120,14 +122,19 @@ jobs:
         shell: bash -l {0}
         env:
           MACOSX_DEPLOYMENT_TARGET: "11.0"
-          CFLAGS: "-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
-          CXXFLAGS: "-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
+          flags: "-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
+          CFLAGS: "$flags"
+          CXXFLAGS: "$flags"
           LDFLAGS: "-mmacos-version-min=11.0"        
         run: |
           echo "arch=${{ matrix.arch }}"
           echo "target=${{ matrix.target }}"      
           echo "PYTHON_VERSION_NO_DOT=$(echo ${{ matrix.python-version }} | tr -d '.')" >> $GITHUB_ENV
           cd ./vtk/build
+          echo "== FLAGS =="
+          echo "CFLAGS=$CFLAGS"
+          echo "CXXFLAGS=$CXXFLAGS"
+          echo "LDFLAGS=$LDFLAGS"
           cmake -GNinja \
                 -DVTK_WHEEL_BUILD=ON \
                 -DVTK_WRAP_PYTHON=ON \
