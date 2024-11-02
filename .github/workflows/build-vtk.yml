@@ -112,14 +112,12 @@ jobs:
 
       - name: Cache build folder
         id: cache-cpp
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             build
             .ninja_log
-          key: ${{ matrix.os }}-${{ matrix.python-version }}-ninja-${{ hashFiles('**/CMakeLists.txt', '**/*.cmake') }}
-          restore-keys: |
-            ${{ matrix.os }}-${{ matrix.python-version }}-ninja-
+          key: ${{ matrix.os }}-${{ matrix.python-version }}-ninja-
 
       - name: Compile from Scratch for Macos
         if: startsWith(matrix.os, 'macos') && (steps.cache-cpp.outputs.cache-hit != 'true')
