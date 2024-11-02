@@ -49,20 +49,15 @@ jobs:
           # Add brew Python to PATH
           echo "/opt/homebrew/opt/python@${{ matrix.python-version }}/bin" >> $GITHUB_PATH
           
+          python3 -m pip install --upgrade wheel build setuptools
+
           # Verify installation
           python${{  matrix.python-version }} --version
           arch -arm64 python${{  matrix.python-version }} -c "import platform; print(f'Architecture: {platform.machine()}')"
 
-          python --version
-          python -c "import platform; print(f'Architecture: {platform.machine()}')"
-
-      - name: Set up Python env and verify Python architecture
-        shell: bash -l {0}
-        run: |
-          python --version
-          python -m pip install --upgrade wheel build setuptools
-          python -c "import platform; print(platform.machine())"
-          file $(which python)
+          python3 --version
+          python3 -c "import platform; print(f'Architecture: {platform.machine()}')"
+          file $(which python3)
           
       - name: Ubuntu Deps
         if: matrix.os == 'ubuntu-20.04'
