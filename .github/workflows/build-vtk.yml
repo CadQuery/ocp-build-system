@@ -65,6 +65,8 @@ jobs:
           echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
           echo "_PYTHON_HOST_PLATFORM=macosx-11.0-${{ matrix.arch }}" >> $GITHUB_ENV
 
+          system_profiler SPHardwareDataType | grep "Cores" | awk '{ print $5 }'
+
       - name: Verify Python
         run: |
           command -v python
