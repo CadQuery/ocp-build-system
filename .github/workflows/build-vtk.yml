@@ -6,7 +6,7 @@ on:
 env:
   PYTHONUTF8: 1
   VTK_VERSION: 9.2.6
-  VTK_MAJOR_VERSION: 9.2
+  VTK_MINOR_VERSION: 9
 
 jobs:
   build:
@@ -93,7 +93,7 @@ jobs:
       - name: Download vtk
         run: |
           mkdir -p ./vtk/build
-          wget -q https://www.vtk.org/files/release/${{ env.VTK_MAJOR_VERSION}}/VTK-${{ env.VTK_VERSION }}.tar.gz  # Update this for newer releases of VTK
+          wget -q https://www.vtk.org/files/release/${{ env.VTK_MINOR_VERSION}}/VTK-${{ env.VTK_VERSION }}.tar.gz  # Update this for newer releases of VTK
           tar -zxf VTK-${{ env.VTK_VERSION }}.tar.gz --directory ./vtk/
           
       - name: Verify Python lib path is correct for building VTK
@@ -152,9 +152,9 @@ jobs:
                 -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
                 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
                 -DCMAKE_BUILD_TYPE=Release \
-                ../VTK-9.2.6
-          echo "XXX" > .ninja_log
-          # ninja -j3
+                ../VTK-${{ env.VTK_VERSION }}
+
+          ninja -j3
 
       - name: Cache build folder
         id: cache-cpp
