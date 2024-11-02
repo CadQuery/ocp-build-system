@@ -46,9 +46,10 @@ jobs:
           # Install Python with native arm64 architecture
           arch -arm64 brew install python@${{ matrix.python-version }}
           
-          # Add brew Python to PATH
-          echo "/opt/homebrew/opt/python@${{ matrix.python-version }}/bin" >> $GITHUB_PATH
-          
+          # Add brew Python to PATH as first entry
+          echo "/opt/homebrew/opt/python@${{ matrix.python-version }}/bin:$PATH" > "$GITHUB_PATH"
+          echo "GITHUB_PATH=$GITHUB_PATH"
+
           python3 -m pip install --upgrade wheel build setuptools
 
           # Verify installation
