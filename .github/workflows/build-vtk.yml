@@ -5,6 +5,8 @@ on:
 
 env:
   PYTHONUTF8: 1
+  VTK_VERSION: 9.2.6
+  VTK_MAJOR_VERSION: 9.2
 
 jobs:
   build:
@@ -93,15 +95,15 @@ jobs:
       - name: Download vtk
         run: |
           mkdir -p ./vtk/build
-          wget -q https://www.vtk.org/files/release/9.2/VTK-9.2.6.tar.gz  # Update this for newer releases of VTK
-          tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/
+          wget -q https://www.vtk.org/files/release/${{ VTK_MAJOR_VERSION}}/VTK-${{ env.VTK_VERSION }}.tar.gz  # Update this for newer releases of VTK
+          tar -zxf VTK-${{ env.VTK_VERSION }}.tar.gz --directory ./vtk/
           
       - name: Verify Python lib path is correct for building VTK
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
           echo "_PYTHON_HOST_PLATFORM: $_PYTHON_HOST_PLATFORM"
 
-          cd ./vtk/VTK-9.2.6
+          cd ./vtk/VTK-${{ env.VTK_VERSION }}
           python CMake/wheel_extract_platlib.py
           # Note: This is how VTK builds library deployment paths
           # the python/action based universal Python uses "universal2"
@@ -110,53 +112,61 @@ jobs:
           python CMake/wheel_extract_platlib.py
           cd ..
 
-      - name: Cache build folder
-        id: cache-cpp
-        uses: actions/cache@v4
+      - name: Restore cached build files
+        id: cache-build
+        uses: actions/cache/restore@v4
         with:
           path: |
             build
             .ninja_log
-          key: ${{ matrix.os }}-${{ matrix.python-version }}-ninja-
+          key:  ${{ matrix.os }}-${{ matrix.python-version }}-ninja-${{ env.VTK_VERSION }}-
 
-      - name: Compile from Scratch
-        if: steps.cache-cpp.outputs.cache-hit != 'true'
+      - name: Compile from Scratch for Macos
+        if: steps.cache-build.outputs.cache-hit != 'true' && startsWith(matrix.os, 'macos')
         shell: bash -l {0}
         run: |
+          echo "== Environment =="
+          echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
+          echo "_PYTHON_HOST_PLATFORM: $_PYTHON_HOST_PLATFORM"
+
           cd ./vtk/build
-          if ${{ runner.os }} == 'macOS'; then
-            echo "== Environment =="
-            echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
-            echo "_PYTHON_HOST_PLATFORM: $_PYTHON_HOST_PLATFORM"
 
-            echo "== FLAGS =="
-            flags="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
-            export CFLAGS="$flags"
-            export CXXFLAGS="$flags"
-            export LDFLAGS="-mmacos-version-min=11.0"        
-            echo "CFLAGS=$CFLAGS"
-            echo "CXXFLAGS=$CXXFLAGS"
-            echo "LDFLAGS=$LDFLAGS"
+          echo "== FLAGS =="
+          flags="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
+          export CFLAGS="$flags"
+          export CXXFLAGS="$flags"
+          export LDFLAGS="-mmacos-version-min=11.0"        
+          echo "CFLAGS=$CFLAGS"
+          echo "CXXFLAGS=$CXXFLAGS"
+          echo "LDFLAGS=$LDFLAGS"
 
-            cmake -GNinja \
-                  -DVTK_WHEEL_BUILD=ON \
-                  -DVTK_WRAP_PYTHON=ON \
-                  -DVTK_DIST_NAME_SUFFIX=cadquery \
-                  -DVTK_VERSION_SUFFIX="" \
-                  -DCMAKE_C_FLAGS="$CFLAGS" \
-                  -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-                  -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
-                  -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
-                  -DCMAKE_MODULE_LINKER_FLAGS="$LDFLAGS" \
-                  -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
-                  -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} \
-                  -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
-                  -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
-                  -DCMAKE_BUILD_TYPE=Release \
-                  ../VTK-9.2.6
-          fi
+          cmake -GNinja \
+                -DVTK_WHEEL_BUILD=ON \
+                -DVTK_WRAP_PYTHON=ON \
+                -DVTK_DIST_NAME_SUFFIX=cadquery \
+                -DVTK_VERSION_SUFFIX="" \
+                -DCMAKE_C_FLAGS="$CFLAGS" \
+                -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+                -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
+                -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
+                -DCMAKE_MODULE_LINKER_FLAGS="$LDFLAGS" \
+                -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
+                -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} \
+                -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
+                -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+                -DCMAKE_BUILD_TYPE=Release \
+                ../VTK-9.2.6
           ninja -j3
 
+      - name: Cache build folder
+        id: cache-cpp
+        uses: actions/cache/save@v4
+        with:
+          path: |
+            build
+            .ninja_log
+          key: ${{ steps.cache-build.outputs.cache-primary-key }}
+            
       - name: Verify Library Architecture
         run: |
           find . -name "*.dylib" -exec lipo -info {} \;
