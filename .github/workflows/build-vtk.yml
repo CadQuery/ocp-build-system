@@ -62,7 +62,6 @@ jobs:
           echo "PYTHON_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python3_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
-          echo "export MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
 
       - name: Verify Python
         run: |
