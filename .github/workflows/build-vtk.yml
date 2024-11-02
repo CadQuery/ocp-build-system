@@ -22,7 +22,6 @@ jobs:
             arch: 'x86_64'
             python_arch: 'x64'
             target: 'x86_64-apple-macos11'
-            brew_path: '/usr/local/opt'
           - os: 'macos-14'
             arch: 'arm64'
             python_arch: 'arm64'
@@ -52,12 +51,16 @@ jobs:
           # Note: Unversioned and major-versioned symlinks `python`, `python3`, `python-config`, `python3-config`, `pip`, `pip3`, etc. 
           # pointing to `python3.11`, `python3.11-config`, `pip3.11` etc., respectively, are installed into
           # /opt/homebrew/opt/python@3.11/libexec/bin (arm64) or /usr/local/opt/python@3.11/libexec/bin (x86_64)
-          PATH="${{ matrix.brew_path }}/python@${{ matrix.python-version }}/libexec/bin:$PATH"          
+          PYTHON_ROOT=$(brew --prefix python@${{ matrix.python-version }})          
+          
+          # Save paths for later steps
+          PATH="$PYTHON_ROOT/libexec/bin:$PATH"          
           echo "PATH=$PATH" >> $GITHUB_ENV
-
+          
           # ensure cmake takes the right Python
-          echo "Python3_ROOT=/opt/homebrew/opt/python@${{ matrix.python-version }}" >> $GITHUB_ENV
-          echo "Python_ROOT=/opt/homebrew/opt/python@${{ matrix.python-version }}" >> $GITHUB_ENV
+          echo "PYTHON_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
+          echo "Python3_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
+          echo "Python_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
 
       - name: Verify Python
         run: |
