@@ -15,9 +15,8 @@ jobs:
 
     strategy:
       matrix:
-        # os: ['ubuntu-20.04', 'macos-13', 'macos-14', 'windows-2019']
+        os: ['ubuntu-20.04', 'macos-13', 'macos-14', 'windows-2019']
         # python-version: ['3.10', '3.11', '3.12']
-        os: ['macos-13', 'macos-14']
         python-version: ['3.11']
         include:
           - os: 'macos-13'
@@ -72,7 +71,6 @@ jobs:
           command -v python
           python --version
           python -c "import platform; print(f'Architecture: {platform.machine()}')"
-          file $(which python)
       
       - name: Install Python dependencies
         run: |
@@ -90,7 +88,12 @@ jobs:
         run: |
           brew install ninja
 
+      - name: Windows Deps (build environment)
+        if: ${{ runner.os == 'Windows' }}
+        uses: ilammy/msvc-dev-cmd@v1
+
       - name: Restore cached build files
+        # works on Windows, since github actions replace the '/' with '\'
         id: cache-build
         uses: actions/cache/restore@v4
         with:
@@ -102,25 +105,37 @@ jobs:
 
       - name: Download vtk
         if: steps.cache-build.outputs.cache-hit != 'true'
+        shell: python
         run: |
-          mkdir -p ./vtk/build
-          wget -q https://www.vtk.org/files/release/${{ env.VTK_MINOR_VERSION}}/VTK-${{ env.VTK_VERSION }}.tar.gz  # Update this for newer releases of VTK
-          tar -zxf VTK-${{ env.VTK_VERSION }}.tar.gz --directory ./vtk/
+          import os
+          import tarfile
+          import urllib.request
+          
+          # Create build directory
+          os.makedirs('./vtk/build', exist_ok=True)
+          
+          # Download the file
+          vtk_url = f"https://www.vtk.org/files/release/${{ env.VTK_MINOR_VERSION}}/VTK-${{ env.VTK_VERSION }}.tar.gz"
+          urllib.request.urlretrieve(vtk_url, "VTK.tar.gz")
+          
+          # Extract the archive
+          with tarfile.open("VTK.tar.gz", "r:gz") as tar:
+              tar.extractall(path="./vtk/")
       
       - name: Verify Python lib path is correct for building VTK
         if: steps.cache-build.outputs.cache-hit != 'true'
+        shell: python
         run: |
-          echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
-          echo "_PYTHON_HOST_PLATFORM: $_PYTHON_HOST_PLATFORM"
-
-          cd ./vtk/VTK-${{ env.VTK_VERSION }}
-          python CMake/wheel_extract_platlib.py
-          # Note: This is how VTK builds library deployment paths
-          # the python/action based universal Python uses "universal2"
-          # On macos-14 with arm64 brew Python it uses "arm64" based paths
-          # On macos-13 with x86_x64 brew Python it uses "x86_x64" based paths
-          python CMake/wheel_extract_platlib.py
-          cd ..
+            import os
+            import platform
+            
+            # Change directory in a cross-platform way
+            vtk_dir = os.path.join('vtk', f'VTK-${{ env.VTK_VERSION }}')
+            os.chdir(vtk_dir)
+            
+            import subprocess
+            script_path = os.path.join('CMake', 'wheel_extract_platlib.py')
+            subprocess.run(['python', script_path], check=True)
 
       - name: Compile from Scratch for Macos
         if: steps.cache-build.outputs.cache-hit != 'true' && startsWith(matrix.os, 'macos')
@@ -158,7 +173,29 @@ jobs:
 
           ninja -j3
 
+      - name: Compile from Scratch for Linux
+        if: steps.cache-build.outputs.cache-hit != 'true' && matrix.os == 'ubuntu-20.04'
+        run: |
+          cd ./vtk/build
+          cmake -GNinja \
+                -DVTK_WHEEL_BUILD=ON \
+                -DVTK_WRAP_PYTHON=ON \
+                -DVTK_VERSION_SUFFIX="" \
+                -DCMAKE_BUILD_TYPE=Release \
+                ../VTK-${{ env.VTK_VERSION }}
+
+          ninja -j2
+
+      - name: Compile from Scratch for Windows
+        if: steps.cache-build.outputs.cache-hit != 'true' && matrix.os == 'windows-2019'
+        shell: cmd
+        run: |
+          cd vtk\build
+          cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON -DVTK_VERSION_SUFFIX="" -DCMAKE_BUILD_TYPE=Release ../VTK-${{ env.VTK_VERSION }}
+          ninja -j4
+
       - name: Cache build folder
+        # works on Windows, since github actions replace the '/' with '\'
         id: cache-cpp
         uses: actions/cache/save@v4
         with:
@@ -169,6 +206,7 @@ jobs:
           key: ${{ steps.cache-build.outputs.cache-primary-key }}
             
       - name: Verify Library Architecture
+        if: ${{ runner.os == 'macOS' }}
         run: |
           find . -name "*.dylib" -exec lipo -archs {} \; | uniq
           find . -name "*.dylib" -exec bash -c 'otool -l {} | grep minos' \; | uniq
@@ -182,20 +220,30 @@ jobs:
           with open('./vtk/build/setup.py', 'w') as file:
               file.write(content)
               
-      - name: Build wheel
+      - name: Build wheel on Linux and MacOS
+        if: matrix.os != 'windows-2019'
         run: |
           command -v python
           cd ./vtk/build
           python -m build -n -w
           cd ../../
-          find ./ -iname *.whl
-
-      - name: Test wheel
-        run: |
-          python -V
+          
           pip install vtk/build/dist/*.whl
           python -c "import vtk;print('vtk imported successfully')"
 
+      - name: Build wheel on Windows
+        if: matrix.os == 'windows-2019'
+        shell: cmd
+        run: |
+          where python
+          cd .\vtk\build
+          python -m build -n -w
+          cd ..\..\
+          dir /s /b *.whl
+
+          pip install vtk\build\dist\*.whl
+          python -c "import vtk;print('vtk imported successfully')"
+                    
       - name: Upload Artifact
         uses: actions/upload-artifact@v3
         with:
