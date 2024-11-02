@@ -167,7 +167,8 @@ jobs:
             
       - name: Verify Library Architecture
         run: |
-          find . -name "*.dylib" -exec lipo -info {} \;
+          find . -name "*.dylib" -exec lipo -archs {} \;
+          find . -name "*.dylib" -exec bash -c 'otool -l {} | grep minos' \;
 
       - name: Build wheel
         run: |
