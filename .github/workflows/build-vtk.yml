@@ -6,7 +6,7 @@ on:
 env:
   PYTHONUTF8: 1
   VTK_VERSION: 9.2.6
-  VTK_MINOR_VERSION: 9
+  VTK_MINOR_VERSION: 9.2
 
 jobs:
   build:
