@@ -93,7 +93,7 @@ jobs:
           python CMake/wheel_extract_platlib.py
           # Note: This is how VTK builds library deployment paths
           # On macos-14 python/action based it uses "universal2" and with arm64 brew Python it uses "arm64"
-          arch -arm64 python CMake/wheel_extract_platlib.py
+          python CMake/wheel_extract_platlib.py
           cd ..
 
       - name: Cache build folder
