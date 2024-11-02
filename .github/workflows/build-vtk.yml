@@ -93,10 +93,10 @@ jobs:
       - name: Download vtk
         run: |
           mkdir -p ./vtk/build
-          wget https://www.vtk.org/files/release/9.2/VTK-9.2.6.tar.gz  # Update this for newer releases of VTK
+          wget -q https://www.vtk.org/files/release/9.2/VTK-9.2.6.tar.gz  # Update this for newer releases of VTK
           tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/
           
-      - name: Verify Python Architecture correct for building VTK
+      - name: Verify Python lib path is correct for building VTK
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
           echo "_PYTHON_HOST_PLATFORM: $_PYTHON_HOST_PLATFORM"
@@ -104,8 +104,9 @@ jobs:
           cd ./vtk/VTK-9.2.6
           python CMake/wheel_extract_platlib.py
           # Note: This is how VTK builds library deployment paths
-          # On macos-14 python/action based it uses "universal2" and with arm64 brew Python it uses "arm64"
-          # On macos-13 python/action based it uses "universal2" and with x86_x64 brew Python it uses "x86_x64"
+          # the python/action based universal Python uses "universal2"
+          # On macos-14 with arm64 brew Python it uses "arm64" based paths
+          # On macos-13 with x86_x64 brew Python it uses "x86_x64" based paths
           python CMake/wheel_extract_platlib.py
           cd ..
 
@@ -164,7 +165,7 @@ jobs:
       - name: Build wheel
         shell: bash -l {0}
         run: |
-          export MACOSX_DEPLOYMENT_TARGET=11.0
+          command -v python
           cd ./vtk/build
           python -m build -n -w
           cd ../../
