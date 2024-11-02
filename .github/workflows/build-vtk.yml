@@ -26,7 +26,6 @@ jobs:
             arch: 'arm64'
             python_arch: 'arm64'
             target: 'arm64-apple-macos11'
-            brew_path: '/opt/homebrew/opt'
 
     steps:
 
