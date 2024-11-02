@@ -18,10 +18,10 @@ jobs:
         os: ['macos-13', 'macos-14']
         python-version: ['3.11']
         include:
-          # - os: 'macos-13'
-          #   arch: 'x86_64'
-          #   python_arch: 'x64'
-          #   target: 'x86_64-apple-macos11'
+          - os: 'macos-13'
+            arch: 'x86_64'
+            python_arch: 'x64'
+            target: 'x86_64-apple-macos11'
           - os: 'macos-14'
             arch: 'arm64'
             python_arch: 'arm64'
@@ -32,20 +32,20 @@ jobs:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
-        if: ${{ matrix.os != 'macos-14' }}
+        if: ${{ runner.os != 'macOS' }}
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ matrix.python_arch }}
                     
       - name: Install ARM64 Python
-        # We need an arm64 only Python for macos-14. The python-action Python is universal2
-        if: ${{ matrix.os == 'macos-14' }}
+        # We need an arm64 or x86_64 only Python for macos. The python-action Python is universal2
+        if: ${{ runner.os == 'macOS' }}
         run: |
           # Uninstall any existing Python to avoid conflicts
           brew uninstall --ignore-dependencies python@3.11 || true
           
-          # Install Python with native arm64 architecture
-          arch -arm64 brew install python@${{ matrix.python-version }}
+          # Install Python with native arm64 or architecture
+          arch -${{ matrix.python_arch }} brew install python@${{ matrix.python-version }}
           
           # Note: Unversioned and major-versioned symlinks `python`, `python3`, `python-config`, `python3-config`, `pip`, `pip3`, etc. 
           # pointing to `python3.11`, `python3.11-config`, `pip3.11` etc., respectively, are installed into
@@ -127,7 +127,6 @@ jobs:
                 -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
                 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
                 -DCMAKE_BUILD_TYPE=Release \
-                -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="build/lib.macosx-11.0-arm64-cpython-311" \
                 ../VTK-9.2.6
           ninja -j3
 
