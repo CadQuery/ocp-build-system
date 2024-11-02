@@ -48,6 +48,7 @@ jobs:
           
           export PATH="/opt/homebrew/opt/python@${{ matrix.python-version }}/bin:$PATH"          
           echo "PATH: $PATH"
+          echo "GITHUB_PATH: $GITHUB_PATH"
 
       - name: Verify Python
         run: |
