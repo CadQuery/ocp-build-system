@@ -39,16 +39,34 @@ jobs:
           cache-environment: true
           init-shell: bash
 
-      # - uses: actions/setup-python@v5
-      #   with:
-      #     python-version: ${{ matrix.python-version }}
-      #     architecture: ${{ matrix.python_arch }}
+      - uses: actions/setup-python@v5
+        if: ${{ matrix.os != 'macos-14' }}
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: ${{ matrix.python_arch }}
                     
+      - name: Install ARM64 Python
+        if: ${{ matrix.os == 'macos-14' }}
+        run: |
+          # Uninstall any existing Python to avoid conflicts
+          brew uninstall --ignore-dependencies python@3.11 || true
+          
+          # Install Python 3.11 with native arm64 architecture
+          arch -arm64 brew install python@3.11
+          
+          # Add brew Python to PATH
+          echo "/opt/homebrew/opt/python@3.11/bin" >> $GITHUB_PATH
+          
+          # Verify installation
+          python3.11 --version
+          arch -arm64 python3.11 -c "import platform; print(f'Architecture: {platform.machine()}')"
 
-      - name: Set up Pythoin env and verify Python architecture
+          python3 --version
+          python3 -c "import platform; print(f'Architecture: {platform.machine()}')"
+
+      - name: Set up Python env and verify Python architecture
         shell: bash -l {0}
         run: |
-          micromamba activate vtkenv
           python --version
           python -m pip install --upgrade wheel build setuptools
           python -c "import platform; print(platform.machine())"
@@ -66,12 +84,12 @@ jobs:
         run: |
           brew install ninja
 
-      # - name: Setup Python Env
-      #   shell: bash -l {0}
-      #   run: |
-      #     python -m pip install --upgrade pip
-      #     python -m pip install --upgrade wheel build setuptools
-      #     python -m pip freeze 
+      - name: Setup Python Env
+        shell: bash -l {0}
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade wheel build setuptools
+          python -m pip freeze 
 
       - name: Download vtk
         run: |
