@@ -193,7 +193,7 @@ jobs:
         run: |
           cd vtk\build
           cmake -GNinja -DVTK_WHEEL_BUILD=ON -DVTK_WRAP_PYTHON=ON -DVTK_VERSION_SUFFIX="" -DCMAKE_BUILD_TYPE=Release ../VTK-${{ env.VTK_VERSION }}
-          
+
           ninja -j4
 
       - name: Cache build folder
@@ -251,4 +251,3 @@ jobs:
         with:
           name: cadquery-vtk-${{ matrix.os }}-cp${{ matrix.python-version }}
           path: vtk/build/dist/*.whl
-#
