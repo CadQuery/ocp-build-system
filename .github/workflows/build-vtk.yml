@@ -62,7 +62,7 @@ jobs:
           echo "PYTHON_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python3_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
-          echo "MACOSX_DEPLOYMENT_TARGET="11.0" >> $GITHUB_ENV
+          echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
           echo "_PYTHON_HOST_PLATFORM=macosx-11.0-${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: Verify Python
