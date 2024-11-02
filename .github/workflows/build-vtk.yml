@@ -21,11 +21,11 @@ jobs:
           - os: 'macos-13'
             arch: 'x86_64'
             python_arch: 'x64'
-            target: 'x86_64-apple-macos11'
+            target: 'x86_64-apple-macos'
           - os: 'macos-14'
             arch: 'arm64'
             python_arch: 'arm64'
-            target: 'arm64-apple-macos11'
+            target: 'arm64-apple-macos'
 
     steps:
 
@@ -62,6 +62,7 @@ jobs:
           echo "PYTHON_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python3_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
+          echo "export MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
 
       - name: Verify Python
         run: |
