@@ -40,9 +40,9 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ matrix.python_arch }}
                     
+      # We need an arm64 only Python for macos-14 and an x86_64 only Python for macos-13. 
+      # The actions/setup-python Python is universal2
       - name: Install Python on MacOS
-        # We need an arm64 only Python for macos-14 and an x86_64 only Python for macos-13. 
-        # The actions/setup-python Python is universal2
         if: ${{ runner.os == 'macOS' }}
         run: |        
           # Uninstall any existing Python to avoid conflicts
@@ -82,13 +82,11 @@ jobs:
 
       - name: Ubuntu Deps
         if: matrix.os == 'ubuntu-20.04'
-        shell: bash -l {0}
         run: |
           sudo apt install -y build-essential cmake mesa-common-dev mesa-utils freeglut3-dev python-dev python-venv git-core ninja-build cmake wget libglvnd0 libglvnd-dev
 
       - name: MacOS Deps
         if: startsWith(matrix.os, 'macos')
-        shell: bash -l {0}
         run: |
           brew install ninja
 
@@ -123,7 +121,6 @@ jobs:
 
       - name: Compile from Scratch for Macos
         if: steps.cache-build.outputs.cache-hit != 'true' && startsWith(matrix.os, 'macos')
-        shell: bash -l {0}
         run: |
           echo "== Environment =="
           echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
@@ -172,7 +169,6 @@ jobs:
           find . -name "*.dylib" -exec lipo -info {} \;
 
       - name: Build wheel
-        shell: bash -l {0}
         run: |
           command -v python
           cd ./vtk/build
@@ -181,7 +177,6 @@ jobs:
           find ./ -iname *.whl
 
       - name: Test wheel
-        shell: bash -l {0}
         run: |
           python -V
           pip install vtk/build/dist/*.whl
