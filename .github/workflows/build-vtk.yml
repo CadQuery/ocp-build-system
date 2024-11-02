@@ -31,14 +31,6 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - uses: mamba-org/setup-micromamba@v1
-        with:
-          environment-name: vtkenv
-          create-args: >-
-            python=${{ matrix.python-version }}
-          cache-environment: true
-          init-shell: bash
-
       - uses: actions/setup-python@v5
         if: ${{ matrix.os != 'macos-14' }}
         with:
@@ -99,7 +91,6 @@ jobs:
           
       - name: Verify Python Architecture
         run: |
-          micromamba activate vtkenv
           cd ./vtk/VTK-9.2.6
           python CMake/wheel_extract_platlib.py
           arch -arm64 python CMake/wheel_extract_platlib.py
