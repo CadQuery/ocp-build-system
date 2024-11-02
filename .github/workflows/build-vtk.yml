@@ -15,7 +15,7 @@ jobs:
       matrix:
         # os: ['ubuntu-20.04', 'macos-13', 'macos-14', 'windows-2019']
         # python-version: ['3.10', '3.11', '3.12']
-        os: ['macos-14']
+        os: ['macos-13', 'macos-14']
         python-version: ['3.11']
         include:
           # - os: 'macos-13'
@@ -51,6 +51,7 @@ jobs:
           # /opt/homebrew/opt/python@3.11/libexec/bin
           PATH="/opt/homebrew/opt/python@${{ matrix.python-version }}/libexec/bin:$PATH"          
           echo "PATH=$PATH" >> $GITHUB_ENV
+          # ensure cmake takes the right Python
           echo "Python3_ROOT=/opt/homebrew/opt/python@${{ matrix.python-version }}" >> $GITHUB_ENV
 
       - name: Verify Python
@@ -124,7 +125,7 @@ jobs:
                 -DCMAKE_BUILD_TYPE=Release \
                 -DCMAKE_LIBRARY_OUTPUT_DIRECTORY="build/lib.macosx-11.0-arm64-cpython-311" \
                 ../VTK-9.2.6
-          ninja -j3 -v
+          ninja -j3
 
       - name: Verify Library Architecture
         run: |
