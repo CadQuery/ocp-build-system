@@ -38,6 +38,7 @@ jobs:
           architecture: ${{ matrix.python_arch }}
                     
       - name: Install ARM64 Python
+        # We need an arm64 only Python for macos-14. The python-action Python is universal2
         if: ${{ matrix.os == 'macos-14' }}
         run: |
           # Uninstall any existing Python to avoid conflicts
@@ -51,6 +52,7 @@ jobs:
           # /opt/homebrew/opt/python@3.11/libexec/bin
           PATH="/opt/homebrew/opt/python@${{ matrix.python-version }}/libexec/bin:$PATH"          
           echo "PATH=$PATH" >> $GITHUB_ENV
+
           # ensure cmake takes the right Python
           echo "Python3_ROOT=/opt/homebrew/opt/python@${{ matrix.python-version }}" >> $GITHUB_ENV
 
@@ -85,10 +87,12 @@ jobs:
           wget https://www.vtk.org/files/release/9.2/VTK-9.2.6.tar.gz  # Update this for newer releases of VTK
           tar -zxf VTK-9.2.6.tar.gz --directory ./vtk/
           
-      - name: Verify Python Architecture
+      - name: Verify Python Architecture correct for building VTK
         run: |
           cd ./vtk/VTK-9.2.6
           python CMake/wheel_extract_platlib.py
+          # Note: This is how VTK builds library deployment paths
+          # On macos-14 python/action based it uses "universal2" and with arm64 brew Python it uses "arm64"
           arch -arm64 python CMake/wheel_extract_platlib.py
           cd ..
 
