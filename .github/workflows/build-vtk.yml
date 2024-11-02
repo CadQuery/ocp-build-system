@@ -51,18 +51,18 @@ jobs:
           # Uninstall any existing Python to avoid conflicts
           brew uninstall --ignore-dependencies python@3.11 || true
           
-          # Install Python 3.11 with native arm64 architecture
-          arch -arm64 brew install python@3.11
+          # Install Python with native arm64 architecture
+          arch -arm64 brew install python@${{ matrix.python-version }}
           
           # Add brew Python to PATH
-          echo "/opt/homebrew/opt/python@3.11/bin" >> $GITHUB_PATH
+          echo "/opt/homebrew/opt/python@3.${{ matrix.python-version }}/bin" >> $GITHUB_PATH
           
           # Verify installation
-          python3.11 --version
-          arch -arm64 python3.11 -c "import platform; print(f'Architecture: {platform.machine()}')"
+          python3.${{  matrix.python-version }} --version
+          arch -arm64 python${{  matrix.python-version }} -c "import platform; print(f'Architecture: {platform.machine()}')"
 
-          python3 --version
-          python3 -c "import platform; print(f'Architecture: {platform.machine()}')"
+          python --version
+          python -c "import platform; print(f'Architecture: {platform.machine()}')"
 
       - name: Set up Python env and verify Python architecture
         shell: bash -l {0}
