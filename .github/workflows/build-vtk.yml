@@ -176,7 +176,7 @@ jobs:
         run: |
           command -v python
           cd ./vtk/build
-          sed -i "s/dist_name = 'vtk'/dist_name = 'cadquery_vtk'/" setup.py
+          sed -i 's/dist_name = '\''vtk'\''/dist_name = '\''cadquery_vtk'\''/' setup.py
           python -m build -n -w
           cd ../../
           find ./ -iname *.whl
@@ -192,3 +192,4 @@ jobs:
         with:
           name: cadquery-vtk-${{ matrix.os }}-cp${{ matrix.python-version }}
           path: vtk/build/dist/*.whl
+#
