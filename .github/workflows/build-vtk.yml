@@ -40,10 +40,10 @@ jobs:
       - name: Install ARM64 Python
         # We need an arm64 or x86_64 only Python for macos. The python-action Python is universal2
         if: ${{ runner.os == 'macOS' }}
-        run: |
-          ls -l /usr/local/bin
+        run: |        
           # Uninstall any existing Python to avoid conflicts
           brew uninstall --ignore-dependencies python@3.11 || true
+          ls -l /usr/local/bin
           
           # Install Python with native arm64 or architecture
           arch -${{ matrix.arch }} brew install --force python@${{ matrix.python-version }}
