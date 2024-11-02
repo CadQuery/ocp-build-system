@@ -95,7 +95,7 @@ jobs:
       - name: Download vtk
         run: |
           mkdir -p ./vtk/build
-          wget -q https://www.vtk.org/files/release/${{ VTK_MAJOR_VERSION}}/VTK-${{ env.VTK_VERSION }}.tar.gz  # Update this for newer releases of VTK
+          wget -q https://www.vtk.org/files/release/${{ env.VTK_MAJOR_VERSION}}/VTK-${{ env.VTK_VERSION }}.tar.gz  # Update this for newer releases of VTK
           tar -zxf VTK-${{ env.VTK_VERSION }}.tar.gz --directory ./vtk/
           
       - name: Verify Python lib path is correct for building VTK
