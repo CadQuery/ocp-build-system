@@ -280,7 +280,7 @@ jobs:
           cd ..\..\
           dir /s /b *.whl
 
-          pip install vtk\build\dist\*.whl
+          for /f "delims=" %%i in ('dir /s /b *.whl') do pip install "%%i"
           python -c "import vtk;print('vtk imported successfully')"
 
       - name: Upload Artifact
