@@ -65,8 +65,6 @@ jobs:
           echo "MACOSX_DEPLOYMENT_TARGET=11.0" >> $GITHUB_ENV
           echo "_PYTHON_HOST_PLATFORM=macosx-11.0-${{ matrix.arch }}" >> $GITHUB_ENV
 
-          system_profiler SPHardwareDataType | grep "Cores" | awk '{ print $5 }'
-
       - name: Verify Python
         run: |
           command -v python
@@ -122,40 +120,41 @@ jobs:
           key: ${{ matrix.os }}-${{ matrix.python-version }}-ninja-
 
       - name: Compile from Scratch for Macos
-        if: startsWith(matrix.os, 'macos') && (steps.cache-cpp.outputs.cache-hit != 'true')
+        if: steps.cache-cpp.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          echo "== Environment =="
-          echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
-          echo "_PYTHON_HOST_PLATFORM: $_PYTHON_HOST_PLATFORM"
-
           cd ./vtk/build
+          if ${{ runner.os }} == 'macOS'; then
+            echo "== Environment =="
+            echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
+            echo "_PYTHON_HOST_PLATFORM: $_PYTHON_HOST_PLATFORM"
 
-          echo "== FLAGS =="
-          flags="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
-          export CFLAGS="$flags"
-          export CXXFLAGS="$flags"
-          export LDFLAGS="-mmacos-version-min=11.0"        
-          echo "CFLAGS=$CFLAGS"
-          echo "CXXFLAGS=$CXXFLAGS"
-          echo "LDFLAGS=$LDFLAGS"
+            echo "== FLAGS =="
+            flags="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
+            export CFLAGS="$flags"
+            export CXXFLAGS="$flags"
+            export LDFLAGS="-mmacos-version-min=11.0"        
+            echo "CFLAGS=$CFLAGS"
+            echo "CXXFLAGS=$CXXFLAGS"
+            echo "LDFLAGS=$LDFLAGS"
 
-          cmake -GNinja \
-                -DVTK_WHEEL_BUILD=ON \
-                -DVTK_WRAP_PYTHON=ON \
-                -DVTK_DIST_NAME_SUFFIX=cadquery \
-                -DVTK_VERSION_SUFFIX="" \
-                -DCMAKE_C_FLAGS="$CFLAGS" \
-                -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
-                -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
-                -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
-                -DCMAKE_MODULE_LINKER_FLAGS="$LDFLAGS" \
-                -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
-                -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} \
-                -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
-                -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
-                -DCMAKE_BUILD_TYPE=Release \
-                ../VTK-9.2.6
+            cmake -GNinja \
+                  -DVTK_WHEEL_BUILD=ON \
+                  -DVTK_WRAP_PYTHON=ON \
+                  -DVTK_DIST_NAME_SUFFIX=cadquery \
+                  -DVTK_VERSION_SUFFIX="" \
+                  -DCMAKE_C_FLAGS="$CFLAGS" \
+                  -DCMAKE_CXX_FLAGS="$CXXFLAGS" \
+                  -DCMAKE_SHARED_LINKER_FLAGS="$LDFLAGS" \
+                  -DCMAKE_EXE_LINKER_FLAGS="$LDFLAGS" \
+                  -DCMAKE_MODULE_LINKER_FLAGS="$LDFLAGS" \
+                  -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
+                  -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} \
+                  -DCMAKE_HOST_SYSTEM_PROCESSOR=${{ matrix.arch }} \
+                  -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
+                  -DCMAKE_BUILD_TYPE=Release \
+                  ../VTK-9.2.6
+          fi
           ninja -j3
 
       - name: Verify Library Architecture
