@@ -62,6 +62,8 @@ jobs:
           echo "PYTHON_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python3_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
+          echo "MACOSX_DEPLOYMENT_TARGET="11.0" >> $GITHUB_ENV
+          echo "_PYTHON_HOST_PLATFORM="macosx-11.0-${{ matrix.arch }}" >> $GITHUB_ENV
 
       - name: Verify Python
         run: |
@@ -96,7 +98,9 @@ jobs:
           
       - name: Verify Python Architecture correct for building VTK
         run: |
-          export MACOSX_DEPLOYMENT_TARGET=11.0
+          echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
+          echo "_PYTHON_HOST_PLATFORM: $_PYTHON_HOST_PLATFORM"
+
           cd ./vtk/VTK-9.2.6
           python CMake/wheel_extract_platlib.py
           # Note: This is how VTK builds library deployment paths
@@ -124,10 +128,13 @@ jobs:
           export CFLAGS="$flags"
           export CXXFLAGS="$flags"
           export LDFLAGS="-mmacos-version-min=11.0"        
-          export MACOSX_DEPLOYMENT_TARGET=11.0
+
+          echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
+          echo "_PYTHON_HOST_PLATFORM: $_PYTHON_HOST_PLATFORM"
+
           echo "arch=${{ matrix.arch }}"
           echo "target=${{ matrix.target }}"      
-          echo "PYTHON_VERSION_NO_DOT=$(echo ${{ matrix.python-version }} | tr -d '.')" >> $GITHUB_ENV
+
           cd ./vtk/build
           echo "== FLAGS =="
           echo "CFLAGS=$CFLAGS"
