@@ -39,7 +39,7 @@ jobs:
           architecture: ${{ matrix.python_arch }}
                     
       - name: Install Python on MacOS
-        # We need an arm64 only Pathon for macos-14 and an x86_64 only Python for macos-13. 
+        # We need an arm64 only Python for macos-14 and an x86_64 only Python for macos-13. 
         # The actions/setup-python Python is universal2
         if: ${{ runner.os == 'macOS' }}
         run: |        
@@ -58,7 +58,7 @@ jobs:
           PATH="$PYTHON_ROOT/libexec/bin:$PATH"          
           echo "PATH=$PATH" >> $GITHUB_ENV
           
-          # ensure cmake takes the right Python on macos-13 and macsos-14
+          # ensure cmake takes the right Python on macos-13 and macsos-14 and deployment target 11.0
           echo "PYTHON_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python3_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
@@ -124,22 +124,21 @@ jobs:
         if: startsWith(matrix.os, 'macos') && (steps.cache-cpp.outputs.cache-hit != 'true')
         shell: bash -l {0}
         run: |
+          echo "== Environment =="
+          echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
+          echo "_PYTHON_HOST_PLATFORM: $_PYTHON_HOST_PLATFORM"
+
+          cd ./vtk/build
+
+          echo "== FLAGS =="
           flags="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }} -mmacos-version-min=11.0"
           export CFLAGS="$flags"
           export CXXFLAGS="$flags"
           export LDFLAGS="-mmacos-version-min=11.0"        
-
-          echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
-          echo "_PYTHON_HOST_PLATFORM: $_PYTHON_HOST_PLATFORM"
-
-          echo "arch=${{ matrix.arch }}"
-          echo "target=${{ matrix.target }}"      
-
-          cd ./vtk/build
-          echo "== FLAGS =="
           echo "CFLAGS=$CFLAGS"
           echo "CXXFLAGS=$CXXFLAGS"
           echo "LDFLAGS=$LDFLAGS"
+
           cmake -GNinja \
                 -DVTK_WHEEL_BUILD=ON \
                 -DVTK_WRAP_PYTHON=ON \
@@ -156,7 +155,7 @@ jobs:
                 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
                 -DCMAKE_BUILD_TYPE=Release \
                 ../VTK-9.2.6
-          ninja -j3 -v
+          ninja -j3
 
       - name: Verify Library Architecture
         run: |
