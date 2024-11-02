@@ -175,8 +175,8 @@ jobs:
       - name: Build wheel
         run: |
           command -v python
-          sed -i "s/dist_name = 'vtk'/dist_name = 'cadquery_vtk'/" build/setup.py
           cd ./vtk/build
+          sed -i "s/dist_name = 'vtk'/dist_name = 'cadquery_vtk'/" setup.py
           python -m build -n -w
           cd ../../
           find ./ -iname *.whl
