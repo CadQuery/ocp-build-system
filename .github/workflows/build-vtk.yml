@@ -46,7 +46,7 @@ jobs:
           # Install Python with native arm64 architecture
           arch -arm64 brew install python@${{ matrix.python-version }}
           
-          PATH="/opt/homebrew/opt/python@${{ matrix.python-version }}/bin:$PATH"          
+          PATH="/opt/homebrew/opt/python@${{ matrix.python-version }}/libexec/bin:$PATH"          
           echo "PATH: $PATH"
           echo "PATH=$PATH" >> $GITHUB_ENV
 
@@ -54,6 +54,7 @@ jobs:
         run: |
           echo "PATH=$PATH"
 
+          
           echo OPTION "python${{  matrix.python-version }}"
           command -v python${{  matrix.python-version }}
           python${{  matrix.python-version }} --version
