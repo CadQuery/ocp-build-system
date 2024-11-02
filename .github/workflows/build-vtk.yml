@@ -45,11 +45,12 @@ jobs:
       #     architecture: ${{ matrix.python_arch }}
                     
 
-      - name: Verify Python architecture
+      - name: Set up Pythoin env and verify Python architecture
         shell: bash -l {0}
         run: |
           micromamba activate vtkenv
           python --version
+          python -m pip install --upgrade wheel build setuptools
           python -c "import platform; print(platform.machine())"
           file $(which python)
           
@@ -65,12 +66,12 @@ jobs:
         run: |
           brew install ninja
 
-      - name: Setup Python Env
-        shell: bash -l {0}
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade wheel build setuptools
-          python -m pip freeze 
+      # - name: Setup Python Env
+      #   shell: bash -l {0}
+      #   run: |
+      #     python -m pip install --upgrade pip
+      #     python -m pip install --upgrade wheel build setuptools
+      #     python -m pip freeze 
 
       - name: Download vtk
         run: |
