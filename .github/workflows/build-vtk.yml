@@ -90,12 +90,6 @@ jobs:
         run: |
           brew install ninja
 
-      - name: Download vtk
-        run: |
-          mkdir -p ./vtk/build
-          wget -q https://www.vtk.org/files/release/${{ env.VTK_MINOR_VERSION}}/VTK-${{ env.VTK_VERSION }}.tar.gz  # Update this for newer releases of VTK
-          tar -zxf VTK-${{ env.VTK_VERSION }}.tar.gz --directory ./vtk/
-          
       - name: Verify Python lib path is correct for building VTK
         run: |
           echo "MACOSX_DEPLOYMENT_TARGET: $MACOSX_DEPLOYMENT_TARGET"
@@ -115,10 +109,17 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: |
+            ./vtk/VTK-${{ env.VTK_VERSION }}
             ./vtk/build
             ./vtk/build/.ninja_log
           key:  ${{ matrix.os }}-${{ matrix.python-version }}-ninja-${{ env.VTK_VERSION }}-
 
+      - name: Download vtk
+        run: |
+          mkdir -p ./vtk/build
+          wget -q https://www.vtk.org/files/release/${{ env.VTK_MINOR_VERSION}}/VTK-${{ env.VTK_VERSION }}.tar.gz  # Update this for newer releases of VTK
+          tar -zxf VTK-${{ env.VTK_VERSION }}.tar.gz --directory ./vtk/
+          
       - name: Compile from Scratch for Macos
         if: steps.cache-build.outputs.cache-hit != 'true' && startsWith(matrix.os, 'macos')
         run: |
@@ -161,6 +162,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: |
+            ./vtk/VTK-${{ env.VTK_VERSION }}
             ./vtk/build
             ./vtk/build/.ninja_log
           key: ${{ steps.cache-build.outputs.cache-primary-key }}
