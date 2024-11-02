@@ -32,14 +32,16 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Install Python on other platforms than MacOS
+        uses: actions/setup-python@v5
         if: ${{ runner.os != 'macOS' }}
         with:
           python-version: ${{ matrix.python-version }}
           architecture: ${{ matrix.python_arch }}
                     
-      - name: Install ARM64 Python
-        # We need an arm64 or x86_64 only Python for macos. The python-action Python is universal2
+      - name: Install Python on MacOS
+        # We need an arm64 only Pathon for macos-14 and an x86_64 only Python for macos-13. 
+        # The actions/setup-python Python is universal2
         if: ${{ runner.os == 'macOS' }}
         run: |        
           # Uninstall any existing Python to avoid conflicts
@@ -57,7 +59,7 @@ jobs:
           PATH="$PYTHON_ROOT/libexec/bin:$PATH"          
           echo "PATH=$PATH" >> $GITHUB_ENV
           
-          # ensure cmake takes the right Python
+          # ensure cmake takes the right Python on macos-13 and macsos-14
           echo "PYTHON_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python3_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
           echo "Python_ROOT=$PYTHON_ROOT" >> $GITHUB_ENV
@@ -99,6 +101,7 @@ jobs:
           python CMake/wheel_extract_platlib.py
           # Note: This is how VTK builds library deployment paths
           # On macos-14 python/action based it uses "universal2" and with arm64 brew Python it uses "arm64"
+          # On macos-13 python/action based it uses "universal2" and with x86_x64 brew Python it uses "x86_x64"
           python CMake/wheel_extract_platlib.py
           cd ..
 
@@ -126,7 +129,7 @@ jobs:
                 -DVTK_WRAP_PYTHON=ON \
                 -DVTK_DIST_NAME_SUFFIX=cadquery \
                 -DVTK_VERSION_SUFFIX="" \
-                -DCMAKE_C_FLAGS="-target ${{ matrix.target }}" \
+                -DCMAKE_C_FLAGS="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }}" \
                 -DCMAKE_CXX_FLAGS="-Wno-error=incompatible-function-pointer-types -target ${{ matrix.target }}" \
                 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.arch }} \
                 -DCMAKE_SYSTEM_PROCESSOR=${{ matrix.arch }} \
@@ -134,7 +137,7 @@ jobs:
                 -DCMAKE_OSX_DEPLOYMENT_TARGET=11.0 \
                 -DCMAKE_BUILD_TYPE=Release \
                 ../VTK-9.2.6
-          ninja -j3
+          ninja -j3 -v
 
       - name: Verify Library Architecture
         run: |
