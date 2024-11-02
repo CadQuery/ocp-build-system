@@ -43,10 +43,10 @@ jobs:
         run: |        
           # Uninstall any existing Python to avoid conflicts
           brew uninstall --ignore-dependencies python@3.11 || true
-          ls -l /usr/local/bin
           
           # Install Python with native arm64 or architecture
-          arch -${{ matrix.arch }} brew install --force python@${{ matrix.python-version }}
+          arch -${{ matrix.arch }} brew install --without-links python@${{ matrix.python-version }}
+          brew link --force --overwrite python@${{ matrix.python-version }} || true
           
           # Note: Unversioned and major-versioned symlinks `python`, `python3`, `python-config`, `python3-config`, `pip`, `pip3`, etc. 
           # pointing to `python3.11`, `python3.11-config`, `pip3.11` etc., respectively, are installed into
