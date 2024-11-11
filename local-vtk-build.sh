@@ -7,7 +7,7 @@ function info() {
 
 trap "info Exited!; exit;" SIGINT SIGTERM
 
-for python_version in '3.9' '3.10' '3.11' '3.12'
+for python_version in '3.9' '3.10' '3.11' '3.12' '3.13'
 do
     env_name="ocp-build-system-$python_version"
 
