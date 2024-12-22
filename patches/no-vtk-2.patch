@@ -1,0 +1,31 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 1cac14a..64ee8d1 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -14,16 +14,7 @@ message( STATUS "Python lib: ${Python_LIBRARIES}" )
+ SET(PYTHON_SP_DIR "site-packages" CACHE PATH "Python site-packages directory (for installing)")
+ 
+ find_package( pybind11 REQUIRED )
+-find_package( VTK REQUIRED
+-  COMPONENTS
+-    WrappingPythonCore
+-    RenderingCore
+-    RenderingOpenGL2
+-    CommonDataModel
+-    CommonExecutionModel
+-    freetype
+-)
+-message(STATUS "VTK ${VTK_VERSION} found")
++
+ find_package( OpenCASCADE REQUIRED )
+ 
+ include_directories( ${PROJECT_SOURCE_DIR} )
+@@ -34,7 +25,7 @@ add_library( OCP MODULE ${CPP_FILES} )
+ target_include_directories( OCP PRIVATE ${OpenCASCADE_INCLUDE_DIR} )
+ 
+ target_link_libraries( OCP PRIVATE ${OpenCASCADE_LIBRARIES} )
+-target_link_libraries( OCP PRIVATE pybind11::pybind11 VTK::WrappingPythonCore VTK::RenderingCore VTK::CommonDataModel VTK::CommonExecutionModel)
++target_link_libraries( OCP PRIVATE pybind11::pybind11)
+ 
+ set_target_properties( OCP
+                        PROPERTIES
