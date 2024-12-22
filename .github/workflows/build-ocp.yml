@@ -31,7 +31,7 @@ jobs:
         include:
           - os: "macos-13"
             delocate: delocate
-            plat: macosx_10_10_x86_64
+            plat: macosx_11_1_x86_64
             vtk_libs: ".dylibs/libvtk*.dylib"
             vtk_suffix: "/"
             vtk_prefix: ""
@@ -41,7 +41,7 @@ jobs:
             shells: "bash"
           - os: "macos-14"
             delocate: delocate
-            plat: macosx_11_0_arm64
+            plat: macosx_11_1_arm64
             vtk_libs: ".dylibs/libvtk*.dylib"
             vtk_suffix: "/"
             vtk_prefix: ""
