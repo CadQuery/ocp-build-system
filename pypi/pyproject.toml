@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cadquery-ocp"
+version = "7.7.2"
+description = "Unchanged OCP package, just pypi packaged"
+authors = [
+    {name = "Bernhard Walter", email = "b_walter@arcor.de"},
+]
+requires-python = ">=3.10"
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+include = ["*", "cadquery_ocp*", "OCP"]
+
+[tool.setuptools.package-data]
+"cadquery_ocp" = ["../*.so", "../*.pyd", "*.txt", "LICENSE"]
+"OCP" = ["*.so", "*.pyd",  "*.dll", "*.dylib"]
+

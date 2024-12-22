@@ -1,0 +1,159 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 6ef699d..203b387 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -16,7 +16,7 @@ authors = [
+ ]
+ description = "A python CAD programming library"
+ readme = "README.md"
+-requires-python = ">= 3.10, < 3.13"
++requires-python = ">= 3.10, < 3.14"
+ keywords = [
+     "3d models",
+     "3d printing",
+@@ -35,7 +35,7 @@ classifiers = [
+ ]
+ 
+ dependencies = [
+-    "cadquery-ocp >= 7.7.0",
++    "cadquery-ocp-novtk >= 7.7.0",
+     "typing_extensions >= 4.6.0, <5",
+     "numpy >= 2, <3",
+     "svgpathtools >= 1.5.1, <2",
+@@ -43,7 +43,6 @@ dependencies = [
+     "ezdxf >= 1.1.0, < 2",
+     "ipython >= 8.0.0, <9",
+     "py-lib3mf >= 2.3.1",
+-    "ocpsvg",
+     "trianglesolver"
+ ]
+ 
+diff --git a/src/build123d/topology.py b/src/build123d/topology.py
+index be15a1b..0e049b8 100644
+--- a/src/build123d/topology.py
++++ b/src/build123d/topology.py
+@@ -68,8 +68,6 @@ from IPython.lib.pretty import pretty
+ from numpy import ndarray
+ from scipy.optimize import minimize
+ from scipy.spatial import ConvexHull
+-from vtkmodules.vtkCommonDataModel import vtkPolyData
+-from vtkmodules.vtkFiltersCore import vtkPolyDataNormals, vtkTriangleFilter
+ 
+ import OCP.GeomAbs as ga  # Geometry type enum
+ import OCP.TopAbs as ta  # Topology type enum
+@@ -201,8 +199,6 @@ from OCP.HLRAlgo import HLRAlgo_Projector
+ from OCP.HLRBRep import HLRBRep_Algo, HLRBRep_HLRToShape
+ from OCP.IFSelect import IFSelect_ReturnStatus
+ from OCP.Interface import Interface_Static
+-from OCP.IVtkOCC import IVtkOCC_Shape, IVtkOCC_ShapeMesher
+-from OCP.IVtkVTK import IVtkVTK_ShapeData
+ from OCP.LocOpe import LocOpe_DPrism
+ from OCP.NCollection import NCollection_Utf8String
+ from OCP.Precision import Precision
+@@ -3095,59 +3091,6 @@ class Shape(NodeMixin):
+ 
+         return self.__class__(result)
+ 
+-    def to_vtk_poly_data(
+-        self,
+-        tolerance: float = None,
+-        angular_tolerance: float = None,
+-        normals: bool = False,
+-    ) -> vtkPolyData:
+-        """Convert shape to vtkPolyData
+-
+-        Args:
+-          tolerance: float:
+-          angular_tolerance: float:  (Default value = 0.1)
+-          normals: bool:  (Default value = True)
+-
+-        Returns: data object in VTK consisting of points, vertices, lines, and polygons
+-        """
+-        vtk_shape = IVtkOCC_Shape(self.wrapped)
+-        shape_data = IVtkVTK_ShapeData()
+-        shape_mesher = IVtkOCC_ShapeMesher()
+-
+-        drawer = vtk_shape.Attributes()
+-        drawer.SetUIsoAspect(Prs3d_IsoAspect(Quantity_Color(), Aspect_TOL_SOLID, 1, 0))
+-        drawer.SetVIsoAspect(Prs3d_IsoAspect(Quantity_Color(), Aspect_TOL_SOLID, 1, 0))
+-
+-        if tolerance:
+-            drawer.SetDeviationCoefficient(tolerance)
+-
+-        if angular_tolerance:
+-            drawer.SetDeviationAngle(angular_tolerance)
+-
+-        shape_mesher.Build(vtk_shape, shape_data)
+-
+-        vtk_poly_data = shape_data.getVtkPolyData()
+-
+-        # convert to triangles and split edges
+-        t_filter = vtkTriangleFilter()
+-        t_filter.SetInputData(vtk_poly_data)
+-        t_filter.Update()
+-
+-        return_value = t_filter.GetOutput()
+-
+-        # compute normals
+-        if normals:
+-            n_filter = vtkPolyDataNormals()
+-            n_filter.SetComputePointNormals(True)
+-            n_filter.SetComputeCellNormals(True)
+-            n_filter.SetFeatureAngle(360)
+-            n_filter.SetInputData(return_value)
+-            n_filter.Update()
+-
+-            return_value = n_filter.GetOutput()
+-
+-        return return_value
+-
+     def to_arcs(self, tolerance: float = 1e-3) -> Face:
+         """to_arcs
+ 
+@@ -3161,13 +3104,6 @@ class Shape(NodeMixin):
+         """
+         return self.__class__(BRepAlgo.ConvertFace_s(self.wrapped, tolerance))
+ 
+-    def _repr_javascript_(self):
+-        """Jupyter 3D representation support"""
+-
+-        from .jupyter_tools import display
+-
+-        return display(self)._repr_javascript_()
+-
+     def transformed(
+         self, rotate: VectorLike = (0, 0, 0), offset: VectorLike = (0, 0, 0)
+     ) -> Self:
+diff --git a/tests/test_direct_api.py b/tests/test_direct_api.py
+index 9eba3db..cc7f43b 100644
+--- a/tests/test_direct_api.py
++++ b/tests/test_direct_api.py
+@@ -92,7 +92,6 @@ from build123d.topology import (
+     delta,
+     unwrap_topods_compound,
+ )
+-from build123d.jupyter_tools import display
+ 
+ DEG2RAD = math.pi / 180
+ RAD2DEG = 180 / math.pi
+@@ -1632,20 +1631,6 @@ class TestImportExport(DirectApiTestCase):
+         self.assertVectorAlmostEquals(stl_box.position, (0, 0, 0), 5)
+ 
+ 
+-class TestJupyter(DirectApiTestCase):
+-    def test_repr_javascript(self):
+-        shape = Solid.make_box(1, 1, 1)
+-
+-        # Test no exception on rendering to js
+-        js1 = shape._repr_javascript_()
+-
+-        assert "function render" in js1
+-
+-    def test_display_error(self):
+-        with self.assertRaises(AttributeError):
+-            display(Vector())
+-
+-
+ class TestLocation(DirectApiTestCase):
+     def test_location(self):
+         loc0 = Location()
