@@ -18,15 +18,15 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-20.04", "macos-13", "macos-14", "windows-2019"]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-        # python-version: ["3.11"]
+        # python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.11"]
         use-vtk: ["OFF", "ON"]
 
-        exclude:
-          - use-vtk: ON
-            python-version: 3.12
-          - use-vtk: ON
-            python-version: 3.13
+        # exclude:
+        #   - use-vtk: ON
+        #     python-version: 3.12
+        #   - use-vtk: ON
+        #     python-version: 3.13
 
         include:
           - os: "macos-13"
