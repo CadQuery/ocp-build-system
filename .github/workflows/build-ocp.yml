@@ -701,6 +701,7 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash -l {0}
         run: |
+          set -euo pipefail
           micromamba activate build-ocp
           cd pypi
 
@@ -727,17 +728,18 @@ jobs:
           if [[ "${{ matrix.use-vtk }}" == "ON" ]]; then
             patchelf --add-rpath '$ORIGIN/../vtk.libs'    ${PKG_NAME}-${{ env.OCCT }}*/OCP/OCP.*.so
             patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.OCCT }}*/OCP/OCP.*.so
-            patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.OCCT }}/${PKG_NAME}.libs/*
+            patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.OCCT }}*/${PKG_NAME}.libs/*
           fi
 
-          patchelf --add-rpath '$ORIGIN/../'${PKG_NAME}.libs ${PKG_NAME}-${{ env.OCCT }}/${PKG_NAME}.libs/*
-          python -m wheel pack ${PKG_NAME}-${{ env.OCCT }}
+          patchelf --add-rpath '$ORIGIN/../'${PKG_NAME}.libs ${PKG_NAME}-${{ env.OCCT }}*/${PKG_NAME}.libs/*
+          python -m wheel pack ${PKG_NAME}*
           cd ..
 
       - name: (Mac) Delocate the cadquery_ocp wheel
         if: runner.os == 'macOS'
         shell: bash -l {0}
         run: |
+          set -euo pipefail
           micromamba activate build-ocp
 
           if [[ "${{ matrix.use-vtk }}" == "ON" ]]; then
@@ -769,6 +771,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash -l {0}
         run: |
+          set -euo pipefail
           micromamba activate build-ocp
 
           cd pypi/
