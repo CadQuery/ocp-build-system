@@ -727,11 +727,11 @@ jobs:
           if [[ "${{ matrix.use-vtk }}" == "ON" ]]; then
             patchelf --add-rpath '$ORIGIN/../vtk.libs'    ${PKG_NAME}-${{ env.OCCT }}*/OCP/OCP.*.so
             patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.OCCT }}*/OCP/OCP.*.so
-            patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.OCCT }}/${PKG_NAME}.libs/*
+            patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.OCCT }}*/${PKG_NAME}.libs/*
           fi
 
-          patchelf --add-rpath '$ORIGIN/../'${PKG_NAME}.libs ${PKG_NAME}-${{ env.OCCT }}/${PKG_NAME}.libs/*
-          python -m wheel pack ${PKG_NAME}-${{ env.OCCT }}
+          patchelf --add-rpath '$ORIGIN/../'${PKG_NAME}.libs ${PKG_NAME}-${{ env.OCCT }}*/${PKG_NAME}.libs/*
+          python -m wheel pack ${PKG_NAME}-${{ env.OCCT }}*
           cd ..
 
       - name: (Mac) Delocate the cadquery_ocp wheel
@@ -749,7 +749,7 @@ jobs:
           cd pypi/dist
           python -m wheel unpack ${PKG_NAME}*.whl
           rm ${PKG_NAME}*.whl
-          install_name_tool -delete_rpath $(realpath ~/opt/local/occt-${{ env.OCCT }}/lib) ${PKG_NAME}-${{ env.OCCT }}*/OCP/OCP.*.so
+          install_name_tool -delete_rpath $(realpath ~/opt/local/occt-${{ env.OCCT }}*/lib) ${PKG_NAME}-${{ env.OCCT }}*/OCP/OCP.*.so
 
           if [[ "${{ matrix.use-vtk }}" == "ON" ]]; then
             install_name_tool -add_rpath @loader_path/../vtkmodules/.dylibs/ ${PKG_NAME}-${{ env.OCCT }}*/OCP/OCP.*.so
@@ -759,7 +759,7 @@ jobs:
           cd ..
 
           # env MACOSX_DEPLOYMENT_TARGET=11.1 \
-          env DYLD_LIBRARY_PATH=$HOME/opt/local/occt-${{ env.OCCT }}/lib:$HOME/opt/local/vtk-${{ env.VTK }}/lib:$CONDA_PREFIX/lib \
+          env DYLD_LIBRARY_PATH=$HOME/opt/local/occt-${{ env.OCCT }}*/lib:$HOME/opt/local/vtk-${{ env.VTK }}/lib:$CONDA_PREFIX/lib \
               python -m delocate.cmd.delocate_wheel \
               -e libvtk \
               --wheel-dir=wheel \
