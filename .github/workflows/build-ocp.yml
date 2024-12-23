@@ -655,6 +655,7 @@ jobs:
 
           if [[ "${{ matrix.use-vtk }}" == "ON" ]]; then
             PKG_NAME="cadquery_ocp"
+            ${{ matrix.sed_i }} '/requires-python/a\dependencies = [ "vtk==9.2.6" ]' pyproject.toml
           else
             PKG_NAME="cadquery_ocp_novtk"
             ${{ matrix.sed_i }} 's/cadquery-ocp/cadquery-ocp-novtk/g' pyproject.toml
