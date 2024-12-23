@@ -725,8 +725,8 @@ jobs:
           rm ${PKG_NAME}*.whl
 
           if [[ "${{ matrix.use-vtk }}" == "ON" ]]; then
-            patchelf --add-rpath '$ORIGIN/../vtk.libs'    ${PKG_NAME}-${{ env.OCCT }}/OCP/OCP.*.so
-            patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.OCCT }}/OCP/OCP.*.so
+            patchelf --add-rpath '$ORIGIN/../vtk.libs'    ${PKG_NAME}-${{ env.OCCT }}*/OCP/OCP.*.so
+            patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.OCCT }}*/OCP/OCP.*.so
             patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.OCCT }}/${PKG_NAME}.libs/*
           fi
 
@@ -749,10 +749,10 @@ jobs:
           cd pypi/dist
           python -m wheel unpack ${PKG_NAME}*.whl
           rm ${PKG_NAME}*.whl
-          install_name_tool -delete_rpath $(realpath ~/opt/local/occt-${{ env.OCCT }}/lib) ${PKG_NAME}-${{ env.OCCT }}/OCP/OCP.*.so
+          install_name_tool -delete_rpath $(realpath ~/opt/local/occt-${{ env.OCCT }}/lib) ${PKG_NAME}-${{ env.OCCT }}*/OCP/OCP.*.so
 
           if [[ "${{ matrix.use-vtk }}" == "ON" ]]; then
-            install_name_tool -add_rpath @loader_path/../vtkmodules/.dylibs/ ${PKG_NAME}-${{ env.OCCT }}/OCP/OCP.*.so
+            install_name_tool -add_rpath @loader_path/../vtkmodules/.dylibs/ ${PKG_NAME}-${{ env.OCCT }}*/OCP/OCP.*.so
           fi
 
           python -m wheel pack ${PKG_NAME}*
