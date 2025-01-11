@@ -617,7 +617,15 @@ jobs:
         run: |
           set -euo pipefail
 
-          # TODO
+          if [[ ${{ matrix.os }} == "macos-13" || ${{ matrix.os }} == "macos-14" ]]; then
+            curl -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_macOS-latest.zip
+          else
+            curl -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_${{ matrix.os }}.zip
+          fi
+          unzip OCP_src_stubs_*
+          rm *.zip
+          mkdir OCP
+          mv OCP_src_stubs_* OCP/OCP
 
       - name: (All) Cache OCP source folder
         id: cache-ocp-source-save
