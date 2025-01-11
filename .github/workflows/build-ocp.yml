@@ -1151,7 +1151,7 @@ jobs:
           pip install pytest docutils ipython
 
       - name: Download wheel artifact
-        if: env.PYWRAP == false || (matrix.python-version == '3.13' && matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true')
+        if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk'
         shell: bash -l {0}
         run: |
           if [[ "${{ matrix.os }}" == "macos-14" ]]; then
