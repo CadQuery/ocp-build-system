@@ -7,8 +7,11 @@ env:
   VTK: 9.3.1
   VTK_MAJOR: 9.3
   OCCT: 7.8.1
-  PY313VTK_RUNID: 12697376619
-  PYWRAP: true
+  PY313VTK_RUNID: 12724782854
+  PYWRAP: false
+
+# Source of the Python 3.13 vtk 9.3.1 wheels: https://github.com/CadQuery/ocp-build-system/actions/runs/12724782854
+# See PY313VTK_RUNID
 
 jobs:
   # ========================================
