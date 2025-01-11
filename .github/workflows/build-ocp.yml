@@ -1123,14 +1123,14 @@ jobs:
 
           PATH=~/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/win64/vc14/bin/:$PATH delvewheel repair $EXCLUDE --wheel-dir wheel --namespace-pkg ${PKG_NAME} dist/*.whl
 
-      - name: Upload cadquery_ocp wheel
+      - name: Upload vtk cadquery_ocp wheel
         if: matrix.use-vtk == 'vtk'
         uses: actions/upload-artifact@v4
         with:
           name: cadquery-ocp-${{ env.OCCT }}-${{ matrix.os }}-cp${{ matrix.python-version }}
           path: pypi/wheel/*.whl
 
-      - name: Upload cadquery_ocp wheel
+      - name: Upload novtk cadquery_ocp wheel
         if: matrix.use-vtk == 'novtk'
         uses: actions/upload-artifact@v4
         with:
