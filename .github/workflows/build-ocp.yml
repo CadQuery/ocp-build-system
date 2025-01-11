@@ -468,6 +468,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: (All) Restore OCP source cache
+        if: env.PYWRAP == 'true'
         id: cache-ocp-source-restore
         uses: actions/cache/restore@v4
         with:
