@@ -768,6 +768,7 @@ jobs:
 
       # Create sources for supporting vtk - will be patched later for novtk
       - name: (All) Restore OCP source cache
+        if: env.PYWRAP == 'true'
         id: cache-ocp-source-restore
         uses: actions/cache/restore@v4
         with:
