@@ -1,0 +1,95 @@
+From 0e3ce099051cedb09ec8a98020b591811eddd6a9 Mon Sep 17 00:00:00 2001
+From: blobfish <blobfish@gmx.com>
+Date: Wed, 22 Mar 2023 22:47:10 -0400
+Subject: [PATCH 16/18] IntPatch_Intersection: Consider intersection of a
+ closed edge. See following:
+
+    bfb# 000017
+
+    results of this change through occt public regression tests.
+    These results match previous runs except for lowalgos as noted.
+      testgrid blend
+        No regressions
+        Total cases: 13 BAD, 433 OK, 29 SKIPPED
+      testgrid boolean
+        Total cases: 2 BAD, 1 IMPROVEMENT, 3304 OK, 786 SKIPPED
+      testgrid bugs
+        Total cases: 189 BAD, 17 FAILED, 1920 OK, 2159 SKIPPED
+      testgrid chamfer
+        No regressions
+        Total cases: 22 BAD, 239 OK, 18 SKIPPED
+      testgrid collections
+        No regressions
+        Total cases: 13 OK
+      testgrid de
+        No regressions
+        Total cases: 80 BAD, 177 OK, 826 SKIPPED
+      testgrid de_mesh
+        Total cases: 8 FAILED, 17 OK, 95 SKIPPED
+        Elapsed time: 0 Hours 0 Minutes 20.295376 Seconds
+      testgrid demo
+        Total cases: 17 FAILED, 16 OK, 1 SKIPPED
+      testgrid draft
+        No regressions
+        Total cases: 11 BAD, 96 OK, 6 SKIPPED
+      testgrid evolved
+        No regressions
+        Total cases: 13 OK, 12 SKIPPED
+      testgrid feat
+        No regressions
+        Total cases: 2 BAD, 283 OK, 19 SKIPPED
+      testgrid fillet2d
+        No regressions
+        Total cases: 10 OK
+      testgrid geometry
+        No regressions
+        Total cases: 232 OK
+      testgrid heal
+        No regressions
+        Total cases: 44 BAD, 1645 OK, 1051 SKIPPED
+      testgrid lowalgos
+        Total cases: 18 BAD, 3 FAILED, 213 OK, 112 SKIPPED
+        testgrid lowalgos intss bug565
+        testgrid lowalgos intss bug567_1
+        testgrid lowalgos intss bug23972
+        These 3 tests failed on the official branch also. Not this commits fault.
+      testgrid mkface
+        No regressions
+        Total cases: 5 BAD, 131 OK, 29 SKIPPED
+      testgrid nproject
+        No regressions
+        Total cases: 8 OK, 2 SKIPPED
+      testgrid offset
+        No regressions
+        Total cases: 130 BAD, 683 OK, 1190 SKIPPED
+      testgrid pipe
+        No regressions
+        Total cases: 5 BAD, 152 OK, 174 SKIPPED
+      testgrid prism
+        No regressions
+        Total cases: 1 OK
+      testgrid sewing
+        No regressions
+        Total cases: 5 BAD, 504 OK, 191 SKIPPED
+      testgrid thrusection
+        No regressions
+        Total cases: 37 BAD, 379 OK
+---
+ src/IntPatch/IntPatch_Intersection.cxx | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/IntPatch/IntPatch_Intersection.cxx b/src/IntPatch/IntPatch_Intersection.cxx
+index b06c8513d1..0f5636aa61 100644
+--- a/src/IntPatch/IntPatch_Intersection.cxx
++++ b/src/IntPatch/IntPatch_Intersection.cxx
+@@ -177,6 +177,7 @@ void IntPatch_Intersection::Perform(const Handle(Adaptor3d_Surface)&  S1,
+       Geom2dInt_GInter Intersector(AC,
+                                    Precision::Confusion(),
+                                    Precision::Confusion());
++      if (Intersector.IsDone() && AC.IsClosed() && Intersector.NbPoints() == 1) break;
+       if (Intersector.IsDone() && Intersector.IsEmpty())
+         break;
+     }
+-- 
+2.45.0
+

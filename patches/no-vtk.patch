@@ -1,14 +1,13 @@
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index d0065b17..7f167915 100644
+index 1cac14a..64ee8d1 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -5,17 +5,7 @@ set( N_PROC 2 CACHE STRING "Number of processes used for generating code")
-
-
- find_package( LLVM REQUIRED )
+@@ -14,16 +14,7 @@ message( STATUS "Python lib: ${Python_LIBRARIES}" )
+ SET(PYTHON_SP_DIR "site-packages" CACHE PATH "Python site-packages directory (for installing)")
+ 
+ find_package( pybind11 REQUIRED )
 -find_package( VTK REQUIRED
 -  COMPONENTS
--    CommonCore
 -    WrappingPythonCore
 -    RenderingCore
 -    RenderingOpenGL2
@@ -18,95 +17,15 @@ index d0065b17..7f167915 100644
 -)
 -message(STATUS "VTK ${VTK_VERSION} found")
 +
- find_package( RapidJSON REQUIRED )
- find_package( Clang REQUIRED )
-
-@@ -39,7 +29,6 @@ execute_process(
-
-
- get_target_property( LIBCLANG_PATH libclang IMPORTED_LOCATION_RELEASE )
--get_target_property( VTK_INCLUDE_DIR VTK::CommonCore INTERFACE_INCLUDE_DIRECTORIES )
-
- message( STATUS "Include dirs: ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES}")
-
-@@ -70,7 +59,6 @@ if( NOT EXISTS ${CMAKE_SOURCE_DIR}/OCP )
-             -n ${N_PROC}
-             -l ${LIBCLANG_PATH}
-             -i ${CLANG_INCLUDE_DIRS}/
--            -i ${VTK_INCLUDE_DIR}/
-             -i ${CLANG_INSTALL_PREFIX}/lib/clang/${LLVM_VERSION}/include/
-             ${CXX_INCLUDES}
-             all ocp.toml ${PLATFORM}
-@@ -82,7 +70,7 @@ if( NOT EXISTS ${CMAKE_SOURCE_DIR}/OCP )
-     if( ${PYWRAP_RESULT} GREATER 0)
-         message(FATAL_ERROR "Pywrap call failed")
-     endif()
--
-+else()
-+    add_subdirectory( ${CMAKE_SOURCE_DIR}/OCP )
- endif()
-
--add_subdirectory( ${CMAKE_SOURCE_DIR}/OCP )
-
-diff --git a/ocp.toml b/ocp.toml
-index 4a41c132..1d5c74d0 100644
---- a/ocp.toml
-+++ b/ocp.toml
-@@ -3,7 +3,7 @@ input_folder = "./opencascade"
- output_folder = "./OCP"
- template_path = "./templates"
+ find_package( OpenCASCADE REQUIRED )
  
--additional_files = ["pystreambuf.h","vtk_pybind.h"]
-+additional_files = ["pystreambuf.h"]
+ include_directories( ${PROJECT_SOURCE_DIR} )
+@@ -34,7 +25,7 @@ add_library( OCP MODULE ${CPP_FILES} )
+ target_include_directories( OCP PRIVATE ${OpenCASCADE_INCLUDE_DIR} )
  
- pats = ["{}_*.hxx","{}.hxx"]
- 
-@@ -321,10 +321,6 @@ modules = ["Standard",
- "Vrml",
- "VrmlAPI",
- "RWGltf",
--"IVtk",
--"IVtkOCC",
--"IVtkTools",
--"IVtkVTK",
- "DE",
- "IMeshTools",
- "IMeshData",
-@@ -344,7 +340,6 @@ exclude = ["Standard_Handle.hxx","Standard", "Standard_MemoryUtils.hxx",
-            "BRepMesh_ConeRangeSplitter.hxx","BRepMesh_CylinderRangeSplitter.hxx",
-            "BRepMesh_NURBSRangeSplitter.hxx","BRepMesh_SphereRangeSplitter.hxx",
-            "BRepMesh_TorusRangeSplitter.hxx","BRepMesh_UVParamRangeSplitter.hxx","OpenGl_GLESExtensions.hxx",
--           "IVtk_IShapePickerAlgo.hxx","ProjLib_HCompProjectedCurve.hxx","ProjLib_HProjectedCurve.hxx",
-            "OSD_StreamBuffer.hxx"
-            ]
- #           "BVH_Box.hxx","BVH_tools.hxx"
-@@ -1247,29 +1242,6 @@ using rapidjson::BasicOStreamWrapper;"""
- 
-             "Interface_ValueInterpret.hxx" = "#include <Interface_TypedValue.hxx>"
- 
--    [Modules.IVtkVTK]
--
--        include_header_pre = """#include <vtkRenderer.h>
--#include "vtk_pybind.h" """
--
--    [Modules.IVtkTools]
--
--        include_header_pre = """#undef Handle
--#include <vtkRenderer.h>
--#include <vtkActor.h>
--#include <vtkInformationObjectBaseKey.h>"""
--
--        exclude_methods = ["IVtkTools_ShapePicker::Pick","IVtkTools_ShapePicker::pick",
--        "IVtkTools_SubPolyDataFilter::PrintSelf", "IVtkTools_DisplayModeFilter::PrintSelf"]
--
--    [Modules.IVtk]
--
--        exclude_typedefs = ["IVtk_PointIdList"]
--
--    [Modules.IVtkOCC]
--
--        exclude_methods = ["IVtkOCC_ShapePickerAlgo::Pick", "IVtkOCC_ViewerSelector::Pick"]
--
-     [Modules.BinLDrivers]
- 
-         include_header_pre = "#include <PCDM_ReaderFilter.hxx>"
+ target_link_libraries( OCP PRIVATE ${OpenCASCADE_LIBRARIES} )
+-target_link_libraries( OCP PRIVATE pybind11::pybind11 VTK::WrappingPythonCore VTK::RenderingCore VTK::CommonDataModel VTK::CommonExecutionModel)
++target_link_libraries( OCP PRIVATE pybind11::pybind11)
+
+ set_target_properties( OCP
+                        PROPERTIES

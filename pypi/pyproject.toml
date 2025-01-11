@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cadquery-ocp"
-version = "7.7.2.2b2"
+version = "7.8.1.0"
 description = "Unchanged OCP package, just pypi packaged"
 authors = [
     {name = "Bernhard Walter", email = "b_walter@arcor.de"},
@@ -20,4 +20,3 @@ include = ["*", "cadquery_ocp*", "OCP"]
 [tool.setuptools.package-data]
 "cadquery_ocp" = ["../*.so", "../*.pyd", "*.txt", "LICENSE"]
 "OCP" = ["*.so", "*.pyd",  "*.dll", "*.dylib"]
-

@@ -1,0 +1,26 @@
+From d797f6ff9a8734a635cef22268aa9d809f5d0b4e Mon Sep 17 00:00:00 2001
+From: blobfish <blobfish@gmx.com>
+Date: Sat, 3 Dec 2022 18:42:45 -0500
+Subject: [PATCH 15/18] build: Expand preprocessor conditional on non standard
+ type traits. Needed for macosx
+
+---
+ src/Standard/Standard_Type.hxx | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Standard/Standard_Type.hxx b/src/Standard/Standard_Type.hxx
+index 65b6826a81..561eb91fe8 100644
+--- a/src/Standard/Standard_Type.hxx
++++ b/src/Standard/Standard_Type.hxx
+@@ -26,7 +26,7 @@
+ // DEFINE_STANDARD_RTTI* macro is actually a base class.
+ #if ! defined(OCCT_CHECK_BASE_CLASS)
+ 
+-#if (defined(__GNUC__) && ((__GNUC__ == 4 && __GNUC_MINOR__ >= 7) || (__GNUC__ > 4)))
++#if (! defined(__clang__)  && defined(__GNUC__) && ((__GNUC__ == 4 && __GNUC_MINOR__ >= 7) || (__GNUC__ > 4)))
+ 
+ // For GCC 4.7+, more strict check is possible -- ensuring that base class 
+ // is direct base -- using non-standard C++ reflection functionality.
+-- 
+2.45.0
+

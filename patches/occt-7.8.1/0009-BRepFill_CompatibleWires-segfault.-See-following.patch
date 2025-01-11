@@ -1,0 +1,75 @@
+From fd39840cf9b8e59f982a22a8f894fbfd0817a539 Mon Sep 17 00:00:00 2001
+From: blobfish <blobfish@gmx.com>
+Date: Thu, 31 Mar 2022 10:38:07 -0400
+Subject: [PATCH 09/18] BRepFill_CompatibleWires: segfault. See following:
+
+    bfb# 000001
+    freecad bug: https://github.com/FreeCAD/FreeCAD/issues/6119
+
+    BRepFill_CompatibleWires: Verify iterators and throw to prevent segfault
+    BRepFill_CompatibleWires: Add missing negative sign for beta test in transform
+    BRepFill_CompatibleWires: Remove negative rotation detection
+
+    results of this change through occt public regression tests:
+    testgrid thrusection
+        No regressions
+        Total cases: 25 BAD, 309 OK
+    testgrid pipe
+        No regressions
+        Total cases: 5 BAD, 152 OK, 171 SKIPPED
+---
+ src/BRepFill/BRepFill_CompatibleWires.cxx | 17 ++++++-----------
+ 1 file changed, 6 insertions(+), 11 deletions(-)
+
+diff --git a/src/BRepFill/BRepFill_CompatibleWires.cxx b/src/BRepFill/BRepFill_CompatibleWires.cxx
+index 623979cb06..e6c7802fbe 100644
+--- a/src/BRepFill/BRepFill_CompatibleWires.cxx
++++ b/src/BRepFill/BRepFill_CompatibleWires.cxx
+@@ -612,26 +612,18 @@ static void Transform (const Standard_Boolean WithRotation,
+   gp_Vec axe1 = Ax1, axe2 = Ax2; 
+   if (!axe1.IsParallel(axe2,1.e-4)) {
+     gp_Vec Vtrans(Pos1,Pos2),Vsign;
+-    Standard_Real alpha,beta,sign=1;
++    Standard_Real alpha,beta;
+     alpha = Vtrans.Dot(axe1);
+     beta = Vtrans.Dot(axe2);
+     if (alpha<-1.e-7) axe1 *=-1;
+-    if (beta<1.e-7) axe2 *=-1;
+-    alpha = Vtrans.Dot(axe1);
+-    beta = Vtrans.Dot(axe2);
++    if (beta<-1.e-7) axe2 *=-1;
+     gp_Vec norm2 = axe1 ^ axe2;
+-    Vsign.SetLinearForm(Vtrans.Dot(axe1),axe2,-Vtrans.Dot(axe2),axe1);
+-    alpha = Vsign.Dot(axe1);
+-    beta = Vsign.Dot(axe2);
+-    Standard_Boolean pasnul = (Abs(alpha)>1.e-4 && Abs(beta)>1.e-4);
+-    if ( alpha*beta>0.0 && pasnul ) sign=-1;
+     gp_Ax1 Norm(Pos2,norm2);
+     Standard_Real ang = axe1.AngleWithRef(axe2,norm2);
+     if (!WithRotation) {
+       if (ang>M_PI/2) ang = ang - M_PI;
+       if (ang<-M_PI/2) ang = ang + M_PI;
+     }
+-    ang *= sign;
+     Pnew = Pnew.Rotated (Norm,ang);
+   }
+ }
+@@ -1160,11 +1152,14 @@ void BRepFill_CompatibleWires::
+     gp_Pnt PPs = Curve.Value(0.1*(U1+9*U2));
+     TopTools_ListIteratorOfListOfShape itF(MapVLV(VF)),itL(MapVLV(VL));
+     Standard_Integer rang = ideb;
+-    while (rang < i) {
++    while (rang < i && itF.More() && itL.More()) {
+       itF.Next();
+       itL.Next();
+       rang++;
+     }
++    if (!itF.More() || !itL.More())
++      throw Standard_ConstructionError("BRepFill :: regularize profiles are inconsistent");
++    
+     TopoDS_Vertex V1 = TopoDS::Vertex(itF.Value()), V2 = TopoDS::Vertex(itL.Value());
+     TopoDS_Edge Esol;
+     Standard_Real scalmax=0.;
+-- 
+2.45.0
+

@@ -2,8 +2,8 @@
 
 # Set VTK version
 set(VTK_MAJOR_VERSION 9)
-set(VTK_MINOR_VERSION 2)
-set(VTK_BUILD_VERSION 6)
+set(VTK_MINOR_VERSION 3)
+set(VTK_BUILD_VERSION 1)
 
 # Set full VTK version
 set(VTK_VERSION "${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.${VTK_BUILD_VERSION}")
@@ -15,11 +15,11 @@ else()
   set(HOME_DIR "$ENV{HOME}")
 endif()
 
-set(VTK_INCLUDE_DIRS "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/include/vtk-9.2")
+set(VTK_INCLUDE_DIRS "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/include/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 set(VTK_LIBRARY_DIRS "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/lib")
 set(VTK_DLL_DIRS "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/bin")
 
-set(VTK_INCLUDE_DIR "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/include/vtk-9.2")
+set(VTK_INCLUDE_DIR "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/include/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 set(VTK_LIBRARY_DIR "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/lib")
 set(VTK_DLL_DIR "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/bin")
 
@@ -27,177 +27,204 @@ set(VTK_DLL_DIR "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/bin")
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 set(PYTHON_VERSION "${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
 
+set(SUFFIX "-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
+
 # Define the components
 set(VTK_MODULES_ENABLED
-    WrappingTools
-    WebPython
-    WebCore
-    Python
-    sys
-    WebGLExporter
-    ViewsInfovis
-    CommonColor
-    ViewsContext2D
-    loguru
-    TestingRendering
-    TestingCore
-    RenderingQt
-    PythonContext2D
-    RenderingVolumeOpenGL2
-    glew
-    opengl
-    RenderingMatplotlib
-    PythonInterpreter
-    RenderingLabel
-    octree
-    RenderingLOD
-    RenderingLICOpenGL2
-    RenderingImage
-    RenderingContextOpenGL2
-    IOXdmf2
-    libxml2
-    xdmf2
-    hdf5
-    IOVeraOut
-    IOTecplotTable
-    utf8
-    IOSegY
-    IOXdmf3
-    xdmf3
-    IOParallelXML
-    IOPLY
-    IOOggTheora
-    theora
-    ogg
-    IONetCDF
-    netcdf
-    libproj
-    IOMotionFX
-    pegtl
-    IOParallel
-    jsoncpp
-    IOMINC
-    IOLSDyna
-    IOInfovis
-    zlib
-    IOImport
-    IOIOSS
-    fmt
-    ioss
+    AcceleratorsVTKmCore
+    AcceleratorsVTKmDataModel
+    AcceleratorsVTKmFilters
     cgns
+    ChartsCore
+    CommonColor
+    CommonComputationalGeometry
+    CommonCore
+    CommonDataModel
+    CommonExecutionModel
+    CommonMath
+    CommonMisc
+    CommonPython
+    CommonSystem
+    CommonTransforms
+    DICOMParser
+    DomainsChemistry
+    DomainsChemistryOpenGL2
+    doubleconversion
     exodusII
-    IOFFMPEG
-    IOVideo
-    IOMovie
-    IOExportPDF
-    libharu
-    IOExportGL2PS
-    RenderingGL2PSOpenGL2
-    gl2ps
-    png
-    IOExport
-    RenderingVtkJS
-    nlohmannjson
-    RenderingSceneGraph
-    IOExodus
-    IOEnSight
-    IOCityGML
-    pugixml
-    IOChemistry
-    IOCesium3DTiles
-    IOGeometry
-    IOCONVERGECFD
-    IOHDF
-    IOCGNSReader
-    IOAsynchronous
-    IOAMR
-    InteractionImage
-    ImagingStencil
-    ImagingStatistics
-    ImagingMorphological
-    ImagingMath
-    ImagingFourier
-    IOSQL
-    sqlite
-    GUISupportQt
-    GeovisCore
-    InfovisLayout
-    ViewsCore
-    InteractionWidgets
-    RenderingVolume
-    RenderingAnnotation
-    ImagingHybrid
-    ImagingColor
-    InteractionStyle
-    FiltersTopology
+    expat
+    FiltersAMR
+    FiltersCellGrid
+    FiltersCore
+    FiltersExtraction
+    FiltersFlowPaths
+    FiltersGeneral
+    FiltersGeneric
+    FiltersGeometry
+    FiltersGeometryPreview
+    FiltersHybrid
+    FiltersHyperTree
+    FiltersImaging
+    FiltersModeling
+    FiltersParallel
+    FiltersParallelDIY2
+    FiltersParallelImaging
+    FiltersParallelStatistics
+    FiltersPoints
+    FiltersProgrammable
+    FiltersPython
+    FiltersReduction
     FiltersSelection
     FiltersSMP
-    FiltersPython
-    FiltersProgrammable
-    FiltersPoints
-    FiltersVerdict
-    verdict
-    FiltersParallelImaging
-    FiltersParallelDIY2
-    FiltersImaging
-    ImagingGeneral
-    FiltersGeneric
-    FiltersFlowPaths
-    eigen
-    FiltersAMR
-    FiltersParallel
+    FiltersSources
+    FiltersStatistics
+    FiltersTensor
     FiltersTexture
-    FiltersModeling
-    DomainsChemistryOpenGL2
-    RenderingOpenGL2
-    RenderingHyperTreeGrid
-    RenderingUI
-    FiltersHyperTree
-    FiltersHybrid
-    DomainsChemistry
-    CommonPython
-    WrappingPythonCore
-    ChartsCore
+    FiltersTopology
+    FiltersVerdict
+    fmt
+    freetype
+    GeovisCore
+    gl2ps
+    glew
+    h5part
+    hdf5_hl
+    hdf5
+    ImagingColor
+    ImagingCore
+    ImagingFourier
+    ImagingGeneral
+    ImagingHybrid
+    ImagingMath
+    ImagingMorphological
+    ImagingOpenGL2
+    ImagingSources
+    ImagingStatistics
+    ImagingStencil
     InfovisCore
-    FiltersExtraction
-    ParallelDIY
-    diy2
+    InfovisLayout
+    InteractionImage
+    InteractionStyle
+    InteractionWidgets
+    IOAMR
+    IOAsynchronous
+    IOCellGrid
+    IOCesium3DTiles
+    IOCGNSReader
+    IOChemistry
+    IOCityGML
+    IOCONVERGECFD
+    IOCore
+    IOEnSight
+    IOExodus
+    IOExport
+    IOExportGL2PS
+    IOExportPDF
+    IOFLUENTCFF
+    IOGeoJSON
+    IOGeometry
+    IOH5part
+    IOH5Rage
+    IOHDF
+    IOImage
+    IOImport
+    IOInfovis
+    IOIOSS
+    IOLegacy
+    IOLSDyna
+    IOMINC
+    IOMotionFX
+    IOMovie
+    IONetCDF
+    IOOggTheora
+    IOOMF
+    IOParallel
+    IOParallelExodus
+    IOParallelLSDyna
+    IOParallelXML
+    IOPIO
+    IOPLY
+    IOSegY
+    IOSQL
+    ioss
+    IOTecplotTable
+    IOTRUCHAS
+    IOVeraOut
+    IOVideo
+    IOVPIC
+    IOXdmf2
     IOXML
     IOXMLParser
-    expat
-    ParallelCore
-    IOLegacy
-    IOCore
-    doubleconversion
+    jpeg
+    jsoncpp
+    kissfft
+    libharu
+    libproj
+    libxml2
+    loguru
     lz4
     lzma
-    FiltersStatistics
-    ImagingSources
-    IOImage
-    DICOMParser
-    jpeg
+    m_cont
+    m_filter_clean_grid
+    m_filter_connected_components
+    m_filter_contour
+    m_filter_core
+    m_filter_density_estimate
+    m_filter_entity_extraction
+    m_filter_field_conversion
+    m_filter_field_transform
+    m_filter_geometry_refinement
+    m_filter_mesh_info
+    m_filter_resampling
+    m_filter_vector_analysis
+    m_worklet
+    mdiympi_nompi
     metaio
-    tiff
+    netcdf
+    ogg
+    ParallelCore
+    ParallelDIY
+    png
+    pugixml
+    PythonContext2D
+    PythonInterpreter
+    RenderingAnnotation
+    RenderingCellGrid
     RenderingContext2D
-    RenderingFreeType
-    freetype
-    kwiml
+    RenderingContextOpenGL2
     RenderingCore
-    FiltersSources
-    ImagingCore
-    FiltersGeometry
-    FiltersGeneral
-    CommonComputationalGeometry
-    FiltersCore
-    CommonExecutionModel
-    CommonDataModel
-    CommonSystem
-    CommonMisc
-    exprtk
-    CommonTransforms
-    CommonMath
-    kissfft
-    CommonCore
+    RenderingExternal
+    RenderingFreeType
+    RenderingGL2PSOpenGL2
+    RenderingHyperTreeGrid
+    RenderingImage
+    RenderingLabel
+    RenderingLICOpenGL2
+    RenderingLOD
+    RenderingMatplotlib
+    RenderingOpenGL2
+    RenderingParallel
+    RenderingSceneGraph
+    RenderingUI
+    RenderingVolume
+    RenderingVolumeAMR
+    RenderingVolumeOpenGL2
+    RenderingVR
+    RenderingVtkJS
+    sqlite
+    sys
+    TestingRendering
+    theora
+    tiff
+    verdict
+    ViewsContext2D
+    ViewsCore
+    ViewsInfovis
+    vpic
+    WebCore
+    WebGLExporter
+    WrappingPythonCore
+    xdmf2
+    zlib
 )
 
 # Create imported targets for each module
@@ -205,18 +232,18 @@ foreach(module ${VTK_MODULES_ENABLED})
     if(NOT TARGET VTK::${module})
         add_library(VTK::${module} SHARED IMPORTED)
         if(${module} STREQUAL "WrappingPythonCore")
-            set_target_properties(VTK::${module} PROPERTIES
-                IMPORTED_LOCATION "${VTK_DLL_DIRS}/vtk${module}${PYTHON_VERSION}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.dll"
-                IMPORTED_IMPLIB "${VTK_LIBRARY_DIRS}/vtk${module}${PYTHON_VERSION}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib"
-                INTERFACE_INCLUDE_DIRECTORIES "${VTK_INCLUDE_DIRS}"
-            )
+            file(GLOB VTK_DLL "${VTK_DLL_DIRS}/vtk${module}${PYTHON_VERSION}${SUFFIX}*.dll")
+            file(GLOB VTK_LIB "${VTK_LIBRARY_DIRS}/vtk${module}${PYTHON_VERSION}${SUFFIX}*.lib")        
         else()
-            set_target_properties(VTK::${module} PROPERTIES
-                IMPORTED_LOCATION "${VTK_DLL_DIRS}/vtk${module}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.dll"
-                IMPORTED_IMPLIB "${VTK_LIBRARY_DIRS}/vtk${module}-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}.lib"
-                INTERFACE_INCLUDE_DIRECTORIES "${VTK_INCLUDE_DIRS}"
-            )
+            file(GLOB VTK_DLL "${VTK_DLL_DIRS}/vtk${module}${SUFFIX}*.dll")
+            file(GLOB VTK_LIB "${VTK_LIBRARY_DIRS}/vtk${module}${SUFFIX}*.lib")        
         endif()
+        message(STATUS "VTK::${module} DLL: ${VTK_DLL}   LIB: ${VTK_LIB}")
+        set_target_properties(VTK::${module} PROPERTIES
+            IMPORTED_LOCATION "${VTK_DLL}"
+            IMPORTED_IMPLIB "${VTK_LIB}"
+            INTERFACE_INCLUDE_DIRECTORIES "${VTK_INCLUDE_DIRS}"
+        )
     endif()
 endforeach()
 

@@ -1,0 +1,28 @@
+From b36591b52fc3adfe17a319461780c95326f7810c Mon Sep 17 00:00:00 2001
+From: blobfish <blobfish@gmx.com>
+Date: Tue, 29 Sep 2020 06:36:13 -0400
+Subject: [PATCH 02/18] GeomPlate_BuildAveragePlane: BasePlan: Don't set
+ yvector to zero. See Following:
+
+    When we return, the yvector is crossed with x and we crash.
+    The z vector is passed in and we calculate the x vector, so just cross those 2 in this case to get y.
+---
+ src/GeomPlate/GeomPlate_BuildAveragePlane.cxx | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/GeomPlate/GeomPlate_BuildAveragePlane.cxx b/src/GeomPlate/GeomPlate_BuildAveragePlane.cxx
+index 557906d138..9b1dcb05c1 100644
+--- a/src/GeomPlate/GeomPlate_BuildAveragePlane.cxx
++++ b/src/GeomPlate/GeomPlate_BuildAveragePlane.cxx
+@@ -434,7 +434,7 @@ void GeomPlate_BuildAveragePlane::BasePlan(const gp_Vec& OZ)
+           || ((Abs(n2)<=myTol)&&(Abs(n3)<=myTol))
+           || ((Abs(n1)<=myTol)&&(Abs(n3)<=myTol))) {
+       myOX.SetCoord(V3(1),V3(2),V3(3));
+-      myOY.SetCoord(0,0,0);
++      myOY = OZ ^ myOX;
+     }
+     else {
+       myOX.SetCoord(V3(1),V3(2),V3(3));
+-- 
+2.45.0
+
