@@ -33,6 +33,8 @@ jobs:
     steps:
       - name: (All) Checkout project
         uses: actions/checkout@v4
+        with:
+          ref: v7.8.1
 
       - name: (All) Get number of CPUs
         shell: bash -l {0}
