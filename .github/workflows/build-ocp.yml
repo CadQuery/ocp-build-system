@@ -128,23 +128,23 @@ jobs:
       # - - - - - - - - - - - - - - - - - - - - -
 
       - name: Download wheel artifact
-        if: ${{ matrix.python-version }} == '3.13' && matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
+        if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
         run: |
           if [[ "${{ matrix.os }}" == "macos-14" ]]; then
             echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
-            curl -O https://github.com/CadQuery/ocp-build-system/releases/download/v${{ env.OCP }}-dev/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
+            curl -L -O https://github.com/CadQuery/ocp-build-system/releases/download/v${{ env.OCP }}-dev/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
 
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
             echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
-            curl -O https://github.com/CadQuery/ocp-build-system/releases/download/v7.8.1.0-dev/cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl
+            curl -L -O https://github.com/CadQuery/ocp-build-system/releases/download/v7.8.1.0-dev/cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl
 
           elif [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
             echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
-            curl -O https://github.com/CadQuery/ocp-build-system/releases/download/v7.8.1.0-dev/cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl
+            curl -L -O https://github.com/CadQuery/ocp-build-system/releases/download/v7.8.1.0-dev/cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl
 
           else 
             echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
-            curl -O https://github.com/CadQuery/ocp-build-system/releases/download/v7.8.1.0-dev/cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl
+            curl -L -O https://github.com/CadQuery/ocp-build-system/releases/download/v7.8.1.0-dev/cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl
 
           fi
           ls -l
