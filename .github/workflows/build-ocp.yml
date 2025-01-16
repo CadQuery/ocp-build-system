@@ -26,9 +26,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-        use-vtk: ["vtk", "novtk"]
+        os: ["windows-2019"]
+        # os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
+        python-version: ["3.11"]
+        # python-version: ["3.10", "3.11", "3.12", "3.13"]
+        use-vtk: ["vtk"]
+        # use-vtk: ["vtk", "novtk"]
 
         include:
           - os: "macos-13"
@@ -381,6 +384,7 @@ jobs:
               -D CMAKE_BUILD_TYPE=Release ^
               -D BUILD_RELEASE_DISABLE_EXCEPTIONS=OFF ^
               -D BUILD_MODULE_Draw=OFF ^
+              -D BUILD_OPT_PROFILE=Production ^
               ^
               -D CMAKE_INSTALL_PREFIX=%USERPROFILE%\opt\local\occt-${{ env.OCCT }}-${{ matrix.use-vtk }} ^
               -D CMAKE_PREFIX_PATH=%CONDA_PREFIX%\Library ^
