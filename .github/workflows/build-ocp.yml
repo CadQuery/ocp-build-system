@@ -322,6 +322,7 @@ jobs:
               -D CMAKE_BUILD_TYPE=Release \
               -D BUILD_RELEASE_DISABLE_EXCEPTIONS=OFF \
               -D BUILD_MODULE_Draw=OFF  \
+              -D BUILD_OPT_PROFILE=Production \
               -D CMAKE_PREFIX_PATH=$CONDA_PREFIX \
               \
               -D VTK_RENDERING_BACKEND=OpenGL2 \
@@ -349,6 +350,7 @@ jobs:
               -D CMAKE_BUILD_TYPE=Release \
               -D BUILD_RELEASE_DISABLE_EXCEPTIONS=OFF \
               -D BUILD_MODULE_Draw=OFF \
+              -D BUILD_OPT_PROFILE=Production \
               -D CMAKE_PREFIX_PATH=$CONDA_PREFIX
           fi
 
@@ -408,6 +410,7 @@ jobs:
               -D CMAKE_BUILD_TYPE="Release" ^
               -D BUILD_RELEASE_DISABLE_EXCEPTIONS=OFF ^
               -D BUILD_MODULE_Draw=OFF ^
+              -D BUILD_OPT_PROFILE=Production ^
               ^
               -D CMAKE_INSTALL_PREFIX=%USERPROFILE%\opt\local\occt-${{ env.OCCT }}-${{ matrix.use-vtk }} ^
               -D CMAKE_PREFIX_PATH=%CONDA_PREFIX%\Library
