@@ -674,7 +674,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: "windows-2019"]
+        os: ["windows-2019"]
         python-version: ["3.11"]
         use-vtk: ["vtk"]
         # os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
