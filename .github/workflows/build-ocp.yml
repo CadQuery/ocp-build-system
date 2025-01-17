@@ -4,7 +4,7 @@ on: workflow_dispatch
 
 env:
   OCP: 7.8.1.0
-  WHEEL: 7.8.1.1
+  WHEEL: 7.8.1.0.post1
   VTK: 9.3.1
   VTK_MAJOR: 9.3
   OCCT: 7.8.1
