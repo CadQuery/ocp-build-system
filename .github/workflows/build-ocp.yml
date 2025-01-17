@@ -1031,14 +1031,15 @@ jobs:
                               --python-tag $PY_VER \
                               dist/*.whl
 
+          # Patch Root-is-purelib to false to ensure installation to lib64 on Fedora / Debian
           mkdir work
           cd work
-          python -m wheel unpack ../dist/${PKG_NAME}-*.whl
-          cd ${PKG_NAME}-*
-          ${{ matrix.sed_i }} "s/Root-Is-Purelib: true/Root-Is-Purelib: false/" cadquery*/WHEEL
+          python -m wheel unpack ../dist/${PKG_NAME}*.whl
+          cd ${PKG_NAME}*
+          ${{ matrix.sed_i }} "s/Root-Is-Purelib: true/Root-Is-Purelib: false/" ${PKG_NAME}*/WHEEL
           cd ..
-          python -m wheel pack cadquery_ocp-*
-          rm ../dist/${PKG_NAME}-*.whl
+          python -m wheel pack ${PKG_NAME}*
+          rm ../dist/${PKG_NAME}*.whl
           mv *.whl ../dist/
           cd ..
 
