@@ -1140,14 +1140,14 @@ jobs:
         if: matrix.use-vtk == 'vtk'
         uses: actions/upload-artifact@v4
         with:
-          name: cadquery-ocp-${{ env.OCCT }}-${{ matrix.os }}-cp${{ matrix.python-version }}
+          name: cadquery-ocp-${{ env.WHEEL }}-${{ matrix.os }}-cp${{ matrix.python-version }}
           path: pypi/wheel/*.whl
 
       - name: Upload novtk cadquery_ocp wheel
         if: matrix.use-vtk == 'novtk'
         uses: actions/upload-artifact@v4
         with:
-          name: cadquery-ocp-novtk-${{ env.OCCT }}-${{ matrix.os }}-cp${{ matrix.python-version }}
+          name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ matrix.os }}-cp${{ matrix.python-version }}
           path: pypi/wheel/*.whl
 
       # ========================================
