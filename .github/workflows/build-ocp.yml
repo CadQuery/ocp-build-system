@@ -4,6 +4,7 @@ on: workflow_dispatch
 
 env:
   OCP: 7.8.1.0
+  WHEEL: 7.8.1.1
   VTK: 9.3.1
   VTK_MAJOR: 9.3
   OCCT: 7.8.1
@@ -1062,13 +1063,13 @@ jobs:
           rm ${PKG_NAME}*.whl
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-            patchelf --add-rpath '$ORIGIN/../vtk.libs'    ${PKG_NAME}-${{ env.OCP }}/OCP/OCP.*.so
-            patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.OCP }}/OCP/OCP.*.so
-            patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.OCP }}/${PKG_NAME}.libs/*
+            patchelf --add-rpath '$ORIGIN/../vtk.libs'    ${PKG_NAME}-${{ env.WHEEL }}/OCP/OCP.*.so
+            patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.WHEEL }}/OCP/OCP.*.so
+            patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.WHEEL }}/${PKG_NAME}.libs/*
           fi
 
-          patchelf --add-rpath '$ORIGIN/../'${PKG_NAME}.libs ${PKG_NAME}-${{ env.OCP }}/${PKG_NAME}.libs/*
-          python -m wheel pack ${PKG_NAME}-${{ env.OCP }}
+          patchelf --add-rpath '$ORIGIN/../'${PKG_NAME}.libs ${PKG_NAME}-${{ env.WHEEL }}/${PKG_NAME}.libs/*
+          python -m wheel pack ${PKG_NAME}-${{ env.WHEEL }}
           cd ..
 
       - name: (Mac) Delocate the cadquery_ocp wheel
@@ -1088,10 +1089,10 @@ jobs:
           cd pypi/dist
           python -m wheel unpack ${PKG_NAME}*.whl
           rm ${PKG_NAME}*.whl
-          install_name_tool -delete_rpath $(realpath ~/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib) ${PKG_NAME}-${{ env.OCP }}/OCP/OCP.*.so
+          install_name_tool -delete_rpath $(realpath ~/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib) ${PKG_NAME}-${{ env.WHEEL }}/OCP/OCP.*.so
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-            install_name_tool -add_rpath @loader_path/../vtkmodules/.dylibs/ ${PKG_NAME}-${{ env.OCP }}/OCP/OCP.*.so
+            install_name_tool -add_rpath @loader_path/../vtkmodules/.dylibs/ ${PKG_NAME}-${{ env.WHEEL }}/OCP/OCP.*.so
           fi
 
           python -m wheel pack ${PKG_NAME}*
