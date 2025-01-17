@@ -1031,6 +1031,17 @@ jobs:
                               --python-tag $PY_VER \
                               dist/*.whl
 
+          mkdir work
+          cd work
+          python -m wheel unpack ../dist/${PKG_NAME}-*.whl
+          cd ${PKG_NAME}-*
+          ${{ matrix.sed_i }} "s/Root-Is-Purelib: true/Root-Is-Purelib: false/" cadquery*/WHEEL
+          cd ..
+          python -m wheel pack cadquery_ocp-*
+          rm ../dist/${PKG_NAME}-*.whl
+          mv *.whl ../dist/
+          cd ..
+
           unzip -l dist/${PKG_NAME}*.whl
 
       - name: (Linux) Delocate the cadquery_ocp wheel
