@@ -33,7 +33,7 @@ jobs:
         use-vtk: ["vtk"]
         # use-vtk: ["vtk", "novtk"]
 
-        # include:
+        include:
         #   - os: "macos-13"
         #     vtk_libs: ".dylibs/libvtk*.dylib"
         #     vtk_suffix: "/"
@@ -682,28 +682,28 @@ jobs:
         # use-vtk: ["vtk", "novtk"]
 
         include:
-          - os: "macos-13"
-            delocate: delocate
-            plat: macosx_11_1_x86_64
-            sed_i: "gsed -i"
-            module: "OCP.*.so"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-          - os: "macos-14"
-            delocate: delocate
-            plat: macosx_11_1_arm64
-            sed_i: "gsed -i"
-            module: "OCP.*.so"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-          - os: "ubuntu-20.04"
-            delocate: auditwheel patchelf
-            plat: manylinux_2_31_x86_64
-            sed_i: "sed -i"
-            compilers: ""
-            module: "OCP.*.so"
-            env: "DUMMY=0"
-            shells: "bash"
+          # - os: "macos-13"
+          #   delocate: delocate
+          #   plat: macosx_11_1_x86_64
+          #   sed_i: "gsed -i"
+          #   module: "OCP.*.so"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          # - os: "macos-14"
+          #   delocate: delocate
+          #   plat: macosx_11_1_arm64
+          #   sed_i: "gsed -i"
+          #   module: "OCP.*.so"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          # - os: "ubuntu-20.04"
+          #   delocate: auditwheel patchelf
+          #   plat: manylinux_2_31_x86_64
+          #   sed_i: "sed -i"
+          #   compilers: ""
+          #   module: "OCP.*.so"
+          #   env: "DUMMY=0"
+          #   shells: "bash"
           - os: "windows-2019"
             delocate: delvewheel
             plat: win_amd64
