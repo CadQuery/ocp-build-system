@@ -1019,11 +1019,18 @@ jobs:
             DYLD_LIBRARY_PATH=$HOME/opt/local/vtk-${{ env.VTK }}/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib \
             python ocp-tree.py
             mv *.so OCP
+            ls -l OCP/*.so
+            strip OCP/*.so
+            ls -l OCP/*.so
             
           else
             LD_LIBRARY_PATH=$HOME/opt/local/vtk-${{ env.VTK }}/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib \
             python ocp-tree.py
             mv *.so OCP
+            ls -l OCP/*.so
+            strip OCP/*.so
+            ls -l OCP/*.so
+
           fi
 
           python -m build -w -n
