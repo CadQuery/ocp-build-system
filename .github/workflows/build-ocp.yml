@@ -1211,30 +1211,15 @@ jobs:
         run: |
           set -euo pipefail
 
-          git clone https://github.com/gumyr/build123d.git
-          cd build123d
-          git checkout 6621e3bb24d3d062fbec4c7731da174f195f6de8
-          cd ..
-
           micromamba activate test
 
-          if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
+          git clone https://github.com/gumyr/build123d.git
 
-            curl -O https://files.pythonhosted.org/packages/10/ed/d4c555f74e39be516c9da41ff8e672e5996c95f5dd7865f6a3a7a91fbb22/ocpsvg-0.3.3.tar.gz
-            tar -zxvf ocpsvg-0.3.3.tar.gz
-            cd ocpsvg-0.3.3
-            ${{ matrix.sed_i }} 's/"cadquery-ocp >= 7.7.0",//' pyproject.toml
-            pip install .
-            cd ..
-            
-            cd build123d
+          cd build123d
+          if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
             patch -p1 < ../patches/build123d-novtk.patch
-            pip install .
-          else
-            cd build123d
-            patch -p1 < ../patches/build123d-vtk.patch
-            pip install .
           fi
+          pip install .
 
           pytest tests -v -W ignore
 
@@ -1246,12 +1231,12 @@ jobs:
 
           git clone https://github.com/cadquery/cadquery.git
           cd cadquery
-          git checkout 23af517a66928e7c0bc3ebb6b86edf643af4751c
 
-          patch -p1 < ../patches/cadquery.patch
+          if [[ "${{ matrix.python-version }}" == "3.13" ]]; then
+            patch -p1 < ../patches/cadquery.patch
+          fi
 
           micromamba activate test
-          pip install multimethod
 
           # workaround for nlopt 2.9.0 not available for Intel Mac
           if [[ "${{ matrix.os }}" == "macos-13" ]]; then
