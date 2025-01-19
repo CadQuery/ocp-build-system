@@ -976,16 +976,8 @@ jobs:
           micromamba activate build-ocp
           pip install build wheel ${{ matrix.delocate }}
 
-          echo "= = = = = = = = = = = = = = = = "
-          ls -lR OCP
-          echo "= = = = = = = = = = = = = = = = "
-
           cd pypi
           cp ../OCP/build/${{ matrix.module }} .
-
-          echo "- - - - - - - - - pypi - - - - - - - - -"
-          ls -l
-          echo "- - - - - - - - - pypi - - - - - - - - -"
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
             PKG_NAME="cadquery_ocp"
@@ -1020,7 +1012,7 @@ jobs:
             python ocp-tree.py
             mv *.so OCP
             ls -l OCP/*.so
-            strip OCP/*.so
+            strip -x OCP/*.so
             ls -l OCP/*.so
             
           else
