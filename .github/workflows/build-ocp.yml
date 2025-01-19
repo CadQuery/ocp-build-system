@@ -431,10 +431,10 @@ jobs:
       #                 SDK
       # ========================================
 
-      - name: Debug Upload SDK
+      - name: Upload SDK
         uses: actions/upload-artifact@v4
         with:
-          name: debug_sdk_${{ matrix.os }}-py_${{ matrix.python-version }}-${{ matrix.use-vtk }}
+          name: SDK_${{ matrix.os }}-py_${{ matrix.python-version }}-${{ matrix.use-vtk }}
           path: ~/opt/local
 
   # ========================================
