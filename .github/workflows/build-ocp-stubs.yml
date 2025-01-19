@@ -24,9 +24,6 @@ jobs:
           environment-name: build-stubs
           create-args: >-
             python=${{ matrix.python-version }}
-            build
-            setuptools
-            wheel
           log-level: debug
           init-shell: bash
           cache-downloads: true
@@ -48,6 +45,7 @@ jobs:
           set -euo pipefail
 
           micromamba activate build-stubs
+          pip install build setuptools wheel
           cd pypi-stubs
           python -m build -w -n
   
