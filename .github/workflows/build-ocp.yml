@@ -551,9 +551,9 @@ jobs:
           micromamba activate build-ocp
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief=0.15.1 python-clang pyparsing
-            pip install "pybind11==2.10.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
+            pip install "pybind11==2.12.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
           else
-            pip install "pybind11==2.10.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click lief==0.15.1 clang==15.0.7 pyparsing
+            pip install "pybind11==2.12.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click lief==0.15.1 clang==15.0.7 pyparsing
           fi
 
       - name: (All) Clone OCP [PYWRAP=true]
@@ -826,9 +826,9 @@ jobs:
           micromamba activate build-ocp
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief=0.15.1 python-clang pyparsing
-            pip install "pybind11==2.10.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
+            pip install "pybind11==2.12.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
           else
-            pip install "pybind11==2.10.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click lief==0.15.1 clang==15.0.7 pyparsing
+            pip install "pybind11==2.12.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click lief==0.15.1 clang==15.0.7 pyparsing
           fi
 
       - name: (Linux) Generate OCP build files and build OCP
