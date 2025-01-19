@@ -7,13 +7,13 @@ env:
 
 jobs:
   stubs:
-    name: Build OCP stubs for ${{ matrix.os }}
+    name: Build OCP stubs for ${{ matrix.os }} on ${{ matrix.python-version }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: ["ubuntu-20.04"]  
-        python-version: ["3.10", "3.11", "3.12", "3.13"]  
+        python-version: ["3.12"]  
 
     steps:
       - uses: actions/checkout@v4
