@@ -9,7 +9,7 @@ requires-python = ">=3.9"
 description = "This is a custom build of the VTK Python wheels which are specific to the needs of the CadQuery project."
 readme = "README.md"
 license = "BSD-3-Clause"
-keywords = ["VTK", OpenCASCADE]
+keywords = ["VTK", "OpenCASCADE"]
 classifiers = [
   "Programming Language :: Python"
 ]
