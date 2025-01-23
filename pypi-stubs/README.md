@@ -1,6 +1,6 @@
 # cadquery-ocp-stubs
 
-Typing stubs for [cadquery-ocp](https://pypi.org/project/cadquery-ocp/) automaticaly generated using [pybind11-stubgen](https://github.com/CadQuery/pybind11-stubgen).
+Typing stubs for cadquery-ocp based on the official CadQuery/OCP sources.
 
 ## Notes
 

@@ -1,8 +1,8 @@
 # cadquery-ocp (also known as OCP)
 
-Python wrapper for OCCT generated using pywrap. Typing stubs available [here](https://github.com/CadQuery/OCP-stubs).
+Python wrapper for OCCT generated using pywrap. Typing [stubs](https://pypi.org/project/cadquery-ocp-stubs/) available from pypi.
 
-## Goals
+## Goals of OCP
 * Provide thin bindings to OCCT.
 * Wrap all OCCT modules (if practical).
 * React quickly to new OCCT releases.

@@ -4,6 +4,7 @@ on: workflow_dispatch
 
 env:
   OCP: 7.8.1.1
+  WHEEL: 7.8.1.1.post1
 
 jobs:
   stubs:
@@ -52,6 +53,6 @@ jobs:
       - name: Upload cadquery_ocp stubs wheel
         uses: actions/upload-artifact@v4
         with:
-          name: cadquery-ocp-${{ env.OCP }}-stubs-cp${{ matrix.python-version }}
+          name: cadquery-ocp-${{ env.WHEEL }}-stubs-cp${{ matrix.python-version }}
           path: pypi-stubs/dist/*.whl          
           

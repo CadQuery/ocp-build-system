@@ -4,10 +4,10 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cadquery-ocp"
-version = "7.8.1.1"
-description = "Python wrapper for OCCT generated using pywrap."
-authors = [{ name = "Bernhard Walter", email = "b_walter@arcor.de" }]
-requires-python = ">=3.10"
+version = "7.8.1.1.post1"
+description = "Python wrapper for Open CASCADE Technology 3D geometry library based on the official CadQuery/OCP sources"
+authors = [{ name = "Bernhard Walter" }]
+requires-python = ">=3.10,<3.14"
 readme = "README.md"
 
 [tool.setuptools]
