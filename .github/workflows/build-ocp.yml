@@ -1219,6 +1219,7 @@ jobs:
 
           cd build123d
           if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
+            git checkout 65ead1cce6a598095a93411953feff650ddf93fc
             patch -p1 < ../patches/build123d-novtk.patch
           fi
           pip install .
