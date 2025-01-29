@@ -24,25 +24,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
+        # os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
+        os: ["ubuntu-20.04"]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
         use-vtk: ["vtk", "novtk"]
 
         include:
-          - os: "macos-13"
-            vtk_libs: ".dylibs/libvtk*.dylib"
-            vtk_suffix: "/"
-            vtk_prefix: ""
-            sed_i: "gsed -i"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-          - os: "macos-14"
-            vtk_libs: ".dylibs/libvtk*.dylib"
-            vtk_suffix: "/"
-            vtk_prefix: ""
-            sed_i: "gsed -i"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
+          # - os: "macos-13"
+          #   vtk_libs: ".dylibs/libvtk*.dylib"
+          #   vtk_suffix: "/"
+          #   vtk_prefix: ""
+          #   sed_i: "gsed -i"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          # - os: "macos-14"
+          #   vtk_libs: ".dylibs/libvtk*.dylib"
+          #   vtk_suffix: "/"
+          #   vtk_prefix: ""
+          #   sed_i: "gsed -i"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
           - os: "ubuntu-20.04"
             vtk_libs: "libvtk*.so"
             vtk_suffix: "/vtk-9.3/"
@@ -50,12 +51,12 @@ jobs:
             sed_i: "sed -i"
             env: "DUMMY=0"
             shells: "bash"
-          - os: "windows-2019"
-            vtk_libs: "vtk*.dll"
-            vtk_suffix: "/"
-            vtk_prefix: "Library/"
-            sed_i: "sed -i"
-            shells: "bash cmd.exe"
+          # - os: "windows-2019"
+          #   vtk_libs: "vtk*.dll"
+          #   vtk_suffix: "/"
+          #   vtk_prefix: "Library/"
+          #   sed_i: "sed -i"
+          #   shells: "bash cmd.exe"
 
     steps:
       - uses: actions/checkout@v4
