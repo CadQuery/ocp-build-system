@@ -995,6 +995,7 @@ jobs:
             PKG_NAME="cadquery_ocp_novtk"
             ${{ matrix.sed_i }} 's/cadquery-ocp/cadquery-ocp-novtk/g' pyproject.toml
             ${{ matrix.sed_i }} 's/cadquery_ocp/cadquery_ocp_novtk/g' pyproject.toml
+            ${{ matrix.sed_i }} 's/sources\"/sources (no VTK support)"/g' pyproject.toml
             ${{ matrix.sed_i }} 's/cadquery-ocp /cadquery-ocp-novtk /g' README.md # keep spaces
             ${{ matrix.sed_i }} '/Python wrapper for OCCT/a\Note: VTK is not supported with cadquery-ocp-novtk.' README.md
           fi
