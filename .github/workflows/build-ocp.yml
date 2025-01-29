@@ -1219,12 +1219,16 @@ jobs:
 
           cd build123d
           if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
-            git checkout 65ead1cce6a598095a93411953feff650ddf93fc
-            patch -p1 < ../patches/build123d-novtk.patch
+            pip install --no-deps ocpsvg svgelements
+            ${{ matrix.sed_i }} '/cadquery-ocp >/d; /ocpsvg/d' pyproject.toml
           fi
           pip install .
 
-          pytest tests -v -W ignore
+          if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
+            pytest tests -v -W ignore --ignore tests/test_direct_api/test_vtk_poly_data.py --ignore tests/test_direct_api/test_jupyter.py
+          else
+            pytest tests -v -W ignore
+          fi
 
       - name: Run cadquery tests
         if: matrix.use-vtk == 'vtk'
