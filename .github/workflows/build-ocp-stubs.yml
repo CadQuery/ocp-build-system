@@ -3,8 +3,8 @@ name: Build OCP stubs
 on: workflow_dispatch
 
 env:
-  OCP: 7.8.1.1
-  WHEEL: 7.8.1.1.post1
+  OCP: 7.8.1.2
+  WHEEL: 7.8.1.2
 
 jobs:
   stubs:
