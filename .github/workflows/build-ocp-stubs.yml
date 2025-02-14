@@ -53,6 +53,6 @@ jobs:
       - name: Upload cadquery_ocp stubs wheel
         uses: actions/upload-artifact@v4
         with:
-          name: cadquery-ocp-${{ env.WHEEL }}-stubs-cp${{ matrix.python-version }}
+          name: cadquery-ocp-${{ env.WHEEL }}-stubs
           path: pypi-stubs/dist/*.whl          
           
