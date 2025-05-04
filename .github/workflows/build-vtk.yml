@@ -15,13 +15,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-20.04", "macos-13", "macos-14", "windows-2019"]
+        os: ["ubuntu-20.04", "macos-13", "macos-14", "macos-15-arm64", "windows-2019"]
         python-version: ["3.13"]
         include:
           - os: "macos-13"
             sed_i: "sed -i '.bak'"
             shells: "bash"
           - os: "macos-14"
+            sed_i: "sed -i '.bak'"
+            shells: "bash"
+          - os: "macos-15-arm64"
             sed_i: "sed -i '.bak'"
             shells: "bash"
           - os: "ubuntu-20.04"
@@ -153,10 +156,10 @@ jobs:
         shell: cmd
         if: runner.os == 'Windows' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
         run: |
-          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-vtk 
+          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-vtk
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
-          cd VTK-${{ env.VTK }}\build          
+          cd VTK-${{ env.VTK }}\build
           cmake -G Ninja ^
                 -D VTK_VERSIONED_INSTALL=ON ^
                 -D VTK_CUSTOM_LIBRARY_SUFFIX="9.3" -DVTK_VERSION_SUFFIX="" ^
