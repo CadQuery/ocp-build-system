@@ -496,7 +496,7 @@ jobs:
         if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
         uses: mamba-org/setup-micromamba@v1
         with:
-          environment-file: environment-${{ matrix.python-version }}.yml
+          environment-file: environment-pywrap-${{ matrix.python-version }}.yml
           log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
@@ -506,7 +506,7 @@ jobs:
         shell: bash -l {0}
         id: cpu-count
         run: |
-          micromamba activate build-ocp
+          micromamba activate build-ocp-source
 
           cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
           echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
@@ -518,13 +518,15 @@ jobs:
         run: |
           set -euo pipefail
 
-          curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
-          sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
+          # curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
+          # sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
           sudo mkdir -p /opt/usr/local/
           sudo mkdir -p /usr/local/include
-          sudo ln -s /opt/MacOSX11.3.sdk/usr/include /opt/usr/local/include
-          sudo ln -s /opt/MacOSX11.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers /usr/local/include/OpenGL
-
+          # sudo ln -s /opt/MacOSX11.3.sdk/usr/include /opt/usr/local/include
+          # sudo ln -s /opt/MacOSX11.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers /usr/local/include/OpenGL
+          sudo ln -s /Library/Developer/CommandLineTools/SDKs/MacOSX15.sdk/usr/include/ /opt/usr/local/include
+          sudo ln -s /Library/Developer/CommandLineTools/SDKs/MacOSX15.sdk/System/Library/Frameworks/OpenGL.framework/Headers /usr/local/include/OpenGL
+          
           brew install gsed
 
       # - - - - - - - - - - - - - - - - - - - - -
@@ -554,20 +556,22 @@ jobs:
       # (env.PYWRAP=true)
       # - - - - - - - - - - - - - - - - - - - - -
 
-      - name: (All) Install Python prerequisites [PYWRAP=true]
-        if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
-        shell: bash -l {0}
-        run: |
-          set -euo pipefail
+      # - name: (All) Install Python prerequisites [PYWRAP=true]
+      #   if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      #   shell: bash -l {0}
+      #   run: |
+      #     set -euo pipefail
 
-          micromamba activate build-ocp
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief python-clang pyparsing
-            pip install "pybind11==${{ env.PYBIND11 }}.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
-          else
-            micromamba install -y py-lief
-            pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==20.1.5 pyparsing
-          fi
+      #     micromamba activate build-ocp-source
+      #     if [[ "$RUNNER_OS" == "Windows" ]]; then
+      #       micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief python-clang pyparsing
+      #       pip install "pybind11==${{ env.PYBIND11 }}.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
+      #     else
+      #       # pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==20.1.5 pyparsing
+      #       micromamba install -y "pybind11=${{ env.PYBIND11 }}.*" "cmake>3.24" ninja "clangdev=20.*" \ 
+      #                             "python-clang=20.*" joblib toml click jinja2 logzero pandas path \ 
+      #                             pyparsing schema tqdm toposort py-lief            
+      #     fi
 
       - name: (All) Clone OCP [PYWRAP=true]
         if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
@@ -590,7 +594,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          micromamba activate build-ocp
+          micromamba activate build-ocp-source
           cd OCP
 
           cmake -B new -S . -G Ninja -D N_PROC=${{ steps.cpu-count.outputs.cpu_count }} \
@@ -607,7 +611,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          micromamba activate build-ocp
+          micromamba activate build-ocp-source
 
           cd OCP
 
@@ -626,7 +630,7 @@ jobs:
         if: env.PYWRAP == 'true' && runner.os == 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
         shell: cmd
         run: |
-          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
+          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp-source
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
           cd OCP
