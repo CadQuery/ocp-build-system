@@ -459,25 +459,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
+        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
+        os: ["macos-15"]
         python-version: ["3.11"]
 
         include:
-          - os: "macos-13"
-            sed_i: "gsed -i"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
           - os: "macos-15"
             sed_i: "gsed -i"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-          - os: "ubuntu-22.04"
-            sed_i: "sed -i"
-            env: "DUMMY=0"
-            shells: "bash"
-          - os: "windows-2019"
-            sed_i: "sed -i"
-            shells: "bash cmd.exe"
+          # - os: "macos-13"
+          #   sed_i: "gsed -i"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          # - os: "ubuntu-22.04"
+          #   sed_i: "sed -i"
+          #   env: "DUMMY=0"
+          #   shells: "bash"
+          # - os: "windows-2019"
+          #   sed_i: "sed -i"
+          #   shells: "bash cmd.exe"
 
     steps:
       - uses: actions/checkout@v4
@@ -601,7 +602,8 @@ jobs:
         shell: bash -l {0}
         run: |
           set -euo pipefail
-
+          brew install tree
+          tree $HOME/opt/local/
           micromamba activate build-ocp
 
           cd OCP
