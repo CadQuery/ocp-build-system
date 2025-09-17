@@ -603,14 +603,8 @@ jobs:
         shell: bash -l {0}
         run: |
           set -euo pipefail
-          brew install tree
-          tree $HOME/opt/local/ | grep -v '.h' | grep -v '.hxx' | grep -v '.lxx' | grep -v '.pxx' | grep -v '.pch'
-          
-          cat $HOME/opt/local/vtk-${{ env.VTK }}/vtk-config.cmake
 
           micromamba activate build-ocp
-          
-          pip list
 
           cd OCP
 
@@ -644,6 +638,8 @@ jobs:
             -D CMAKE_CXX_STANDARD=17 ^
             -D CMAKE_PREFIX_PATH=%CONDA_PREFIX%\Library ^
             -D CMAKE_SHARED_LINKER_FLAGS="-L %USERPROFILE%\opt\local\vtk-${{ env.VTK }}\lib"
+
+          cmake --build .
 
       # - - - - - - - - - - - - - - - - - - - - -
       # Option 2: Download official OCP sources
