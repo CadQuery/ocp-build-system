@@ -562,10 +562,10 @@ jobs:
 
           micromamba activate build-ocp
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief=0.14.1 python-clang pyparsing
+            micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief python-clang pyparsing
             pip install "pybind11==${{ env.PYBIND11 }}.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
           else
-            micromamba install -y py-lief=0.14.1
+            micromamba install -y py-lief
             pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==15.0.7 pyparsing
           fi
 
@@ -694,18 +694,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
+        os: ["macos-15"]
+        # python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
 
         include:
-          - os: "macos-13"
-            delocate: delocate
-            plat: macosx_11_1_x86_64
-            sed_i: "gsed -i"
-            module: "OCP.*.so"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
           - os: "macos-15"
             delocate: delocate
             plat: macosx_11_1_arm64
@@ -713,20 +708,27 @@ jobs:
             module: "OCP.*.so"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-          - os: "ubuntu-22.04"
-            delocate: auditwheel patchelf
-            plat: manylinux_2_31_x86_64
-            sed_i: "sed -i"
-            compilers: ""
-            module: "OCP.*.so"
-            env: "DUMMY=0"
-            shells: "bash"
-          - os: "windows-2019"
-            delocate: delvewheel
-            plat: win_amd64
-            sed_i: "sed -i"
-            shells: "bash cmd.exe"
-            module: "OCP.*.pyd"
+          # - os: "macos-13"
+          #   delocate: delocate
+          #   plat: macosx_11_1_x86_64
+          #   sed_i: "gsed -i"
+          #   module: "OCP.*.so"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          # - os: "ubuntu-22.04"
+          #   delocate: auditwheel patchelf
+          #   plat: manylinux_2_31_x86_64
+          #   sed_i: "sed -i"
+          #   compilers: ""
+          #   module: "OCP.*.so"
+          #   env: "DUMMY=0"
+          #   shells: "bash"
+          # - os: "windows-2019"
+          #   delocate: delvewheel
+          #   plat: win_amd64
+          #   sed_i: "sed -i"
+          #   shells: "bash cmd.exe"
+          #   module: "OCP.*.pyd"
 
     steps:
       - uses: actions/checkout@v4
@@ -847,10 +849,10 @@ jobs:
 
           micromamba activate build-ocp
           if [[ "$RUNNER_OS" == "Windows" ]]; then
-            micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief=0.14.1 python-clang pyparsing
+            micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief python-clang pyparsing
             pip install "pybind11==${{ env.PYBIND11 }}.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
           else
-            micromamba install -y py-lief=0.14.1
+            micromamba install -y py-lief
             pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==15.0.7 pyparsing
           fi
 
