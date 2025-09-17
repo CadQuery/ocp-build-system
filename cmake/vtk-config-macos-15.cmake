@@ -2,7 +2,7 @@
 
 # Set VTK version
 set(VTK_MAJOR_VERSION 9)
-set(VTK_MINOR_VERSION 5)
+set(VTK_MINOR_VERSION 3)
 set(VTK_BUILD_VERSION 1)
 
 # Set full VTK version
