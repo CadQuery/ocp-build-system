@@ -85,7 +85,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-${{ matrix.python-version }}.yml
-          log-level: debug
+          log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
 
@@ -497,7 +497,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-${{ matrix.python-version }}.yml
-          log-level: debug
+          log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
 
@@ -747,7 +747,7 @@ jobs:
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-${{ matrix.python-version }}.yml
-          log-level: debug
+          log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
 
