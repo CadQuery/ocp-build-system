@@ -461,7 +461,7 @@ jobs:
       matrix:
         # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
         os: ["macos-15"]
-        python-version: ["3.11"]
+        python-version: ["3.13"]
 
         include:
           - os: "macos-15"
