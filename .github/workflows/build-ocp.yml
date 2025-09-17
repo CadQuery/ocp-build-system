@@ -603,7 +603,8 @@ jobs:
         run: |
           set -euo pipefail
           brew install tree
-          tree $HOME/opt/local/ | grep -v '.h' | grep -v '-hxx' | grep -v '-lxx' | grep -v '-pxx' | grep -v '-pch'
+          tree $HOME/opt/local/ | grep -v '.h' | grep -v '.hxx' | grep -v '.lxx' | grep -v '.pxx' | grep -v '.pch'
+
           micromamba activate build-ocp
 
           cd OCP
