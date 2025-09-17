@@ -48,7 +48,7 @@ jobs:
           #   shells: "bash"
           # - os: "ubuntu-22.04"
           #   vtk_libs: "libvtk*.so"
-          #   vtk_suffix: "/vtk-9.3/"
+          #   vtk_suffix: "/vtk-9.5/"
           #   vtk_prefix: ""
           #   sed_i: "sed -i"
           #   env: "DUMMY=0"
@@ -603,7 +603,7 @@ jobs:
         run: |
           set -euo pipefail
           brew install tree
-          tree $HOME/opt/local/
+          tree $HOME/opt/local/ | grep -v '.h' | grep -v '-hxx' | grep -v '-lxx' | grep -v '-pxx' | grep -v '-pch'
           micromamba activate build-ocp
 
           cd OCP
