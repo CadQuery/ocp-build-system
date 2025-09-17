@@ -268,26 +268,28 @@ jobs:
           OCCT=$(echo ${{ env.OCCT }} | tr '.' '_')
           git checkout -b V$OCCT tags/V$OCCT
 
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0001-cmake-Don-t-try-to-write-to-install-directory.-You-k.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0002-GeomPlate_BuildAveragePlane-BasePlan-Don-t-set-yvect.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0003-BRepFill_Filling-WireFromList-We-can-t-assume-that-a.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0004-BRepFill_Filling-Curve-constraints-confused-by-impli.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0005-BRepFill_Filling-Don-t-even-attempt-to-build-with-em.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0006-BRepOffset_Tool-TryProject-Check-return-of-BRepLib-B.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0007-ChFi3d_Builder-ChFi3d_ComputeCurves-set-tolreached-f.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0008-BRepLib-MakeEdge-Setting-closed-flag-of-generated-ed.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0009-BRepFill_CompatibleWires-segfault.-See-following.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0010-BRepFill_OffsetWire-segfault.-See-following.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0011-ChFiDS_FilSpine-Allow-usage-of-externally-assigned-l.patch
-          # disabled due to abi incompatibility
-          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0012-Allow-blending-of-faces-less-than-5-degrees.-See-fol.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0013-BRepFill_PipeShell-Fix-segfault-with-line-as-profile.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0015-build-Expand-preprocessor-conditional-on-non-standar.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0016-IntPatch_Intersection-Consider-intersection-of-a-clo.patch
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0017-ChFi3d_Builder-Fix-blend-across-seam.-See-following.patch
-          # see https://tracker.dev.opencascade.org/view.php?id=33576 and https://github.com/FreeCAD/FreeCAD/issues/9760
-          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0018-Fix-0033576-BRepTools_NurbsConvertModification-NewPo.patch
-                  
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0001-cmake-Don-t-try-to-write-to-install-directory.-You-k.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0002-GeomPlate_BuildAveragePlane-BasePlan-Don-t-set-yvect.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0003-BRepFill_Filling-WireFromList-We-can-t-assume-that-a.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0004-BRepFill_Filling-Curve-constraints-confused-by-impli.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0005-BRepFill_Filling-Don-t-even-attempt-to-build-with-em.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0006-BRepOffset_Tool-TryProject-Check-return-of-BRepLib-B.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0007-ChFi3d_Builder-ChFi3d_ComputeCurves-set-tolreached-f.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0008-BRepLib-MakeEdge-Setting-closed-flag-of-generated-ed.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0009-BRepFill_CompatibleWires-segfault.-See-following.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0010-BRepFill_OffsetWire-segfault.-See-following.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0011-ChFiDS_FilSpine-Allow-usage-of-externally-assigned-l.patch
+          # # disabled due to abi incompatibility
+          # # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0012-Allow-blending-of-faces-less-than-5-degrees.-See-fol.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0013-BRepFill_PipeShell-Fix-segfault-with-line-as-profile.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0015-build-Expand-preprocessor-conditional-on-non-standar.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0016-IntPatch_Intersection-Consider-intersection-of-a-clo.patch
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0017-ChFi3d_Builder-Fix-blend-across-seam.-See-following.patch
+          # # see https://tracker.dev.opencascade.org/view.php?id=33576 and https://github.com/FreeCAD/FreeCAD/issues/9760
+          # patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0018-Fix-0033576-BRepTools_NurbsConvertModification-NewPo.patch
+
+          patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/switch-vtk-freetype-cmake-order.patch
+
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             echo vtkCommonTransforms >> src/TKIVtk/EXTERNLIB
             echo vtkCommonMath >> src/TKIVtk/EXTERNLIB
