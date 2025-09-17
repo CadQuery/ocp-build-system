@@ -1,0 +1,61 @@
+From b705872446e7aad2b652c0b48f49a63027a91cbb Mon Sep 17 00:00:00 2001
+From: blobfish <blobfish@gmx.com>
+Date: Thu, 20 Jul 2023 11:35:32 -0400
+Subject: [PATCH 17/18] ChFi3d_Builder: Fix blend across seam. See following:
+
+    bfb# 000019
+
+    ChFi3d_Builder::PerformOneCorner: Fixing calls to ComputeCurve2d with incorrect face variable
+    ChFi3d_Builder::PerformOneCorner: Adding a vertex tolerance calculation for seam intersection vertex
+    ChFi3d_Builder::PerformOneCorner: Adding a call to ChFi3d_Recale to recalibrate points across period boundary
+
+    results of this change through occt public regression tests:
+      testgrid blend
+        No regressions
+        Total cases: 13 BAD, 433 OK, 29 SKIPPED
+        Elapsed time: 0 Hours 3 Minutes 26.0913 Seconds
+---
+ src/ChFi3d/ChFi3d_Builder_C1.cxx | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
+
+diff --git a/src/ChFi3d/ChFi3d_Builder_C1.cxx b/src/ChFi3d/ChFi3d_Builder_C1.cxx
+index edad09233a..bb65294327 100644
+--- a/src/ChFi3d/ChFi3d_Builder_C1.cxx
++++ b/src/ChFi3d/ChFi3d_Builder_C1.cxx
+@@ -1217,6 +1217,7 @@ void ChFi3d_Builder::PerformOneCorner(const Standard_Integer Index,
+       throw Standard_ConstructionError ("Failed to get p-curve of edge");
+     pop1 = Hc->Value(parVtx);
+     pop2 = Fiop.PCurveOnFace()->Value(Fiop.Parameter(isfirst));
++    ChFi3d_Recale(Bop,pop1,pop2,0);
+     Hc = BRep_Tool::CurveOnSurface(Arcprol,Fv,Ubid,Ubid);
+     if (Hc.IsNull()) 
+       throw Standard_ConstructionError ("Failed to get p-curve of edge");
+@@ -1263,7 +1264,10 @@ void ChFi3d_Builder::PerformOneCorner(const Standard_Integer Index,
+ 	    par1=extCC.ParameterOnE1(i);
+ 	    par2=extCC.ParameterOnE2(i);
+ 	    gp_Pnt P1=extCC.PointOnE1(i);
+-	    TopOpeBRepDS_Point tpoint(P1,1.e-4);
++	    gp_Pnt P2=extCC.PointOnE2(i);
++	    gp_XYZ projection = P2.Coord() - P1.Coord();
++	    gp_Pnt center = projection * 0.5 + P1.Coord();
++	    TopOpeBRepDS_Point tpoint(center, Max(projection.Modulus(), Precision::Confusion()));
+ 	    indpt=DStr.AddPoint(tpoint);
+ 	    intcouture=Standard_True;
+ 	    curv1 = new Geom_TrimmedCurve(zob3d,Udeb,par2);
+@@ -1280,11 +1284,11 @@ void ChFi3d_Builder::PerformOneCorner(const Standard_Integer Index,
+ 
+ // interference of curv1 and curv2 on Ishape
+       Et = TopAbs::Reverse(TopAbs::Compose(OVtx,OArcprolv));
+-      ComputeCurve2d(curv1,Fop,c2d1);
++      ComputeCurve2d(curv1,Fv,c2d1);
+       Handle(TopOpeBRepDS_SurfaceCurveInterference)
+ 	InterFv = ChFi3d_FilCurveInDS(Icurv1,IShape,/*zob2dv*/c2d1,Et);
+       DStr.ChangeShapeInterferences(IShape).Append(InterFv);
+-      ComputeCurve2d(curv2,Fop,c2d2);
++      ComputeCurve2d(curv2,Fv,c2d2);
+       InterFv = ChFi3d_FilCurveInDS(Icurv2,IShape,/*zob2dv*/c2d2,Et);
+       DStr.ChangeShapeInterferences(IShape).Append(InterFv);
+ 
+-- 
+2.45.0
+

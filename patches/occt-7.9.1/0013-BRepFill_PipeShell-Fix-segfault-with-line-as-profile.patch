@@ -1,0 +1,42 @@
+From 153d7dd9ff3779f5d007db43d1cbafb957c71799 Mon Sep 17 00:00:00 2001
+From: blobfish <blobfish@gmx.com>
+Date: Tue, 12 Jul 2022 10:46:39 -0400
+Subject: [PATCH 13/18] BRepFill_PipeShell: Fix segfault with line as profile
+ and circle as spine. See following:
+
+    bfb# 000007
+
+    Extrema_ExtCC: Points: Add mypoints to range check to prevent segfaults.
+    GeomFill_SectionPlacement: Perform: Extrema_ExtCC adds a distance but not points in parallel cases.
+        So we nned to add a parallel check before trying to access non-existent points.
+
+    results of this change through occt public regression tests:
+        testgrid prism
+            No regressions
+            Total cases: 1 OK
+        testgrid pipe
+            No regressions
+            Total cases: 5 BAD, 152 OK, 171 SKIPPED
+        testgrid thrusection
+            No regressions
+            Total cases: 25 BAD, 309 OK
+---
+ src/Extrema/Extrema_ExtCC.cxx              | 2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/src/Extrema/Extrema_ExtCC.cxx b/src/Extrema/Extrema_ExtCC.cxx
+index 06481b5539..aa19ebfb9f 100644
+--- a/src/Extrema/Extrema_ExtCC.cxx
++++ b/src/Extrema/Extrema_ExtCC.cxx
+@@ -358,7 +358,7 @@ void Extrema_ExtCC::Points(const Standard_Integer N,
+ 			    Extrema_POnCurv& P1,
+ 			    Extrema_POnCurv& P2) const
+ {
+-  if (N < 1 || N > NbExt())
++  if (N < 1 || N > NbExt() || mypoints.Length() < 2 * N)
+   {
+     throw Standard_OutOfRange();
+   }
+-- 
+2.45.0
+

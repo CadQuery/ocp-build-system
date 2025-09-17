@@ -1,0 +1,94 @@
+From a050c0eaa59f6b37744ccb3325274613504b95a2 Mon Sep 17 00:00:00 2001
+From: blobfish <blobfish@gmx.com>
+Date: Wed, 22 Jun 2022 15:13:54 -0400
+Subject: [PATCH 11/18] ChFiDS_FilSpine: Allow usage of externally assigned law
+ curve. See following:
+
+    bfb# 000005
+
+    SetRadius: Check law type and wrap into composite accordingly
+    AppendElSpine: Only call Computelaw if we have parandrad data
+    IsConstant: Return false if parandrad is empty.
+    SetRadius: Law wasn't getting added to laws member
+    Reset: Only clear laws if we have parandrad data. This allows us to keep the externally assigned law.
+    Reset: Don't access an empty parandrad
+
+    results of this change through occt public regression tests:
+        testgrid blend
+            No regressions
+            Total cases: 13 BAD, 433 OK, 29 SKIPPED
+---
+ src/ChFiDS/ChFiDS_FilSpine.cxx | 30 +++++++++++++++++++++++-------
+ 1 file changed, 23 insertions(+), 7 deletions(-)
+
+diff --git a/src/ChFiDS/ChFiDS_FilSpine.cxx b/src/ChFiDS/ChFiDS_FilSpine.cxx
+index bfd3538257..233e74d92f 100644
+--- a/src/ChFiDS/ChFiDS_FilSpine.cxx
++++ b/src/ChFiDS/ChFiDS_FilSpine.cxx
+@@ -54,14 +54,16 @@ ChFiDS_Spine(Tol)
+ void ChFiDS_FilSpine::Reset(const Standard_Boolean AllData)
+ {
+   ChFiDS_Spine::Reset(AllData);
+-  laws.Clear();
++  if(!parandrad.IsEmpty())
++    laws.Clear();
+   if(AllData)
+     parandrad.Clear();
+   else //Complete parandrad
+     {
+       Standard_Real spinedeb = FirstParameter();
+       Standard_Real spinefin = LastParameter();
+-
++      if (parandrad.IsEmpty())
++        return;
+       gp_XY FirstUandR = parandrad.First();
+       gp_XY LastUandR  = parandrad.Last();
+       if (Abs( spinedeb - FirstUandR.X() ) > gp::Resolution())
+@@ -225,9 +227,17 @@ void  ChFiDS_FilSpine::SetRadius(const Handle(Law_Function)& C,
+ 				 const Standard_Integer      /*IinC*/)
+ {
+   splitdone = Standard_False;
+-  Handle(Law_Composite) prout = new Law_Composite();
+-  Law_Laws& lst = prout->ChangeLaws();
+-  lst.Append(C);
++  if (dynamic_cast<const Law_Composite*>(C.get()))
++  {
++    laws.Append(C);
++  }
++  else
++  {
++    Handle(Law_Composite) prout = new Law_Composite();
++    Law_Laws& lst = prout->ChangeLaws();
++    lst.Append(C);
++    laws.Append(prout);
++  }
+   parandrad.Clear();
+ }
+ 
+@@ -260,6 +270,9 @@ Standard_Boolean  ChFiDS_FilSpine::IsConstant()const
+ 
+ Standard_Boolean  ChFiDS_FilSpine::IsConstant(const Standard_Integer IE)const 
+ {
++  if (parandrad.IsEmpty())
++    return Standard_False;
++  
+   Standard_Real Uf = FirstParameter(IE);
+   Standard_Real Ul = LastParameter(IE);
+ 
+@@ -369,8 +382,11 @@ void ChFiDS_FilSpine::AppendElSpine(const Handle(ChFiDS_ElSpine)& Els)
+ 
+ void ChFiDS_FilSpine::AppendLaw(const Handle(ChFiDS_ElSpine)& Els)
+ {
+-  Handle(Law_Composite) l = ComputeLaw(Els);
+-  laws.Append(l);
++  if (!parandrad.IsEmpty())
++  {
++    Handle(Law_Composite) l = ComputeLaw(Els);
++    laws.Append(l);
++  }
+ }
+ 
+ static void mklaw(Law_Laws&                  res, 
+-- 
+2.45.0
+

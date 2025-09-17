@@ -1,0 +1,25 @@
+From cd5798fb959ee0ee799c9be9478be86e8cffac2c Mon Sep 17 00:00:00 2001
+From: blobfish <blobfish@gmx.com>
+Date: Wed, 9 Feb 2022 18:53:33 -0500
+Subject: [PATCH 08/18] BRepLib: MakeEdge: Setting closed flag of generated
+ edge
+
+---
+ src/BRepLib/BRepLib_MakeEdge.cxx | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/BRepLib/BRepLib_MakeEdge.cxx b/src/BRepLib/BRepLib_MakeEdge.cxx
+index f1ddbdcefb..d2fe99bac7 100644
+--- a/src/BRepLib/BRepLib_MakeEdge.cxx
++++ b/src/BRepLib/BRepLib_MakeEdge.cxx
+@@ -916,6 +916,7 @@ void  BRepLib_MakeEdge::Init(const Handle(Geom_Curve)& CC,
+   }
+   B.Range(E,p1,p2);
+   B.Degenerated(E, degenerated);
++  E.Closed(closed);
+ 
+   myError = BRepLib_EdgeDone;
+   Done();
+-- 
+2.45.0
+
