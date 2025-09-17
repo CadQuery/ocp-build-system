@@ -462,6 +462,7 @@ jobs:
         # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
         os: ["macos-15"]
         python-version: ["3.13"]
+        use-vtk: ["vtk"]
 
         include:
           - os: "macos-15"
@@ -604,8 +605,12 @@ jobs:
           set -euo pipefail
           brew install tree
           tree $HOME/opt/local/ | grep -v '.h' | grep -v '.hxx' | grep -v '.lxx' | grep -v '.pxx' | grep -v '.pch'
+          
+          cat $HOME/opt/local/vtk-${{ env.VTK }}/vtk-config.cmake
 
           micromamba activate build-ocp
+          
+          pip list
 
           cd OCP
 
