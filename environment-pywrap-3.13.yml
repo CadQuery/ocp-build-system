@@ -1,0 +1,22 @@
+name: build-ocp-source
+channels:
+  - conda-forge
+dependencies:
+  - pybind11=2.13.*
+  - python=3.13
+  - cmake>3.24
+  - ninja
+  - clangdev=20.*
+  - python-clang=20.*
+  - joblib
+  - toml
+  - click
+  - jinja2
+  - logzero
+  - pandas
+  - path
+  - pyparsing
+  - schema
+  - tqdm
+  - toposort
+  - py-lief
