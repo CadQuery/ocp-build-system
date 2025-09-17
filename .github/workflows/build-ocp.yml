@@ -3,12 +3,13 @@ name: Build OCP with pypi VTK V2
 on: workflow_dispatch
 
 env:
-  OCP: 7.8.1.2
-  WHEEL: 7.8.1.2
-  VTK: 9.3.1
-  VTK_MAJOR: 9.3
-  OCCT: 7.8.1
-  PYWRAP: false
+  OCP: 7.9.1.0
+  WHEEL: 7.9.1.0
+  VTK: 9.5.1
+  VTK_MAJOR: 9.5
+  OCCT: 7.9.1
+  PYBIND11: 2.13
+  PYWRAP: true
   VTK313_URL: https://github.com/CadQuery/ocp-build-system/releases/download/v7.8.1.0-dev
 
 jobs:
@@ -24,38 +25,40 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
+        os: ["macos-15"]
+        # python-version: ["3.10", "3.11", "3.12", "3.13"]
+        python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
 
         include:
-          - os: "macos-13"
+          - os: "macos-15"
             vtk_libs: ".dylibs/libvtk*.dylib"
             vtk_suffix: "/"
             vtk_prefix: ""
             sed_i: "gsed -i"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-          - os: "macos-14"
-            vtk_libs: ".dylibs/libvtk*.dylib"
-            vtk_suffix: "/"
-            vtk_prefix: ""
-            sed_i: "gsed -i"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-          - os: "ubuntu-20.04"
-            vtk_libs: "libvtk*.so"
-            vtk_suffix: "/vtk-9.3/"
-            vtk_prefix: ""
-            sed_i: "sed -i"
-            env: "DUMMY=0"
-            shells: "bash"
-          - os: "windows-2019"
-            vtk_libs: "vtk*.dll"
-            vtk_suffix: "/"
-            vtk_prefix: "Library/"
-            sed_i: "sed -i"
-            shells: "bash cmd.exe"
+          # - os: "macos-13"
+          #   vtk_libs: ".dylibs/libvtk*.dylib"
+          #   vtk_suffix: "/"
+          #   vtk_prefix: ""
+          #   sed_i: "gsed -i"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          # - os: "ubuntu-22.04"
+          #   vtk_libs: "libvtk*.so"
+          #   vtk_suffix: "/vtk-9.3/"
+          #   vtk_prefix: ""
+          #   sed_i: "sed -i"
+          #   env: "DUMMY=0"
+          #   shells: "bash"
+          # - os: "windows-2019"
+          #   vtk_libs: "vtk*.dll"
+          #   vtk_suffix: "/"
+          #   vtk_prefix: "Library/"
+          #   sed_i: "sed -i"
+          #   shells: "bash cmd.exe"
 
     steps:
       - uses: actions/checkout@v4
@@ -126,28 +129,28 @@ jobs:
       #                VTK SDK
       # - - - - - - - - - - - - - - - - - - - - -
 
-      - name: Download wheel artifact
-        if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
-        shell: bash -l {0}
-        run: |
-          if [[ "${{ matrix.os }}" == "macos-14" ]]; then
-            echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
+      # - name: Download wheel artifact
+      #   if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
+      #   shell: bash -l {0}
+      #   run: |
+      #     if [[ "${{ matrix.os }}" == "macos-15" ]]; then
+      #       echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
+      #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
 
-          elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl
+      #     elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
+      #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
+      #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl
 
-          elif [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl
+      #     elif [[ "${{ matrix.os }}" == "ubuntu-22.04" ]]; then
+      #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
+      #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl
 
-          else 
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl
+      #     else 
+      #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
+      #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl
 
-          fi
-          ls -l
+      #     fi
+      #     ls -l
 
       - name: (All) Install VTK SDK include files
         if: matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
@@ -183,18 +186,21 @@ jobs:
           micromamba create -y -n vtk-$PY_VER python=$PY_VER
           micromamba activate vtk-$PY_VER
 
-          if [[ $PY_VER == 3.13 ]]; then
-            pip install cadquery_vtk-9.3.1*.whl
-          else
-            pip install vtk==${{ env.VTK }}
-          fi
+          # if [[ $PY_VER == 3.13 ]]; then
+          #   pip install cadquery_vtk-9.3.1*.whl
+          # else
+          #   pip install vtk==${{ env.VTK }}
+          # fi
+
+          pip install vtk==${{ env.VTK }}
 
           DEST=~/opt/local/vtk-${{ env.VTK }}
 
           cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtkmodules/${{ matrix.vtk_libs }} $DEST/lib/
           cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtk.py $DEST
 
-          if [[ "$RUNNER_OS" == "Linux" && "$PY_VER" != "3.13" ]]; then
+          # if [[ "$RUNNER_OS" == "Linux" && "$PY_VER" != "3.13" ]]; then
+          if [[ "$RUNNER_OS" == "Linux" ]]; then
             cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtk.libs/* $DEST/lib/
           fi
 
@@ -211,13 +217,16 @@ jobs:
           micromamba create -y -n vtk-$PY_VER python=$PY_VER
           micromamba activate vtk-$PY_VER
 
-          if [[ $PY_VER == 3.13 ]]; then
-            pip install cadquery_vtk-9.3.1*.whl
-            PKG=cadquery_vtk
-          else
-            pip install vtk==${{ env.VTK }}
-            PKG=vtk
-          fi
+          # if [[ $PY_VER == 3.13 ]]; then
+          #   pip install cadquery_vtk-9.3.1*.whl
+          #   PKG=cadquery_vtk
+          # else
+          #   pip install vtk==${{ env.VTK }}
+          #   PKG=vtk
+          # fi
+
+          pip install vtk==${{ env.VTK }}
+          PKG=vtk
 
           DEST=~/opt/local/vtk-${{ env.VTK }}
 
@@ -447,7 +456,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
+        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
         python-version: ["3.11"]
 
         include:
@@ -455,11 +464,11 @@ jobs:
             sed_i: "gsed -i"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-          - os: "macos-14"
+          - os: "macos-15"
             sed_i: "gsed -i"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-          - os: "ubuntu-20.04"
+          - os: "ubuntu-22.04"
             sed_i: "sed -i"
             env: "DUMMY=0"
             shells: "bash"
@@ -549,10 +558,10 @@ jobs:
           micromamba activate build-ocp
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief=0.14.1 python-clang pyparsing
-            pip install "pybind11==2.12.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
+            pip install "pybind11==${{ env.PYBIND11 }}.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
           else
             micromamba install -y py-lief=0.14.1
-            pip install "pybind11==2.12.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==15.0.7 pyparsing
+            pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==15.0.7 pyparsing
           fi
 
       - name: (All) Clone OCP [PYWRAP=true]
@@ -638,7 +647,7 @@ jobs:
 
           rm -fr OCP  # remove the cached sources again
 
-          if [[ ${{ matrix.os }} == "macos-13" || ${{ matrix.os }} == "macos-14" ]]; then
+          if [[ ${{ matrix.os }} == "macos-13" || ${{ matrix.os }} == "macos-15" ]]; then
             curl -L -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_macOS-latest.zip
           else
             curl -L -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_${{ matrix.os }}.zip
@@ -674,7 +683,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
+        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
         use-vtk: ["vtk", "novtk"]
 
@@ -686,14 +695,14 @@ jobs:
             module: "OCP.*.so"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-          - os: "macos-14"
+          - os: "macos-15"
             delocate: delocate
             plat: macosx_11_1_arm64
             sed_i: "gsed -i"
             module: "OCP.*.so"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-          - os: "ubuntu-20.04"
+          - os: "ubuntu-22.04"
             delocate: auditwheel patchelf
             plat: manylinux_2_31_x86_64
             sed_i: "sed -i"
@@ -828,10 +837,10 @@ jobs:
           micromamba activate build-ocp
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief=0.14.1 python-clang pyparsing
-            pip install "pybind11==2.12.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
+            pip install "pybind11==${{ env.PYBIND11 }}.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
           else
             micromamba install -y py-lief=0.14.1
-            pip install "pybind11==2.12.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==15.0.7 pyparsing
+            pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==15.0.7 pyparsing
           fi
 
       - name: (Linux) Generate OCP build files and build OCP
@@ -1171,28 +1180,28 @@ jobs:
           micromamba activate test
           pip install pytest docutils ipython
 
-      - name: Download wheel artifact
-        if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk'
-        shell: bash -l {0}
-        run: |
-          if [[ "${{ matrix.os }}" == "macos-14" ]]; then
-            echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
+      # - name: Download wheel artifact
+      #   if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk'
+      #   shell: bash -l {0}
+      #   run: |
+      #     if [[ "${{ matrix.os }}" == "macos-15" ]]; then
+      #       echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
+      #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
 
-          elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_x86_64.whl
+      #     elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
+      #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
+      #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_x86_64.whl
 
-          elif [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-linux_x86_64.whl
+      #     elif [[ "${{ matrix.os }}" == "ubuntu-22.04" ]]; then
+      #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
+      #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-linux_x86_64.whl
 
-          else 
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-win_amd64.whl
+      #     else 
+      #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
+      #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-win_amd64.whl
 
-          fi
-          ls -l
+      #     fi
+      #     ls -l
 
       - name: Install VTK and OCP wheel
         shell: bash -l {0}
