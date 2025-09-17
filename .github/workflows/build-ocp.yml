@@ -566,7 +566,7 @@ jobs:
             pip install "pybind11==${{ env.PYBIND11 }}.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
           else
             micromamba install -y py-lief
-            pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==15.0.7 pyparsing
+            pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==20.1.5 pyparsing
           fi
 
       - name: (All) Clone OCP [PYWRAP=true]
