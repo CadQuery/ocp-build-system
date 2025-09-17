@@ -598,8 +598,9 @@ jobs:
               -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-vtk/lib/cmake/opencascade \
               -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())")
           
+          cd new
           cmake --build .
-          
+
       - name: (Mac) Generate OCP source [PYWRAP=true]
         if: env.PYWRAP == 'true' && runner.os == 'macOS' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
@@ -618,6 +619,7 @@ jobs:
               -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
               -D CMAKE_OSX_SYSROOT=/opt/MacOSX11.3.sdk
 
+          cd new
           cmake --build .
 
       - name: (Windows) Generate OCP source [PYWRAP=true]
@@ -643,6 +645,7 @@ jobs:
             -D CMAKE_PREFIX_PATH=%CONDA_PREFIX%\Library ^
             -D CMAKE_SHARED_LINKER_FLAGS="-L %USERPROFILE%\opt\local\vtk-${{ env.VTK }}\lib"
 
+          cd new
           cmake --build .
 
       # - - - - - - - - - - - - - - - - - - - - -
