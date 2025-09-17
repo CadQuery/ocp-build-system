@@ -337,7 +337,8 @@ jobs:
               -D VTK_RENDERING_BACKEND=OpenGL2 \
               -D 3RDPARTY_VTK_INCLUDE_DIR=$HOME/opt/local/vtk-${{ env.VTK }}/include${{ matrix.vtk_suffix }} \
               -D 3RDPARTY_VTK_LIBRARY_DIR=$HOME/opt/local/vtk-${{ env.VTK }}/lib/ \
-              -D CMAKE_CXX_STANDARD_LIBRARIES="-lvtkCommonMath-${{ env.VTK_MAJOR }} -lvtkCommonTransforms-${{ env.VTK_MAJOR }} -lvtksys-${{ env.VTK_MAJOR }} -lvtkCommonExecutionModel-${{ env.VTK_MAJOR }} -lvtkCommonDataModel-${{ env.VTK_MAJOR }}"
+              -D CMAKE_CXX_STANDARD_LIBRARIES="-lvtkCommonMath -lvtkCommonTransforms -lvtksys -lvtkCommonExecutionModel -lvtkCommonDataModel"
+              # -D CMAKE_CXX_STANDARD_LIBRARIES="-lvtkCommonMath-${{ env.VTK_MAJOR }} -lvtkCommonTransforms-${{ env.VTK_MAJOR }} -lvtksys-${{ env.VTK_MAJOR }} -lvtkCommonExecutionModel-${{ env.VTK_MAJOR }} -lvtkCommonDataModel-${{ env.VTK_MAJOR }}"
 
               # Patch build file to use VTK libraries with "${{ env.VTK_MAJOR }}" suffix
               # for l in vtkCommonCore  vtkRenderingCore  vtkRenderingFreeType  vtkFiltersGeneral  vtkInteractionStyle  vtkRenderingOpenGL2; do
