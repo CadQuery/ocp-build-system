@@ -862,6 +862,7 @@ jobs:
             VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
           else
             cd OCP
+            cat CMakeLists.txt
             patch -p1 < ../../patches/no-vtk.patch
             cd ..
             VTK_DIR=""
@@ -1252,11 +1253,12 @@ jobs:
 
           micromamba activate test
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-            if [[ ${{ matrix.python-version }} == 3.13 ]]; then
-              pip install ./cadquery_vtk*.whl
-            else
-              pip install vtk==${{ env.VTK }}
-            fi
+            # if [[ ${{ matrix.python-version }} == 3.13 ]]; then
+            #   pip install ./cadquery_vtk*.whl
+            # else
+            #   pip install vtk==${{ env.VTK }}
+            # fi
+            pip install vtk==${{ env.VTK }}
           fi
           pip install pypi/wheel/*.whl
 
@@ -1323,7 +1325,7 @@ jobs:
       # - - -
 
       - name: Uninstall test
-        if: matrix.python-version != '3.13'
+        # if: matrix.python-version != '3.13'
         shell: bash -l {0}
         run: |
           set -eo pipefail
