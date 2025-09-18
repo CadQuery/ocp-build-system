@@ -794,7 +794,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          cd OCP
+          cd OCP/new
           rm OCP/IVtk*
           for module in IVtk IVtkOCC IVtkTools IVtkVTK; do
             ${{ matrix.sed_i }} '/register_IVtk/d' OCP/OCP.cpp
