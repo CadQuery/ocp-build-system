@@ -873,7 +873,7 @@ jobs:
               -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib/cmake/opencascade \
               -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
               -D CMAKE_CXX_STANDARD=17 \
-              -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -D_GLIBCXX_USE_CXX11_ABI=0 -fvisibility=hidden" \
+              -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -D_GLIBCXX_USE_CXX11_ABI=0 -fvisibility=hidden -w" \
               -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
               -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
 
@@ -916,7 +916,7 @@ jobs:
               -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ \
               -D CMAKE_BUILD_TYPE=Release \
               -D CMAKE_OSX_DEPLOYMENT_TARGET="11.1" \
-              -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden" \
+              -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w" \
               $VTK_DIR \
               -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib/cmake/opencascade \
               -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
@@ -973,6 +973,7 @@ jobs:
             -D Python3_FIND_STRATEGY=LOCATION ^
             -D Python3_ROOT_DIR=%CONDA_PREFIX% ^
             -D CMAKE_LINKER=lld-link.exe ^
+            -D CMAKE_CXX_FLAGS="/W0" ^
             %VTK_DIR% ^
             -D OpenCASCADE_DIR=%USERPROFILE%\opt\local\occt-${{ env.OCCT }}-${{ matrix.use-vtk }}\cmake ^
             -D pybind11_DIR=%pybind11_DIR%
@@ -1012,15 +1013,18 @@ jobs:
           pip install build wheel ${{ matrix.delocate }}
 
           cd pypi
+          ${{ matrix.sed_i }} 's/X\.X\.X\.X/${{ env.WHEEL }}/g' filename
           cp ../OCP/build/${{ matrix.module }} .
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
             PKG_NAME="cadquery_ocp"
-            if [[ ${{ matrix.python-version }} == 3.13 ]]; then
-              ${{ matrix.sed_i }} '/requires-python/a\dependencies = [ "cadquery_vtk==${{ env.VTK }}" ]' pyproject.toml
-            else
-              ${{ matrix.sed_i }} '/requires-python/a\dependencies = [ "vtk==${{ env.VTK }}" ]' pyproject.toml
-            fi
+            # if [[ ${{ matrix.python-version }} == 3.13 ]]; then
+            #   ${{ matrix.sed_i }} '/requires-python/a\dependencies = [ "cadquery_vtk==${{ env.VTK }}" ]' pyproject.toml
+            # else
+            #   ${{ matrix.sed_i }} '/requires-python/a\dependencies = [ "vtk==${{ env.VTK }}" ]' pyproject.toml
+            # fi
+
+            ${{ matrix.sed_i }} '/requires-python/a\dependencies = [ "vtk==${{ env.VTK }}" ]' pyproject.toml
           else
             PKG_NAME="cadquery_ocp_novtk"
             ${{ matrix.sed_i }} 's/cadquery-ocp/cadquery-ocp-novtk/g' pyproject.toml
