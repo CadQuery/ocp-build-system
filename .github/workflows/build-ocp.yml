@@ -833,7 +833,7 @@ jobs:
         if: steps.cache-ocp-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate build-ocp
           if [[ "$RUNNER_OS" == "Windows" ]]; then
