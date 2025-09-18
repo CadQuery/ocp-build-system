@@ -856,6 +856,8 @@ jobs:
           micromamba activate build-ocp
 
           cd OCP
+          
+          mv new/OCP .
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
             VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
@@ -896,6 +898,8 @@ jobs:
           micromamba activate build-ocp
 
           cd OCP
+
+          mv new/OCP .
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
             export LDFLAGS="-L$HOME/opt/local/vtk-${{ env.VTK }}/lib"
@@ -938,6 +942,8 @@ jobs:
           PATH="C:\Program Files\Git\usr\bin";%PATH%
 
           cd OCP
+
+          mv new/OCP .
 
           set pybind11_DIR="%CONDA_PREFIX%\Lib\site-packages\pybind11\share\cmake\pybind11"
 
