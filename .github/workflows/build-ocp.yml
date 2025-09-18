@@ -882,7 +882,7 @@ jobs:
             for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \
                      libvtkRenderingCore  libvtkRenderingFreeType  libvtkFiltersGeneral \
                      libvtkInteractionStyle  libvtkRenderingOpenGL2 \
-                     libvtkWrappingPythonCore{{ matrix.python-version }}; do
+                     libvtkWrappingPythonCore${{ matrix.python-version }}; do
                 ${{ matrix.sed_i }} "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
             done
           fi
@@ -928,7 +928,7 @@ jobs:
             for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \
                      libvtkRenderingCore  libvtkRenderingFreeType  libvtkFiltersGeneral \
                      libvtkInteractionStyle  libvtkRenderingOpenGL2 \
-                     libvtkWrappingPythonCore{{ matrix.python-version }}; do
+                     libvtkWrappingPythonCore${{ matrix.python-version }}; do
                 ${{ matrix.sed_i }} "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
             done
           fi

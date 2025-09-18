@@ -7,6 +7,7 @@ dependencies:
   - pybind11=2.13.*
   - cmake >3.24
   - ninja
-  - cxx-compiler
+  - clang==15.0.7
+  - llvmdev==15.0.7
   - tbb-devel
   - pybind11-stubgen
