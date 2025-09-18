@@ -1,9 +1,9 @@
---- CMakeLists.txt	2025-09-18 18:05:24
-+++ CMakeLists.txt	2025-09-18 18:05:45
-@@ -14,16 +14,6 @@
- SET(PYTHON_SP_DIR "site-packages" CACHE PATH "Python site-packages directory (for installing)")
+--- CMakeLists.txt	2025-09-18 18:49:41
++++ CMakeLists.txt.patched	2025-09-18 18:50:17
+@@ -4,15 +4,6 @@
 
- find_package( pybind11 REQUIRED )
+
+ find_package( Python REQUIRED COMPONENTS Development Interpreter)
 -find_package( VTK REQUIRED
 -  COMPONENTS
 -    WrappingPythonCore
@@ -13,16 +13,17 @@
 -    CommonExecutionModel
 -    freetype
 -)
--message(STATUS "VTK ${VTK_VERSION} found")
+ find_package( pybind11 REQUIRED )
  find_package( OpenCASCADE REQUIRED )
 
- include_directories( ${PROJECT_SOURCE_DIR} )
-@@ -34,7 +24,7 @@
- target_include_directories( OCP PRIVATE ${OpenCASCADE_INCLUDE_DIR} )
-
- target_link_libraries( OCP PRIVATE ${OpenCASCADE_LIBRARIES} )
--target_link_libraries( OCP PRIVATE pybind11::pybind11 VTK::WrappingPythonCore VTK::RenderingCore VTK::CommonDataModel VTK::CommonExecutionModel)
-+target_link_libraries( OCP PRIVATE pybind11::pybind11)
-
+@@ -24,10 +15,6 @@
+   ${OpenCASCADE_LIBRARIES}
+   Python::Module
+   pybind11::pybind11
+-  VTK::WrappingPythonCore
+-  VTK::RenderingCore
+-  VTK::CommonDataModel
+-  VTK::CommonExecutionModel
+   )
  set_target_properties( OCP
                         PROPERTIES
