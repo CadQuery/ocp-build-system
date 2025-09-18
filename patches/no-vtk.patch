@@ -1,14 +1,11 @@
-diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 2cf2d390..0ef39316 100644
---- a/CMakeLists.txt
-+++ b/CMakeLists.txt
-@@ -5,18 +5,6 @@ set( N_PROC 2 CACHE STRING "Number of processes used for generating code")
+--- CMakeLists.txt	2025-09-18 18:05:24
++++ CMakeLists.txt	2025-09-18 18:05:45
+@@ -14,16 +14,6 @@
+ SET(PYTHON_SP_DIR "site-packages" CACHE PATH "Python site-packages directory (for installing)")
 
-
- find_package( LLVM REQUIRED )
+ find_package( pybind11 REQUIRED )
 -find_package( VTK REQUIRED
 -  COMPONENTS
--    CommonCore
 -    WrappingPythonCore
 -    RenderingCore
 -    RenderingOpenGL2
@@ -16,30 +13,16 @@ index 2cf2d390..0ef39316 100644
 -    CommonExecutionModel
 -    freetype
 -)
--
 -message(STATUS "VTK ${VTK_VERSION} found")
+ find_package( OpenCASCADE REQUIRED )
 
- find_package( RapidJSON REQUIRED )
- find_package( Clang REQUIRED )
-@@ -45,13 +33,7 @@ execute_process(
- )
+ include_directories( ${PROJECT_SOURCE_DIR} )
+@@ -34,7 +24,7 @@
+ target_include_directories( OCP PRIVATE ${OpenCASCADE_INCLUDE_DIR} )
 
- get_target_property( LIBCLANG_PATH libclang IMPORTED_LOCATION_RELEASE )
--get_target_property( VTK_INCLUDE_DIR VTK::CommonCore INTERFACE_INCLUDE_DIRECTORIES )
--
--# for some reason I get multiple generator expressions
--string(REPLACE ">" ">;" VTK_INCLUDE_DIR ${VTK_INCLUDE_DIR})
--list(GET VTK_INCLUDE_DIR 0 VTK_INCLUDE_DIR)
+ target_link_libraries( OCP PRIVATE ${OpenCASCADE_LIBRARIES} )
+-target_link_libraries( OCP PRIVATE pybind11::pybind11 VTK::WrappingPythonCore VTK::RenderingCore VTK::CommonDataModel VTK::CommonExecutionModel)
++target_link_libraries( OCP PRIVATE pybind11::pybind11)
 
--message( STATUS "Include dirs: ${VTK_INCLUDE_DIR}")
- message( STATUS "Include dirs: ${CMAKE_CXX_IMPLICIT_INCLUDE_DIRECTORIES}")
-
- if(NOT ${CMAKE_SYSTEM_NAME} STREQUAL "Darwin")
-@@ -87,7 +69,6 @@ add_custom_command(
-         -n ${N_PROC}
-         -l ${LIBCLANG_PATH}
-         -i ${CLANG_INCLUDE_DIRS}/
--        -i ${VTK_INCLUDE_DIR}/
-         -i ${CLANG_INSTALL_PREFIX}/lib/clang/${LLVM_VERSION_MAJOR}/include/
-         -p ${CMAKE_SOURCE_DIR}
-         ${CXX_INCLUDES}
+ set_target_properties( OCP
+                        PROPERTIES
