@@ -142,8 +142,7 @@ jobs:
       # - - - - - - - - - - - - - - - - - - - - -
 
       # - - -
-      # 
-      - name: Download wheel artifact
+      # - name: Download wheel artifact
       #   if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
       #   shell: bash -l {0}
       #   run: |
