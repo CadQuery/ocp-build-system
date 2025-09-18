@@ -1013,7 +1013,7 @@ jobs:
           pip install build wheel ${{ matrix.delocate }}
 
           cd pypi
-          ${{ matrix.sed_i }} 's/X\.X\.X\.X/${{ env.WHEEL }}/g' filename
+          ${{ matrix.sed_i }} 's/X\.X\.X\.X/${{ env.WHEEL }}/g' pyproject.toml
           cp ../OCP/build/${{ matrix.module }} .
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
