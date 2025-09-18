@@ -862,7 +862,6 @@ jobs:
             VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
           else
             cd OCP
-            cat CMakeLists.txt
             patch -p1 < ../../patches/no-vtk.patch
             cd ..
             VTK_DIR=""
@@ -908,6 +907,7 @@ jobs:
             VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
           else
             cd OCP
+            cat CMakeLists.txt  
             patch -p1 < ../../patches/no-vtk.patch
             cd ..
             VTK_DIR=""
