@@ -9,5 +9,6 @@ dependencies:
   - ninja
   - clang==15.0.7
   - llvmdev==15.0.7
+  - cxx-compiler
   - tbb-devel
   - pybind11-stubgen
