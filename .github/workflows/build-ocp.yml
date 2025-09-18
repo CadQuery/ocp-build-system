@@ -873,8 +873,7 @@ jobs:
               -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib/cmake/opencascade \
               -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
               -D CMAKE_CXX_STANDARD=17 \
-              -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include" \
-              -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -D_GLIBCXX_USE_CXX11_ABI=0" \
+              -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -D_GLIBCXX_USE_CXX11_ABI=0 -fvisibility=hidden" \
               -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
               -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
 
@@ -917,7 +916,7 @@ jobs:
               -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ \
               -D CMAKE_BUILD_TYPE=Release \
               -D CMAKE_OSX_DEPLOYMENT_TARGET="11.1" \
-              -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include" \
+              -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden" \
               $VTK_DIR \
               -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib/cmake/opencascade \
               -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
