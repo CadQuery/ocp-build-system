@@ -429,7 +429,7 @@ jobs:
 
   # ================================================================================
   # Generate OCP sources
-  # This follows exactly the azure pipeline  defined in the OCP repo and uses a 
+  # This follows exactly the azure pipeline defined in the OCP repo and uses a 
   # micromamba env based approach for all packages.
   # ================================================================================
 
@@ -626,6 +626,7 @@ jobs:
             module: "OCP.*.so"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
+            ocp_tag: "macos-15"
           # - os: "macos-13"
           #   delocate: delocate
           #   plat: macosx_11_1_x86_64
@@ -633,6 +634,7 @@ jobs:
           #   module: "OCP.*.so"
           #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
           #   shells: "bash"
+          #   ocp_tag: "macos-15"
           # - os: "ubuntu-22.04"
           #   delocate: auditwheel patchelf
           #   plat: manylinux_2_31_x86_64
@@ -641,12 +643,14 @@ jobs:
           #   module: "OCP.*.so"
           #   env: "DUMMY=0"
           #   shells: "bash"
+          #   ocp_tag: "ubuntu-22.04"
           # - os: "windows-2022"
           #   delocate: delvewheel
           #   plat: win_amd64
           #   sed_i: "sed -i"
           #   shells: "bash cmd.exe"
           #   module: "OCP.*.pyd"
+          #   ocp_tag: "windows-2022"
 
     steps:
       - uses: actions/checkout@v4
@@ -720,7 +724,7 @@ jobs:
         with:
           path: |
             ./OCP
-          key: OCP-source-${{ env.OCP }}-vtk-${{ matrix.os }}-
+          key: OCP-source-${{ env.OCP }}-vtk-${{ matrix.ocp_tag }}-
 
       - name: (All) Patch vtk out of OCP
         if: matrix.use-vtk == 'novtk'
