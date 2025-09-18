@@ -895,7 +895,7 @@ jobs:
         if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate build-ocp
 
