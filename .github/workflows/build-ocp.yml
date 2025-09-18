@@ -13,9 +13,9 @@ env:
   VTK313_URL: https://github.com/CadQuery/ocp-build-system/releases/download/v7.8.1.0-dev
 
 jobs:
-  # ========================================
-  # Build SDKs
-  # ========================================
+  # ================================================================================
+  # Build SDKs for OCCT and VTK
+  # ================================================================================
 
   # TODO: Check caching strategy
 
@@ -25,7 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
+        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
         os: ["macos-15"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
@@ -53,7 +53,7 @@ jobs:
           #   sed_i: "sed -i"
           #   env: "DUMMY=0"
           #   shells: "bash"
-          # - os: "windows-2019"
+          # - os: "windows-2022"
           #   vtk_libs: "vtk*.dll"
           #   vtk_suffix: "/"
           #   vtk_prefix: "Library/"
@@ -236,7 +236,7 @@ jobs:
 
           # Create the lib files needed for compilation
 
-          PATH='/c/Program Files (x86)/Microsoft Visual Studio 14.0/VC/bin/':$PATH
+          PATH='/c/Program Files/Microsoft Visual Studio 14.0/VC/bin/':$PATH
           cp create_lib.sh $DEST
           pushd $DEST/lib/
           ../create_lib.sh
@@ -375,7 +375,7 @@ jobs:
           call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp 
           cd OCCT
 
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           set CC=cl.exe
           set CXX=cl.exe
 
@@ -437,9 +437,9 @@ jobs:
             ~/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}
           key: ${{ steps.cache-occt-restore.outputs.cache-primary-key }}
 
-      # ========================================
+      # ================================================================================
       #                 SDK
-      # ========================================
+      # ================================================================================
 
       - name: Upload SDK
         uses: actions/upload-artifact@v4
@@ -447,9 +447,11 @@ jobs:
           name: SDK_${{ matrix.os }}-py_${{ matrix.python-version }}-${{ matrix.use-vtk }}
           path: ~/opt/local
 
-  # ========================================
+  # ================================================================================
   # Generate OCP sources
-  # ========================================
+  # This follows exactly the azure pipeline  defined in the OCP repo and uses a 
+  # micromamba env based approach for all packages.
+  # ================================================================================
 
   sources:
     needs: sdks
@@ -459,7 +461,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
+        # os: ["macos-15", "ubuntu-22.04", "windows-2022"]
         os: ["macos-15"]
         python-version: ["3.13"]
         use-vtk: ["vtk"]
@@ -467,17 +469,11 @@ jobs:
         include:
           - os: "macos-15"
             sed_i: "gsed -i"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-          # - os: "macos-13"
-          #   sed_i: "gsed -i"
-          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-          #   shells: "bash"
           # - os: "ubuntu-22.04"
           #   sed_i: "sed -i"
-          #   env: "DUMMY=0"
           #   shells: "bash"
-          # - os: "windows-2019"
+          # - os: "windows-2022"
           #   sed_i: "sed -i"
           #   shells: "bash cmd.exe"
 
@@ -500,17 +496,6 @@ jobs:
           log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
-
-      - name: Get number of CPUs [PYWRAP=true]
-        if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
-        shell: bash -l {0}
-        id: cpu-count
-        run: |
-          micromamba activate build-ocp-source
-
-          cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
-          echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
-          echo "=> Using $cpu_count CPUs"
 
       - name: (Mac) Install MacOS SDK [PYWRAP=true]
         if: env.PYWRAP == 'true' && runner.os == 'macOS' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
@@ -536,48 +521,9 @@ jobs:
           sudo apt-get update && sudo apt-get install g++-13 mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
 
       # - - - - - - - - - - - - - - - - - - - - -
-      # Restore SDKs
-      # - - - - - - - - - - - - - - - - - - - - -
-
-      # - name: (All) Restore VTK SDK cache [PYWRAP=true]
-      #   if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
-      #   id: cache-vtk-restore
-      #   uses: actions/cache/restore@v4
-      #   with:
-      #     path: |
-      #       ~/opt/local/vtk-${{ env.VTK }}
-      #     key: VTK-${{ env.VTK }}-py-${{ matrix.python-version }}-${{ matrix.os }}-
-
-      # - name: (All) Restore OCCT SDK cache [PYWRAP=true]
-      #   if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
-      #   id: cache-occt-restore
-      #   uses: actions/cache/restore@v4
-      #   with:
-      #     path: |
-      #       ~/opt/local/occt-${{ env.OCCT }}-vtk
-      #     key: OCCT-${{ env.OCCT }}-py-${{ matrix.python-version }}-${{ matrix.use-vtk }}-${{ matrix.os }}-
-
-      # - - - - - - - - - - - - - - - - - - - - -
       # Option 1: Build OCP sources using pywrap
       # (env.PYWRAP=true)
       # - - - - - - - - - - - - - - - - - - - - -
-
-      # - name: (All) Install Python prerequisites [PYWRAP=true]
-      #   if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
-      #   shell: bash -l {0}
-      #   run: |
-      #     set -euo pipefail
-
-      #     micromamba activate build-ocp-source
-      #     if [[ "$RUNNER_OS" == "Windows" ]]; then
-      #       micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief python-clang pyparsing
-      #       pip install "pybind11==${{ env.PYBIND11 }}.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
-      #     else
-      #       # pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==20.1.5 pyparsing
-      #       micromamba install -y "pybind11=${{ env.PYBIND11 }}.*" "cmake>3.24" ninja "clangdev=20.*" \ 
-      #                             "python-clang=20.*" joblib toml click jinja2 logzero pandas path \ 
-      #                             pyparsing schema tqdm toposort py-lief            
-      #     fi
 
       - name: (All) Clone OCP [PYWRAP=true]
         if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
@@ -619,7 +565,7 @@ jobs:
           micromamba create --yes --platform win-64 --no-deps --prefix ./occt  occt=${{ env.OCCT }}
 
           call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp-source
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
           cd OCP
 
@@ -674,9 +620,9 @@ jobs:
           name: OCP-source_${{ env.OCP }}-${{ matrix.os }}
           path: ./OCP
 
-  # ========================================
+  # ================================================================================
   # Build OCP
-  # ========================================
+  # ================================================================================
 
   ocp:
     name: Build OCP-${{ matrix.use-vtk }} for ${{ matrix.python-version }} on ${{ matrix.os }}
@@ -686,7 +632,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2019"]
+        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
         os: ["macos-15"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
@@ -715,7 +661,7 @@ jobs:
           #   module: "OCP.*.so"
           #   env: "DUMMY=0"
           #   shells: "bash"
-          # - os: "windows-2019"
+          # - os: "windows-2022"
           #   delocate: delvewheel
           #   plat: win_amd64
           #   sed_i: "sed -i"
@@ -930,7 +876,7 @@ jobs:
         shell: cmd
         run: |
           call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
           PATH="C:\Program Files\Git\usr\bin";%PATH%
 
@@ -980,9 +926,9 @@ jobs:
       #     name: debug_module_${{ matrix.os }}-py_${{ matrix.python-version }}
       #     path: ./OCP/build/${{ matrix.module }}
 
-      # ========================================
+      # ================================================================================
       #               OCP wheel
-      # ========================================
+      # ================================================================================
 
       - name: (All) Create the cadquery_ocp wheel
         shell: bash -l {0}
@@ -1172,9 +1118,9 @@ jobs:
           name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ matrix.os }}-cp${{ matrix.python-version }}
           path: pypi/wheel/*.whl
 
-      # ========================================
+      # ================================================================================
       #                 Test
-      # ========================================
+      # ================================================================================
 
       - name: Create the test environment
         shell: bash -l {0}
