@@ -25,8 +25,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
-        os: ["macos-15"]
+        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
@@ -39,26 +38,26 @@ jobs:
             sed_i: "gsed -i"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-          # - os: "macos-13"
-          #   vtk_libs: ".dylibs/libvtk*.dylib"
-          #   vtk_suffix: "/"
-          #   vtk_prefix: ""
-          #   sed_i: "gsed -i"
-          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-          #   shells: "bash"
-          # - os: "ubuntu-22.04"
-          #   vtk_libs: "libvtk*.so"
-          #   vtk_suffix: "/vtk-9.5/"
-          #   vtk_prefix: ""
-          #   sed_i: "sed -i"
-          #   env: "DUMMY=0"
-          #   shells: "bash"
-          # - os: "windows-2022"
-          #   vtk_libs: "vtk*.dll"
-          #   vtk_suffix: "/"
-          #   vtk_prefix: "Library/"
-          #   sed_i: "sed -i"
-          #   shells: "bash cmd.exe"
+          - os: "macos-13"
+            vtk_libs: ".dylibs/libvtk*.dylib"
+            vtk_suffix: "/"
+            vtk_prefix: ""
+            sed_i: "gsed -i"
+            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+            shells: "bash"
+          - os: "ubuntu-22.04"
+            vtk_libs: "libvtk*.so"
+            vtk_suffix: "/vtk-9.5/"
+            vtk_prefix: ""
+            sed_i: "sed -i"
+            env: "DUMMY=0"
+            shells: "bash"
+          - os: "windows-2022"
+            vtk_libs: "vtk*.dll"
+            vtk_suffix: "/"
+            vtk_prefix: "Library/"
+            sed_i: "sed -i"
+            shells: "bash cmd.exe"
 
     steps:
       - uses: actions/checkout@v4
@@ -470,8 +469,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-15", "ubuntu-22.04", "windows-2022"]
-        os: ["macos-15"]
+        os: ["macos-15", "ubuntu-22.04", "windows-2022"]
         python-version: ["3.13"]
         use-vtk: ["vtk"]
 
@@ -479,12 +477,12 @@ jobs:
           - os: "macos-15"
             sed_i: "gsed -i"
             shells: "bash"
-          # - os: "ubuntu-22.04"
-          #   sed_i: "sed -i"
-          #   shells: "bash"
-          # - os: "windows-2022"
-          #   sed_i: "sed -i"
-          #   shells: "bash cmd.exe"
+          - os: "ubuntu-22.04"
+            sed_i: "sed -i"
+            shells: "bash"
+          - os: "windows-2022"
+            sed_i: "sed -i"
+            shells: "bash cmd.exe"
 
     steps:
       - uses: actions/checkout@v4
@@ -1276,9 +1274,10 @@ jobs:
           git clone https://github.com/gumyr/build123d.git
 
           cd build123d
+          ${{ matrix.sed_i }} 's/"cadquery-ocp >= 7\.8, < 7\.9",/"cadquery-ocp >= 7.9, < 8.0",/' pyproject.toml
           if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
             pip install --no-deps ocpsvg svgelements
-            ${{ matrix.sed_i }} '/cadquery-ocp >/d; /ocpsvg/d' pyproject.toml
+            ${{ matrix.sed_i }} '/ocpsvg/d' pyproject.toml
           fi
           pip install .
 
