@@ -879,8 +879,11 @@ jobs:
               -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-            for l in vtkCommonCore  vtkRenderingCore  vtkRenderingFreeType  vtkFiltersGeneral  vtkInteractionStyle  vtkRenderingOpenGL2; do
-                ${{ matrix.sed_i }} "s/-l$l/-l$l-${{ env.VTK_MAJOR }}/" build/build.ninja
+            for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \
+                     libvtkRenderingCore  libvtkRenderingFreeType  libvtkFiltersGeneral \
+                     libvtkInteractionStyle  libvtkRenderingOpenGL2 \
+                     libvtkWrappingPythonCore{{ matrix.python-version }}; do
+                ${{ matrix.sed_i }} "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
             done
           fi
 
@@ -922,8 +925,11 @@ jobs:
               -D CMAKE_OSX_SYSROOT=/opt/MacOSX11.3.sdk
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-            for l in vtkCommonCore  vtkRenderingCore  vtkRenderingFreeType  vtkFiltersGeneral  vtkInteractionStyle  vtkRenderingOpenGL2; do
-                ${{ matrix.sed_i }} "s/-l$l/-l$l-${{ env.VTK_MAJOR }}/" build/build.ninja
+            for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \
+                     libvtkRenderingCore  libvtkRenderingFreeType  libvtkFiltersGeneral \
+                     libvtkInteractionStyle  libvtkRenderingOpenGL2 \
+                     libvtkWrappingPythonCore{{ matrix.python-version }}; do
+                ${{ matrix.sed_i }} "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
             done
           fi
 
