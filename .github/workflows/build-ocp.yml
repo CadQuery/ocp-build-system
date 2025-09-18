@@ -171,7 +171,7 @@ jobs:
         if: matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           # Create an environment with conda VTK to get the include files
           micromamba create -y -n vtk python=${{ matrix.python-version }}
@@ -196,7 +196,7 @@ jobs:
         if: matrix.use-vtk == 'vtk' && runner.os != 'Windows' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           PY_VER=${{ matrix.python-version }}
 
@@ -229,7 +229,7 @@ jobs:
         if: matrix.use-vtk == 'vtk' && runner.os  == 'Windows'  && steps.cache-vtk-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           PY_VER=${{ matrix.python-version }}
 
@@ -307,7 +307,7 @@ jobs:
         if: runner.os  != 'Windows' && steps.cache-occt-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate build-ocp
           cd OCCT
@@ -565,7 +565,7 @@ jobs:
         if: env.PYWRAP == 'true' && runner.os != 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate build-ocp-source
           cd OCP
@@ -742,7 +742,7 @@ jobs:
         if: runner.os != 'Linux'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate build-ocp
           micromamba install -y fontconfig=2.13.* freetype=2.12.* freeimage=3.18.*
@@ -850,7 +850,7 @@ jobs:
         if: runner.os == 'Linux' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate build-ocp
 
@@ -1007,7 +1007,7 @@ jobs:
       - name: (All) Create the cadquery_ocp wheel
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate build-ocp
           pip install build wheel ${{ matrix.delocate }}
@@ -1093,7 +1093,7 @@ jobs:
         if: runner.os == 'Linux'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate build-ocp
           cd pypi
@@ -1134,7 +1134,7 @@ jobs:
         if: runner.os == 'macOS'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate build-ocp
 
@@ -1169,7 +1169,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate build-ocp
 
@@ -1209,7 +1209,7 @@ jobs:
       - name: Create the test environment
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba create -y -n test python=${{ matrix.python-version }}
           micromamba activate test
@@ -1245,7 +1245,7 @@ jobs:
       - name: Install VTK and OCP wheel
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate test
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
@@ -1264,7 +1264,7 @@ jobs:
       - name: Run build123d tests
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate test
 
@@ -1289,7 +1289,7 @@ jobs:
         if: matrix.use-vtk == 'vtk'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           git clone https://github.com/cadquery/cadquery.git
           cd cadquery
@@ -1323,7 +1323,7 @@ jobs:
         if: matrix.python-version != '3.13'
         shell: bash -l {0}
         run: |
-          set -euo pipefail
+          set -eo pipefail
 
           micromamba activate test
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
