@@ -63,6 +63,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
+      # - - -
+
       - name: (All) Restore VTK SDK cache
         if: matrix.use-vtk == 'vtk'
         id: cache-vtk-restore
@@ -72,6 +74,8 @@ jobs:
             ~/opt/local/vtk-${{ env.VTK }}
           key: VTK-${{ env.VTK }}-py-${{ matrix.python-version }}-${{ matrix.os }}-
 
+      # - - -
+
       - name: (All) Restore OCCT SDK cache
         id: cache-occt-restore
         uses: actions/cache/restore@v4
@@ -79,6 +83,8 @@ jobs:
           path: |
             ~/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}
           key: OCCT-${{ env.OCCT }}-py-${{ matrix.python-version }}-${{ matrix.use-vtk }}-${{ matrix.os }}-
+
+      # - - -
 
       - name: (All) Set up Python ${{ matrix.python-version }} via micromamba
         if: steps.cache-occt-restore.outputs.cache-hit != 'true'
@@ -88,6 +94,8 @@ jobs:
           log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
+
+      # - - -
 
       - name: Get number of CPUs
         if: steps.cache-occt-restore.outputs.cache-hit != 'true'
@@ -104,6 +112,8 @@ jobs:
       # Install toolchain if needed
       # - - - - - - - - - - - - - - - - - - - - -
 
+      # - - -
+
       - name: (Ubuntu) Install dependencies
         if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
@@ -113,6 +123,8 @@ jobs:
           sudo apt-get install -y mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev \
                                   libglu1-mesa-dev freeglut3-dev libxcursor-dev \
                                   libfreeimage-dev libfreetype-dev libfontconfig-dev
+
+      # - - -
 
       - name: (Mac, Windows) Install dependencies
         if: runner.os != 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
@@ -129,7 +141,9 @@ jobs:
       #                VTK SDK
       # - - - - - - - - - - - - - - - - - - - - -
 
-      # - name: Download wheel artifact
+      # - - -
+      # 
+      - name: Download wheel artifact
       #   if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
       #   shell: bash -l {0}
       #   run: |
@@ -151,6 +165,8 @@ jobs:
 
       #     fi
       #     ls -l
+
+      # - - -
 
       - name: (All) Install VTK SDK include files
         if: matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
@@ -174,6 +190,8 @@ jobs:
           cp cmake/vtk-config-${{ matrix.os }}.cmake $DEST/vtk-config.cmake
 
           micromamba deactivate
+
+      # - - -
 
       - name: (Linux, Mac) Install VTK SDK libs
         if: matrix.use-vtk == 'vtk' && runner.os != 'Windows' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
@@ -205,6 +223,8 @@ jobs:
           fi
 
           micromamba deactivate
+
+      # - - -
 
       - name: (Windows) Install VTK SDK libs
         if: matrix.use-vtk == 'vtk' && runner.os  == 'Windows'  && steps.cache-vtk-restore.outputs.cache-hit != 'true'
@@ -244,6 +264,8 @@ jobs:
 
           micromamba deactivate
 
+      # - - -
+
       - name: (All) Cache VTK build folder
         if: matrix.use-vtk == 'vtk'
         id: cache-vtk-save
@@ -279,6 +301,8 @@ jobs:
           fi
 
           mkdir -p ~/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}
+
+      # - - -
 
       - name: (Linux, Mac) Compile and install OCCT SDK
         if: runner.os  != 'Windows' && steps.cache-occt-restore.outputs.cache-hit != 'true'
@@ -348,6 +372,8 @@ jobs:
           ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
           ninja -C build install
 
+      # - - -
+
       - name: (Windows) Compile and install OCCT SDK
         if: runner.os  == 'Windows' && steps.cache-occt-restore.outputs.cache-hit != 'true'
         shell: cmd
@@ -409,6 +435,8 @@ jobs:
           ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
           ninja -C build install
 
+      # - - -
+
       - name: (All) Cache OCCT build folder
         id: cache-occt-save
         uses: actions/cache/save@v4
@@ -420,6 +448,8 @@ jobs:
       # ================================================================================
       #                 SDK
       # ================================================================================
+
+      # - - -
 
       - name: Upload SDK
         uses: actions/upload-artifact@v4
@@ -460,6 +490,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # - - -
+
       - name: (All) Restore OCP source cache
         id: cache-ocp-source-restore
         uses: actions/cache/restore@v4
@@ -467,6 +499,8 @@ jobs:
           path: |
             ./OCP
           key: OCP-source-${{ env.OCP }}-vtk-${{ matrix.os }}-
+
+      # - - -
 
       - name: (All) Set up Python ${{ matrix.python-version }} via micromamba [PYWRAP=true]
         if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
@@ -476,6 +510,8 @@ jobs:
           log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
+
+      # - - -
 
       - name: (Mac) Install MacOS SDK [PYWRAP=true]
         if: env.PYWRAP == 'true' && runner.os == 'macOS' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
@@ -492,6 +528,8 @@ jobs:
           
           brew install gsed
 
+      # - - -
+
       - name: (Linux) Install gl headers [PYWRAP=true]
         if: env.PYWRAP == 'true' && runner.os == 'Linux' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
@@ -504,6 +542,8 @@ jobs:
       # Option 1: Build OCP sources using pywrap
       # (env.PYWRAP=true)
       # - - - - - - - - - - - - - - - - - - - - -
+
+      # - - -
 
       - name: (All) Clone OCP [PYWRAP=true]
         if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
@@ -519,6 +559,8 @@ jobs:
 
           # TODO: remove if fixed
           ${{ matrix.sed_i }} 's/"7.9.0.0"/"${{ env.OCP }}"/' ocp.toml
+
+      # - - -
 
       - name: (Linux, Mac) Generate OCP source [PYWRAP=true]
         if: env.PYWRAP == 'true' && runner.os != 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
@@ -537,6 +579,8 @@ jobs:
           
           cd new
           cmake --build .        
+
+      # - - -
 
       - name: (Windows) Generate OCP source [PYWRAP=true]
         if: env.PYWRAP == 'true' && runner.os == 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
@@ -586,6 +630,8 @@ jobs:
           mkdir OCP
           mv OCP_src_stubs_* OCP/OCP
 
+      # - - -
+
       - name: (All) Cache OCP source folder
         id: cache-ocp-source-save
         uses: actions/cache/save@v4
@@ -593,6 +639,8 @@ jobs:
           path: |
             ./OCP
           key: ${{ steps.cache-ocp-source-restore.outputs.cache-primary-key }}
+
+      # - - -
 
       - name: Upload OCP source
         uses: actions/upload-artifact@v4
@@ -655,6 +703,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # - - -
+
       - name: Get number of CPUs
         shell: bash -l {0}
         id: cpu-count
@@ -665,6 +715,8 @@ jobs:
           echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
           echo "=> Using $cpu_count CPUs"
 
+      # - - -
+
       - name: (All) Set up Python ${{ matrix.python-version }} via micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
@@ -672,6 +724,8 @@ jobs:
           log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
+
+      # - - -
 
       - name: (Ubuntu) Install dependencies
         if: runner.os == 'Linux'
@@ -682,6 +736,8 @@ jobs:
           sudo apt-get install -y mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev \
                                   libglu1-mesa-dev freeglut3-dev libxcursor-dev \
                                   libfreeimage-dev libfreetype-dev libfontconfig-dev
+
+      # - - -
 
       - name: (Mac, Windows) Install dependencies
         if: runner.os != 'Linux'
@@ -709,6 +765,8 @@ jobs:
             ~/opt/local/vtk-${{ env.VTK }}
           key: VTK-${{ env.VTK }}-py-${{ matrix.python-version }}-${{ matrix.os }}-
 
+      # - - -
+
       - name: (All) Restore OCCT SDK cache with VTK support
         id: cache-occt-restore
         uses: actions/cache/restore@v4
@@ -717,7 +775,10 @@ jobs:
             ~/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}
           key: OCCT-${{ env.OCCT }}-py-${{ matrix.python-version }}-${{ matrix.use-vtk }}-${{ matrix.os }}-
 
+      # - - - 
       # Create sources for supporting vtk - will be patched later for novtk
+      # - - - 
+
       - name: (All) Restore OCP source cache
         id: cache-ocp-source-restore
         uses: actions/cache/restore@v4
@@ -725,6 +786,8 @@ jobs:
           path: |
             ./OCP
           key: OCP-source-${{ env.OCP }}-vtk-${{ matrix.ocp_tag }}-
+
+      # - - -
 
       - name: (All) Patch vtk out of OCP
         if: matrix.use-vtk == 'novtk'
@@ -750,6 +813,8 @@ jobs:
             ./OCP/build/${{ matrix.module }}
           key: OCP-${{ env.OCP }}-VTK-${{ matrix.use-vtk }}-py${{ matrix.python-version }}-${{ matrix.os }}-
 
+      # - - -
+
       - name: (Mac) Install MacOS SDK
         if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
@@ -762,6 +827,8 @@ jobs:
           sudo mkdir -p /usr/local/include
           sudo ln -s /opt/MacOSX11.3.sdk/usr/include /opt/usr/local/include
           sudo ln -s /opt/MacOSX11.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers /usr/local/include/OpenGL
+
+      # - - -
 
       - name: (All) Install Python prerequisites
         if: steps.cache-ocp-restore.outputs.cache-hit != 'true'
@@ -777,6 +844,8 @@ jobs:
             micromamba install -y py-lief
             pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==15.0.7 pyparsing
           fi
+
+      # - - -
 
       - name: (Linux) Generate OCP build files and build OCP
         if: runner.os == 'Linux' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
@@ -816,6 +885,8 @@ jobs:
 
           ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
+      # - - -
+
       - name: (Mac) Generate OCP build files and build OCP
         if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
@@ -854,6 +925,8 @@ jobs:
           fi
 
           ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
+
+      # - - -
 
       - name: (Windows) Generate OCP build files and build OCP
         if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
@@ -896,6 +969,8 @@ jobs:
 
           ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
+      # - - -
+
       - name: (All) Cache OCP module
         id: cache-ocp-save
         uses: actions/cache/save@v4
@@ -903,6 +978,8 @@ jobs:
           path: |
             ./OCP/build/${{ matrix.module }}
           key: ${{ steps.cache-ocp-restore.outputs.cache-primary-key }}
+
+      # - - -
 
       # - name: Debug Upload module
       #   uses: actions/upload-artifact@v4
@@ -913,6 +990,8 @@ jobs:
       # ================================================================================
       #               OCP wheel
       # ================================================================================
+
+      # - - -
 
       - name: (All) Create the cadquery_ocp wheel
         shell: bash -l {0}
@@ -997,6 +1076,8 @@ jobs:
 
           unzip -l dist/${PKG_NAME}*.whl
 
+      # - - -
+
       - name: (Linux) Delocate the cadquery_ocp wheel
         if: runner.os == 'Linux'
         shell: bash -l {0}
@@ -1036,6 +1117,8 @@ jobs:
           python -m wheel pack ${PKG_NAME}-${{ env.WHEEL }}
           cd ..
 
+      # - - -
+
       - name: (Mac) Delocate the cadquery_ocp wheel
         if: runner.os == 'macOS'
         shell: bash -l {0}
@@ -1069,6 +1152,8 @@ jobs:
               --wheel-dir=wheel \
               dist/*.whl
 
+      # - - -
+
       - name: (Windows) Delocate the cadquery_ocp wheel
         if: runner.os == 'Windows'
         shell: bash -l {0}
@@ -1088,12 +1173,16 @@ jobs:
 
           PATH=~/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/win64/vc14/bin/:$PATH delvewheel repair $EXCLUDE --wheel-dir wheel --namespace-pkg ${PKG_NAME} dist/*.whl
 
+      # - - -
+
       - name: Upload vtk cadquery_ocp wheel
         if: matrix.use-vtk == 'vtk'
         uses: actions/upload-artifact@v4
         with:
           name: cadquery-ocp-${{ env.WHEEL }}-${{ matrix.os }}-cp${{ matrix.python-version }}
           path: pypi/wheel/*.whl
+
+      # - - -
 
       - name: Upload novtk cadquery_ocp wheel
         if: matrix.use-vtk == 'novtk'
@@ -1114,6 +1203,8 @@ jobs:
           micromamba create -y -n test python=${{ matrix.python-version }}
           micromamba activate test
           pip install pytest docutils ipython
+
+      # - - -
 
       # - name: Download wheel artifact
       #   if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk'
@@ -1138,6 +1229,8 @@ jobs:
       #     fi
       #     ls -l
 
+      # - - -
+
       - name: Install VTK and OCP wheel
         shell: bash -l {0}
         run: |
@@ -1154,6 +1247,8 @@ jobs:
           pip install pypi/wheel/*.whl
 
           python -c "import OCP; print('Success: OCP', OCP.__version__)"
+
+      # - - -
 
       - name: Run build123d tests
         shell: bash -l {0}
@@ -1176,6 +1271,8 @@ jobs:
           else
             pytest tests -v -W ignore
           fi
+
+      # - - -
 
       - name: Run cadquery tests
         if: matrix.use-vtk == 'vtk'
@@ -1208,6 +1305,8 @@ jobs:
           CONDA_PREFIX=$CONDA_PREFIX_BAK
 
           pytest tests -v -W ignore
+
+      # - - -
 
       - name: Uninstall test
         if: matrix.python-version != '3.13'
