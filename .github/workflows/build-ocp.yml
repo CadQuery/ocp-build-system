@@ -468,17 +468,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-15", "ubuntu-22.04", "windows-2022"]
+        # os: ["macos-15", "ubuntu-22.04", "windows-2022"]
+        os: ["windows-2022"]
         python-version: ["3.13"]
         use-vtk: ["vtk"]
 
         include:
-          - os: "macos-15"
-            sed_i: "gsed -i"
-            shells: "bash"
-          - os: "ubuntu-22.04"
-            sed_i: "sed -i"
-            shells: "bash"
+          # - os: "macos-15"
+          #   sed_i: "gsed -i"
+          #   shells: "bash"
+          # - os: "ubuntu-22.04"
+          #   sed_i: "sed -i"
+          #   shells: "bash"
           - os: "windows-2022"
             sed_i: "sed -i"
             shells: "bash cmd.exe"
@@ -589,15 +590,15 @@ jobs:
 
           cd OCP
 
-          # set CC=clang.exe
-          # set CXX=clang.exe
+          set CC=clang.exe
+          set CXX=clang.exe
 
-          cmake -DPython_ROOT_DIR=$CONDA_PREFIX \
-                -DPython3_ROOT_DIR=$CONDA_PREFIX \
-                -DPython_FIND_VIRTUALENV=ONLY \
-                -DPython3_FIND_VIRTUALENV=ONLY \
-                -DOCCT_LIB_DIR=./occt/Library/bin/\*.dll \
-                -DPLATFORM=Windows \
+          cmake -DPython_ROOT_DIR=$CONDA_PREFIX ^
+                -DPython3_ROOT_DIR=$CONDA_PREFIX ^
+                -DPython_FIND_VIRTUALENV=ONLY ^
+                -DPython3_FIND_VIRTUALENV=ONLY ^
+                -DOCCT_LIB_DIR=./occt/Library/bin/\*.dll ^
+                -DPLATFORM=Windows ^
                 -B new -S . -G Ninja
           
           cd new
