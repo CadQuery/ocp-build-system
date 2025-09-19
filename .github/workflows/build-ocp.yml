@@ -584,7 +584,8 @@ jobs:
         shell: cmd
         run: |
           micromamba create --yes --platform win-64 --no-deps --prefix ./occt  occt=${{ env.OCCT }}
-
+          echo %CD%
+          tree /f
           call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp-source
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
