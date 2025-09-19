@@ -887,11 +887,10 @@ jobs:
           else
             cd OCP
             # patch -p1 < ../../patches/no-vtk.patch
-            cat CMakeLists.txt
             echo "Patch VTK out of CMakeLists.txt"
             ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
             ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
-            cat CMakeLists.txt
+
             cd ..
             VTK_DIR=""
           fi
@@ -938,11 +937,10 @@ jobs:
           else
             cd OCP
             # patch -p1 < ../../patches/no-vtk.patch
-            cat CMakeLists.txt
             echo "Patch VTK out of CMakeLists.txt"
             ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
             ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
-            cat CMakeLists.txt
+
             cd ..
             VTK_DIR=""
           fi
@@ -994,11 +992,10 @@ jobs:
           ) else (
             cd OCP
             # patch -p1 < ../../patches/no-vtk.patch
-            cat CMakeLists.txt
             echo "Patch VTK out of CMakeLists.txt"
             ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
             ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
-            cat CMakeLists.txt
+
             cd ..
             set "VTK_DIR= "
           )
