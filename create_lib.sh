@@ -1,5 +1,3 @@
-find '/c/Program Files/Microsoft Visual Studio/2022/Enterprise' -iname dumpbin.exe
-find '/c/Program Files/Microsoft Visual Studio/2022/Enterprise' -iname lib.exe
 PATH='/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/':$PATH
 
 for dll_file in ../bin/vtk*.dll; do
