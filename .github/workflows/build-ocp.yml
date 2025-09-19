@@ -94,6 +94,7 @@ jobs:
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
           cache-environment: true
+          cache-environment-key: environment-${{ steps.date.outputs.date }}
 
       # - - -
 
@@ -509,6 +510,7 @@ jobs:
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
           cache-environment: true
+          cache-environment-key: environment-pywrap-${{ steps.date.outputs.date }}
 
       # - - -
 
@@ -583,24 +585,17 @@ jobs:
 
       - name: (Windows) Generate OCP source [PYWRAP=true]
         if: env.PYWRAP == 'true' && runner.os == 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
-        shell: cmd
+        shell: bash
         run: |
-
-          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp-source
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-
+          micromamba activate build-ocp-source
           cd OCP
 
-          set CC=clang.exe
-          set CXX=clang.exe
-          tree /f %CONDA_PREFIX%\Library\bin\
-
-          cmake -DPython_ROOT_DIR=$CONDA_PREFIX ^
-                -DPython3_ROOT_DIR=$CONDA_PREFIX ^
-                -DPython_FIND_VIRTUALENV=ONLY ^
-                -DPython3_FIND_VIRTUALENV=ONLY ^
-                -DOCCT_LIB_DIR=%CONDA_PREFIX%\Library\bin\*.dll ^
-                -DPLATFORM=Windows ^
+          cmake -DPython_ROOT_DIR=$CONDA_PREFIX \
+                -DPython3_ROOT_DIR=$CONDA_PREFIX \
+                -DPython_FIND_VIRTUALENV=ONLY \
+                -DPython3_FIND_VIRTUALENV=ONLY \
+                -DOCCT_LIB_DIR=$CONDA_PREFIX/Library/bin/TK\*.dll \
+                -DPLATFORM=Windows \
                 -B new -S . -G Ninja
           
           cd new
@@ -724,6 +719,7 @@ jobs:
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
           cache-environment: true
+          cache-environment-key: environment-${{ steps.date.outputs.date }}
 
       # - - -
 
