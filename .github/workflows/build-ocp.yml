@@ -95,7 +95,7 @@ jobs:
           cache-downloads: true
           cache-environment: true
           cache-environment-key: environment-pywrap-${{ env.OCP }}
-          
+
       # - - -
 
       - name: Get number of CPUs
@@ -585,7 +585,7 @@ jobs:
 
       - name: (Windows) Generate OCP source [PYWRAP=true]
         if: env.PYWRAP == 'true' && runner.os == 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
-        shell: bash
+        shell: bash -l {0}
         run: |
           micromamba activate build-ocp-source
           cd OCP
