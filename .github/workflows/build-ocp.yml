@@ -587,14 +587,19 @@ jobs:
         if: env.PYWRAP == 'true' && runner.os == 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          micromamba activate build-ocp-source
+          set -ro pipefail
+
           cd OCP
+
+          micromamba create --yes --platform win-64 --no-deps --prefix ./occt  occt=${{ env.OCCT }}
+          
+          micromamba activate build-ocp-source
 
           cmake -DPython_ROOT_DIR=$CONDA_PREFIX \
                 -DPython3_ROOT_DIR=$CONDA_PREFIX \
                 -DPython_FIND_VIRTUALENV=ONLY \
                 -DPython3_FIND_VIRTUALENV=ONLY \
-                -DOCCT_LIB_DIR=$CONDA_PREFIX/Library/bin/TK\*.dll \
+                -DOCCT_LIB_DIR=./occt/Library/bin/\*.dll \
                 -DPLATFORM=Windows \
                 -B new -S . -G Ninja
           
