@@ -87,7 +87,7 @@ jobs:
 
       - name: Set up Python ${{ matrix.python-version }} via micromamba
         if: steps.cache-occt-restore.outputs.cache-hit != 'true'
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-${{ matrix.python-version }}.yml
           log-level: warning
@@ -509,7 +509,7 @@ jobs:
 
       - name: Set up Python ${{ matrix.python-version }} via micromamba [PYWRAP=true]
         if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-pywrap-${{ matrix.python-version }}.yml
           log-level: warning
@@ -731,7 +731,7 @@ jobs:
       # - - -
 
       - name: Set up Python ${{ matrix.python-version }} via micromamba
-        uses: mamba-org/setup-micromamba@v1
+        uses: mamba-org/setup-micromamba@v2
         with:
           environment-file: environment-${{ matrix.python-version }}.yml
           log-level: warning
