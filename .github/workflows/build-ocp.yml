@@ -484,7 +484,7 @@ jobs:
           #   shells: "bash"
           - os: "windows-2022"
             sed_i: "sed -i"
-            shells: "bash cmd.exe"
+            shells: "bash"
 
     steps:
       - uses: actions/checkout@v4
