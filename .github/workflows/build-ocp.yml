@@ -94,8 +94,8 @@ jobs:
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
           cache-environment: true
-          cache-environment-key: environment-${{ steps.date.outputs.date }}
-
+          cache-environment-key: environment-pywrap-${{ env.OCP }}
+          
       # - - -
 
       - name: Get number of CPUs
@@ -510,7 +510,7 @@ jobs:
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
           cache-environment: true
-          cache-environment-key: environment-pywrap-${{ steps.date.outputs.date }}
+          cache-environment-key: environment-pywrap-${{ env.OCP }}
 
       # - - -
 
@@ -719,7 +719,7 @@ jobs:
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
           cache-environment: true
-          cache-environment-key: environment-${{ steps.date.outputs.date }}
+          cache-environment-key: environment-pywrap-${{ env.OCP }}
 
       # - - -
 
