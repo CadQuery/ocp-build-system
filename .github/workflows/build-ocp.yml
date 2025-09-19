@@ -597,7 +597,7 @@ jobs:
                 -DPython3_ROOT_DIR=$CONDA_PREFIX ^
                 -DPython_FIND_VIRTUALENV=ONLY ^
                 -DPython3_FIND_VIRTUALENV=ONLY ^
-                -DOCCT_LIB_DIR=./occt/Library/bin/\*.dll ^
+                -DOCCT_LIB_DIR=..\occt\Library\bin\*.dll ^
                 -DPLATFORM=Windows ^
                 -B new -S . -G Ninja
           
