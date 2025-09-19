@@ -2,10 +2,13 @@ name: build-ocp
 channels:
   - conda-forge
 dependencies:
-  - ninja
-  - cmake
-  - rapidjson
-  - llvmdev=15.0.7
-  - clangdev=15.0.7
   - python=3.12
   - setuptools>=75
+  - pybind11=2.13.*
+  - cmake >3.24
+  - ninja
+  - clang==15.0.7
+  - llvmdev==15.0.7
+  - tbb-devel
+  - pybind11-stubgen
+  - rapidjson

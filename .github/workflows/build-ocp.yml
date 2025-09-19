@@ -254,7 +254,6 @@ jobs:
 
           # Create the lib files needed for compilation
 
-          PATH='/c/Program Files/Microsoft Visual Studio 14.0/VC/bin/':$PATH
           cp create_lib.sh $DEST
           pushd $DEST/lib/
           ../create_lib.sh
