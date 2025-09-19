@@ -477,20 +477,20 @@ jobs:
       fail-fast: false
       matrix:
         # os: ["macos-15", "ubuntu-22.04", "windows-2022"]
-        os: ["windows-2022"]
+        os: ["macos-15", "ubuntu-22.04"]
         python-version: ["3.13"]
         use-vtk: ["vtk"]
 
         include:
-          # - os: "macos-15"
-          #   sed_i: "gsed -i"
-          #   shells: "bash"
-          # - os: "ubuntu-22.04"
-          #   sed_i: "sed -i"
-          #   shells: "bash"
-          - os: "windows-2022"
+          - os: "macos-15"
+            sed_i: "gsed -i"
+            shells: "bash"
+          - os: "ubuntu-22.04"
             sed_i: "sed -i"
             shells: "bash"
+          # - os: "windows-2022"
+          #   sed_i: "sed -i"
+          #   shells: "bash"
 
     steps:
       - uses: actions/checkout@v4
