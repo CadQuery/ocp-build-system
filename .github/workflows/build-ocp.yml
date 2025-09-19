@@ -585,9 +585,7 @@ jobs:
         if: env.PYWRAP == 'true' && runner.os == 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
         shell: cmd
         run: |
-          micromamba create --yes --platform win-64 --no-deps --prefix ./occt  occt=${{ env.OCCT }}
-          echo %CD%
-          tree /f
+
           call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp-source
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
@@ -595,7 +593,8 @@ jobs:
 
           set CC=clang.exe
           set CXX=clang.exe
-
+          tree /f $CONDA_PREFIX\Library\bin\
+          
           cmake -DPython_ROOT_DIR=$CONDA_PREFIX ^
                 -DPython3_ROOT_DIR=$CONDA_PREFIX ^
                 -DPython_FIND_VIRTUALENV=ONLY ^
