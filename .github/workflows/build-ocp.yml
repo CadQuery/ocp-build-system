@@ -699,7 +699,7 @@ jobs:
             ocp_tag: "macos-15"
           - os: "ubuntu-22.04"
             delocate: auditwheel patchelf
-            plat: manylinux_2_32_x86_64
+            plat: manylinux_2_34_x86_64
             sed_i: "sed -i"
             compilers: ""
             module: "OCP.*.so"
