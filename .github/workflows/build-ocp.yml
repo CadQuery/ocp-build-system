@@ -64,7 +64,7 @@ jobs:
       
       # - - -
 
-      - name: (All) Restore VTK SDK cache
+      - name: Restore VTK SDK cache
         if: matrix.use-vtk == 'vtk'
         id: cache-vtk-restore
         uses: actions/cache/restore@v4
@@ -75,7 +75,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Restore OCCT SDK cache
+      - name: Restore OCCT SDK cache
         id: cache-occt-restore
         uses: actions/cache/restore@v4
         with:
@@ -85,7 +85,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Set up Python ${{ matrix.python-version }} via micromamba
+      - name: Set up Python ${{ matrix.python-version }} via micromamba
         if: steps.cache-occt-restore.outputs.cache-hit != 'true'
         uses: mamba-org/setup-micromamba@v1
         with:
@@ -166,7 +166,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Install VTK SDK include files
+      - name: Install VTK SDK include files
         if: matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
@@ -264,7 +264,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Cache VTK build folder
+      - name: Cache VTK build folder
         if: matrix.use-vtk == 'vtk'
         id: cache-vtk-save
         uses: actions/cache/save@v4
@@ -277,7 +277,7 @@ jobs:
       #                OCCT SDK
       # - - - - - - - - - - - - - - - - - - - - -
 
-      - name: (All) Download and prepare OCCT SDK
+      - name: Download and prepare OCCT SDK
         if: steps.cache-occt-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
@@ -435,7 +435,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Cache OCCT build folder
+      - name: Cache OCCT build folder
         id: cache-occt-save
         uses: actions/cache/save@v4
         with:
@@ -489,7 +489,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Restore OCP source cache
+      - name: Restore OCP source cache
         id: cache-ocp-source-restore
         uses: actions/cache/restore@v4
         with:
@@ -499,7 +499,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Set up Python ${{ matrix.python-version }} via micromamba [PYWRAP=true]
+      - name: Set up Python ${{ matrix.python-version }} via micromamba [PYWRAP=true]
         if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
         uses: mamba-org/setup-micromamba@v1
         with:
@@ -542,7 +542,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Clone OCP [PYWRAP=true]
+      - name: Clone OCP [PYWRAP=true]
         if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
@@ -609,7 +609,7 @@ jobs:
       # (env.PYWRAP=false)
       # - - - - - - - - - - - - - - - - - - - - -
 
-      - name: (All) Download official OCP source [PYWRAP=false]
+      - name: Download official OCP source [PYWRAP=false]
         if: env.PYWRAP == 'false'
         shell: bash -l {0}
         run: |
@@ -629,7 +629,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Cache OCP source folder
+      - name: Cache OCP source folder
         id: cache-ocp-source-save
         uses: actions/cache/save@v4
         with:
@@ -714,7 +714,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Set up Python ${{ matrix.python-version }} via micromamba
+      - name: Set up Python ${{ matrix.python-version }} via micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
           environment-file: environment-${{ matrix.python-version }}.yml
@@ -753,7 +753,7 @@ jobs:
       # Restore SDKs
       # - - - - - - - - - - - - - - - - - - - - -
 
-      - name: (All) Restore VTK SDK cache
+      - name: Restore VTK SDK cache
         if: matrix.use-vtk == 'vtk'
         id: cache-vtk-restore
         uses: actions/cache/restore@v4
@@ -764,7 +764,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Restore OCCT SDK cache with VTK support
+      - name: Restore OCCT SDK cache with VTK support
         id: cache-occt-restore
         uses: actions/cache/restore@v4
         with:
@@ -776,7 +776,7 @@ jobs:
       # Create sources for supporting vtk - will be patched later for novtk
       # - - - 
 
-      - name: (All) Restore OCP source cache
+      - name: Restore OCP source cache
         id: cache-ocp-source-restore
         uses: actions/cache/restore@v4
         with:
@@ -786,7 +786,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Patch vtk out of OCP
+      - name: Patch vtk out of OCP
         if: matrix.use-vtk == 'novtk'
         shell: bash -l {0}
         run: |
@@ -802,7 +802,7 @@ jobs:
       #  Build OCP
       # - - - - - - - - - - - - - - - - - - - - -
 
-      - name: (All) Restore OCP cache
+      - name: Restore OCP cache
         id: cache-ocp-restore
         uses: actions/cache/restore@v4
         with:
@@ -827,7 +827,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Install Python prerequisites
+      - name: Install Python prerequisites
         if: steps.cache-ocp-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
@@ -981,7 +981,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Cache OCP module
+      - name: Cache OCP module
         id: cache-ocp-save
         uses: actions/cache/save@v4
         with:
@@ -1003,7 +1003,7 @@ jobs:
 
       # - - -
 
-      - name: (All) Create the cadquery_ocp wheel
+      - name: Create the cadquery_ocp wheel
         shell: bash -l {0}
         run: |
           set -eo pipefail
