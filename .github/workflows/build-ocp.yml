@@ -1322,12 +1322,24 @@ jobs:
           git clone https://github.com/gumyr/build123d.git
 
           cd build123d
+          
+          # allow cadquery_ocp v 7.9
           ${{ matrix.sed_i }} 's/"cadquery-ocp >= 7\.8, < 7\.9",/"cadquery-ocp >= 7.9, < 8.0",/' pyproject.toml
-          if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
-            pip install --no-deps ocpsvg svgelements
-            ${{ matrix.sed_i }} '/ocpsvg/d' pyproject.toml
-          fi
+          
+          # kick out ocp_svg, since it relies on cadquery_ocp 7.8
+          ${{ matrix.sed_i }} '/ocpsvg/d' pyproject.toml
+          
+          # install ocp_svg and svgelements (a ocp_svg dependency) without cadquery_ocp dependency
+          pip install --no-deps ocpsvg svgelements
+          
+          # install build123d without ocp_svg dependency (since it is already installed)
           pip install .
+
+          # if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
+          #   pip install --no-deps ocpsvg svgelements
+          #   ${{ matrix.sed_i }} '/ocpsvg/d' pyproject.toml
+          # fi
+          # pip install .
 
           if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
             pytest tests -v -W ignore --ignore tests/test_direct_api/test_vtk_poly_data.py --ignore tests/test_direct_api/test_jupyter.py
