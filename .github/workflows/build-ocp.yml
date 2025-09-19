@@ -677,7 +677,8 @@ jobs:
         os: ["macos-13", "macos-15", "ubuntu-22.04"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
-        use-vtk: ["vtk", "novtk"]
+        # use-vtk: ["vtk", "novtk"]
+        use-vtk: ["novtk"]
 
         include:
           - os: "macos-15"
@@ -885,7 +886,12 @@ jobs:
             VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
           else
             cd OCP
-            patch -p1 < ../../patches/no-vtk.patch
+            # patch -p1 < ../../patches/no-vtk.patch
+            cat CMakeLists.txt
+            echo "Patch VTK out of CMakeLists.txt"
+            ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
+            ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
+            cat CMakeLists.txt
             cd ..
             VTK_DIR=""
           fi
@@ -931,8 +937,12 @@ jobs:
             VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
           else
             cd OCP
-            cat CMakeLists.txt  
-            patch -p1 < ../../patches/no-vtk.patch
+            # patch -p1 < ../../patches/no-vtk.patch
+            cat CMakeLists.txt
+            echo "Patch VTK out of CMakeLists.txt"
+            ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
+            ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
+            cat CMakeLists.txt
             cd ..
             VTK_DIR=""
           fi
@@ -983,7 +993,12 @@ jobs:
             set "VTK_DIR=-D VTK_DIR=%USERPROFILE%\opt\local\vtk-${{ env.VTK }}"
           ) else (
             cd OCP
-            patch -p1 < ../../patches/no-vtk.patch
+            # patch -p1 < ../../patches/no-vtk.patch
+            cat CMakeLists.txt
+            echo "Patch VTK out of CMakeLists.txt"
+            ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
+            ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
+            cat CMakeLists.txt
             cd ..
             set "VTK_DIR= "
           )
