@@ -677,8 +677,7 @@ jobs:
         os: ["macos-13", "macos-15", "ubuntu-22.04"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
-        # use-vtk: ["vtk", "novtk"]
-        use-vtk: ["novtk"]
+        use-vtk: ["vtk", "novtk"]
 
         include:
           - os: "macos-15"
