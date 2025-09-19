@@ -1,6 +1,7 @@
 find '/c/Program Files/Microsoft Visual Studio/2022/Enterprise' -iname dumpbin.exe
 find '/c/Program Files/Microsoft Visual Studio/2022/Enterprise' -iname lib.exe
-PATH='/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.42.34433/bin/Hostx64/x64/':$PATH
+PATH='/c/Program Files/Microsoft Visual Studio/2022/Enterprise/VC/Tools/MSVC/14.44.35207/bin/Hostx64/x64/':$PATH
+
 for dll_file in ../bin/vtk*.dll; do
     echo "$dll_file :"
     def_file=$(basename "${dll_file%.*}.def")
