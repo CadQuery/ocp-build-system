@@ -1369,7 +1369,8 @@ jobs:
           micromamba activate test
 
           # 7.9.1. COMPATIBILITY ISSUE
-          ${{ matrix.sed_i }} '/def test_cap/i @pytest.mark.skip()' tests/test_free_functions.py
+          ${{ matrix.sed_i }} '/^from pytest import /s/$/, mark/' tests/test_free_functions.py
+          ${{ matrix.sed_i }} '/def test_cap/i @mark.skip()' tests/test_free_functions.py
 
           # workaround for nlopt 2.9.0 not available for Intel Mac
           # if [[ "${{ matrix.os }}" == "macos-13" ]]; then
