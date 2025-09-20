@@ -966,6 +966,16 @@ jobs:
 
       # - - -
 
+      - name: (Windows) Patch CMakeLists.txt
+        if: runner.os == 'Windows' && matrix.use-vtk == 'novtk' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          echo "Patch VTK out of CMakeLists.txt"
+          ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
+          ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
+
+      # - - -
+
       - name: (Windows) Generate OCP build files and build OCP
         if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
         shell: cmd
@@ -987,13 +997,6 @@ jobs:
           if "${{ matrix.use-vtk }}"=="vtk" (
             set "VTK_DIR=-D VTK_DIR=%USERPROFILE%\opt\local\vtk-${{ env.VTK }}"
           ) else (
-            cd OCP
-            # patch -p1 < ../../patches/no-vtk.patch
-            echo "Patch VTK out of CMakeLists.txt"
-            ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
-            ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
-
-            cd ..
             set "VTK_DIR= "
           )
 
