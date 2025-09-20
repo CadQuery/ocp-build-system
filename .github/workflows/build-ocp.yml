@@ -25,27 +25,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
-        os: ["ubuntu-22.04"]
+        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
 
         include:
-          # - os: "macos-15"
-          #   vtk_libs: ".dylibs/libvtk*.dylib"
-          #   vtk_suffix: "/"
-          #   vtk_prefix: ""
-          #   sed_i: "gsed -i"
-          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-          #   shells: "bash"
-          # - os: "macos-13"
-          #   vtk_libs: ".dylibs/libvtk*.dylib"
-          #   vtk_suffix: "/"
-          #   vtk_prefix: ""
-          #   sed_i: "gsed -i"
-          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-          #   shells: "bash"
+          - os: "macos-15"
+            vtk_libs: ".dylibs/libvtk*.dylib"
+            vtk_suffix: "/"
+            vtk_prefix: ""
+            sed_i: "gsed -i"
+            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+            shells: "bash"
+          - os: "macos-13"
+            vtk_libs: ".dylibs/libvtk*.dylib"
+            vtk_suffix: "/"
+            vtk_prefix: ""
+            sed_i: "gsed -i"
+            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+            shells: "bash"
           - os: "ubuntu-22.04"
             vtk_libs: "libvtk*.so"
             vtk_suffix: "/vtk-9.5/"
@@ -53,12 +52,12 @@ jobs:
             sed_i: "sed -i"
             env: "DUMMY=0"
             shells: "bash"
-          # - os: "windows-2022"
-          #   vtk_libs: "vtk*.dll"
-          #   vtk_suffix: "/"
-          #   vtk_prefix: "Library/"
-          #   sed_i: "sed -i"
-          #   shells: "bash cmd.exe"
+          - os: "windows-2022"
+            vtk_libs: "vtk*.dll"
+            vtk_suffix: "/"
+            vtk_prefix: "Library/"
+            sed_i: "sed -i"
+            shells: "bash cmd.exe"
 
     steps:
       - uses: actions/checkout@v4
@@ -477,21 +476,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-15", "ubuntu-22.04", "windows-2022"]
-        os: ["ubuntu-22.04"]
+        os: ["macos-15", "ubuntu-22.04", "windows-2022"]
         python-version: ["3.13"]
         use-vtk: ["vtk"]
 
         include:
-          # - os: "macos-15"
-          #   sed_i: "gsed -i"
-          #   shells: "bash"
+          - os: "macos-15"
+            sed_i: "gsed -i"
+            shells: "bash"
           - os: "ubuntu-22.04"
             sed_i: "sed -i"
             shells: "bash"
-          # - os: "windows-2022"
-          #   sed_i: "sed -i"
-          #   shells: "bash"
+          - os: "windows-2022"
+            sed_i: "sed -i"
+            shells: "bash"
 
     steps:
       - uses: actions/checkout@v4
@@ -674,8 +672,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
-        os: ["ubuntu-22.04"]
+        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
