@@ -678,22 +678,22 @@ jobs:
         use-vtk: ["vtk", "novtk"]
 
         include:
-          # - os: "macos-15"
-          #   delocate: delocate
-          #   plat: macosx_11_1_arm64
-          #   sed_i: "gsed -i"
-          #   module: "OCP.*.so"
-          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-          #   shells: "bash"
-          #   ocp_tag: "macos-15"
-          # - os: "macos-13"
-          #   delocate: delocate
-          #   plat: macosx_11_1_x86_64
-          #   sed_i: "gsed -i"
-          #   module: "OCP.*.so"
-          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-          #   shells: "bash"
-          #   ocp_tag: "macos-15"
+          - os: "macos-15"
+            delocate: delocate
+            plat: macosx_11_1_arm64
+            sed_i: "gsed -i"
+            module: "OCP.*.so"
+            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+            shells: "bash"
+            ocp_tag: "macos-15"
+          - os: "macos-13"
+            delocate: delocate
+            plat: macosx_11_1_x86_64
+            sed_i: "gsed -i"
+            module: "OCP.*.so"
+            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+            shells: "bash"
+            ocp_tag: "macos-15"
           - os: "ubuntu-22.04"
             delocate: auditwheel patchelf
             plat: manylinux_2_34_x86_64
@@ -703,13 +703,13 @@ jobs:
             env: "DUMMY=0"
             shells: "bash"
             ocp_tag: "ubuntu-22.04"
-          # - os: "windows-2022"
-          #   delocate: delvewheel
-          #   plat: win_amd64
-          #   sed_i: "sed -i"
-          #   shells: "bash cmd.exe"
-          #   module: "OCP.*.pyd"
-          #   ocp_tag: "windows-2022"
+          - os: "windows-2022"
+            delocate: delvewheel
+            plat: win_amd64
+            sed_i: "sed -i"
+            shells: "bash cmd.exe"
+            module: "OCP.*.pyd"
+            ocp_tag: "windows-2022"
 
     steps:
       - uses: actions/checkout@v4
