@@ -25,7 +25,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
+        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
+        os: ["ubuntu-22.04"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
@@ -477,14 +478,14 @@ jobs:
       fail-fast: false
       matrix:
         # os: ["macos-15", "ubuntu-22.04", "windows-2022"]
-        os: ["macos-15", "ubuntu-22.04"]
+        os: ["ubuntu-22.04"]
         python-version: ["3.13"]
         use-vtk: ["vtk"]
 
         include:
-          - os: "macos-15"
-            sed_i: "gsed -i"
-            shells: "bash"
+          # - os: "macos-15"
+          #   sed_i: "gsed -i"
+          #   shells: "bash"
           - os: "ubuntu-22.04"
             sed_i: "sed -i"
             shells: "bash"
@@ -674,28 +675,28 @@ jobs:
       fail-fast: false
       matrix:
         # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
-        os: ["macos-13", "macos-15", "ubuntu-22.04"]
+        os: ["ubuntu-22.04"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
 
         include:
-          - os: "macos-15"
-            delocate: delocate
-            plat: macosx_11_1_arm64
-            sed_i: "gsed -i"
-            module: "OCP.*.so"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-            ocp_tag: "macos-15"
-          - os: "macos-13"
-            delocate: delocate
-            plat: macosx_11_1_x86_64
-            sed_i: "gsed -i"
-            module: "OCP.*.so"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-            ocp_tag: "macos-15"
+          # - os: "macos-15"
+          #   delocate: delocate
+          #   plat: macosx_11_1_arm64
+          #   sed_i: "gsed -i"
+          #   module: "OCP.*.so"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          #   ocp_tag: "macos-15"
+          # - os: "macos-13"
+          #   delocate: delocate
+          #   plat: macosx_11_1_x86_64
+          #   sed_i: "gsed -i"
+          #   module: "OCP.*.so"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          #   ocp_tag: "macos-15"
           - os: "ubuntu-22.04"
             delocate: auditwheel patchelf
             plat: manylinux_2_34_x86_64
