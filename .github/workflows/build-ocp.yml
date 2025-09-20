@@ -1326,7 +1326,7 @@ jobs:
           # kick out ocp_svg, since it relies on cadquery_ocp 7.8
           ${{ matrix.sed_i }} '/ocpsvg/d' pyproject.toml
           
-          # allow cadquery_ocp v 7.9
+          # allow cadquery_ocp v7.9
           if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
             ${{ matrix.sed_i }} 's/"cadquery-ocp >= 7\.8, < 7\.9",/"cadquery-ocp-novtk >= 7.9, < 8.0",/' pyproject.toml
           else
@@ -1362,21 +1362,24 @@ jobs:
           git clone https://github.com/cadquery/cadquery.git
           cd cadquery
 
-          if [[ "${{ matrix.python-version }}" == "3.13" ]]; then
-            patch -p1 < ../patches/cadquery.patch
-          fi
+          # allow cadquery_ocp v7.9
+          ${{ matrix.sed_i }} 's/"cadquery-ocp>=7\.8\.1,<7\.9",/"cadquery-ocp>=7.9,< 8.0",/' setup.py
+
+          # if [[ "${{ matrix.python-version }}" == "3.13" ]]; then
+          #   patch -p1 < ../patches/cadquery.patch
+          # fi
 
           micromamba activate test
 
           # workaround for nlopt 2.9.0 not available for Intel Mac
-          if [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            micromamba install -y nlopt=2.9
-          fi
+          # if [[ "${{ matrix.os }}" == "macos-13" ]]; then
+          #   micromamba install -y nlopt=2.9
+          # fi
 
           # workaround for pypi opt and casadi throwing a seg fault on exit 
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            micromamba install -y nlopt casadi
-          fi
+          # if [[ "$RUNNER_OS" == "Windows" ]]; then
+          #   micromamba install -y nlopt casadi
+          # fi
 
           CONDA_PREFIX_BAK=$CONDA_PREFIX
           unset CONDA_PREFIX
