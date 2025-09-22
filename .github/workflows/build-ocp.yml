@@ -1393,24 +1393,25 @@ jobs:
 
           # Patch for OCP 7.9
           for f in \
-            geometry.py \
-            exporters.py \
-            topology/shape_core.py \
-            topology/composite.py \
-            topology/zero_d.py \
-            topology/one_d.py \
-            topology/two_d.py \
-            topology/three_d.py \
-            topology/utils.py;
+            src/build123d/geometry.py \
+            src/build123d/exporters.py \
+            src/build123d/topology/shape_core.py \
+            src/build123d/topology/composite.py \
+            src/build123d/topology/zero_d.py \
+            src/build123d/topology/one_d.py \
+            src/build123d/topology/two_d.py \
+            src/build123d/topology/three_d.py \
+            src/build123d/topology/utils.py \
+            tests/test_importers.py;
           do
-            ${{ matrix.sed_i }} "s/TopoDS.Vertex_s/TopoDS.Vertex/g" src/build123d/$f
-            ${{ matrix.sed_i }} "s/TopoDS.Edge_s/TopoDS.Edge/g" src/build123d/$f
-            ${{ matrix.sed_i }} "s/TopoDS.Wire_s/TopoDS.Wire/g" src/build123d/$f
-            ${{ matrix.sed_i }} "s/TopoDS.Face_s/TopoDS.Face/g" src/build123d/$f
-            ${{ matrix.sed_i }} "s/TopoDS.Shell_s/TopoDS.Shell/g" src/build123d/$f
-            ${{ matrix.sed_i }} "s/TopoDS.Solid_s/TopoDS.Solid/g" src/build123d/$f
-            ${{ matrix.sed_i }} "s/TopoDS.Compound_s/TopoDS.Compound/g" src/build123d/$f
-            ${{ matrix.sed_i }} "s/TopoDS.CompSolid_s/TopoDS.CompSolid/g" src/build123d/$f
+            ${{ matrix.sed_i }} "s/TopoDS.Vertex_s/TopoDS.Vertex/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Edge_s/TopoDS.Edge/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Wire_s/TopoDS.Wire/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Face_s/TopoDS.Face/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Shell_s/TopoDS.Shell/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Solid_s/TopoDS.Solid/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Compound_s/TopoDS.Compound/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.CompSolid_s/TopoDS.CompSolid/g" $f
           done
 
           # install build123d without ocp_svg dependency (since it is already installed)
