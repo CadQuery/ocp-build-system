@@ -761,7 +761,10 @@ jobs:
           set -o pipefail
 
           micromamba activate build-ocp
-          micromamba install -y fontconfig=2.13.* freetype=2.12.* freeimage=3.18.*
+          
+          
+
+
 
           if [[ "$RUNNER_OS" == "macOS" ]]; then
             brew install gsed
@@ -774,6 +777,8 @@ jobs:
       - name: Restore VTK SDK cache
         if: matrix.use-vtk == 'vtk'
         id: cache-vtk-restore
+
+
         uses: actions/cache/restore@v4
         with:
           path: |
@@ -965,7 +970,7 @@ jobs:
 
           ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
-      # - - -
+      # - - - Prepare under bash ...
 
       - name: (Windows) Patch CMakeLists.txt
         if: runner.os == 'Windows' && matrix.use-vtk == 'novtk' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
@@ -975,20 +980,21 @@ jobs:
           ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
           ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
 
-      # - - -
+          cd OCP
+          mv new/OCP .
+
+      # - - - ... but compile under cmd.exe due to vcvars64.bat
 
       - name: (Windows) Generate OCP build files and build OCP
         if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
-          rem call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
           PATH="C:\Program Files\Git\usr\bin";%PATH%
 
           cd OCP
-
-          mv new/OCP .
 
           set pybind11_DIR="%CONDA_PREFIX%\Lib\site-packages\pybind11\share\cmake\pybind11"
 
@@ -1010,8 +1016,7 @@ jobs:
             -D CMAKE_BUILD_TYPE=Release ^
             -D Python3_FIND_STRATEGY=LOCATION ^
             -D Python3_ROOT_DIR=%CONDA_PREFIX% ^
-            -D CMAKE_LINKER=lld-link.exe ^
-            -D CMAKE_CXX_FLAGS="/EHsc /W0" ^
+            -D CMAKE_CXX_FLAGS="/W0" ^
             %VTK_DIR% ^
             -D OpenCASCADE_DIR=%USERPROFILE%\opt\local\occt-${{ env.OCCT }}-${{ matrix.use-vtk }}\cmake ^
             -D pybind11_DIR=%pybind11_DIR%
