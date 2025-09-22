@@ -898,25 +898,24 @@ jobs:
             VTK_DIR=""
           fi
 
-          EXTRA_FLAGS=""
           if [[ "$RUNNER_OS" == "macOS" ]]; then
             CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w"
-            EXTRA_FLAGS="-D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ "
-            EXTRA_FLAGS="$EXTRA_FLAGS -D CMAKE_OSX_DEPLOYMENT_TARGET=11.1"
+            EXTRA_FLAGS="-D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_OSX_DEPLOYMENT_TARGET=11.1"
           else
             CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w -D_GLIBCXX_USE_CXX11_ABI=0"
+            EXTRA_FLAGS=""
           fi
 
           cmake -B build -S OCP -G Ninja \
-          -D CMAKE_BUILD_TYPE=Release \
-              $VTK_DIR \
-              -D OpenCASCADE_DIR=$HOME/opt/local/occt-7.9.1-novtk/lib/cmake/opencascade \
-              -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
-              -D CMAKE_CXX_STANDARD=17 \
-              $EXTRA_FLAGS \
-              -D CMAKE_CXX_FLAGS="$CXX_FLAGS" \
-              -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-9.5.1/lib" \
-              -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
+                -D CMAKE_BUILD_TYPE=Release \
+                $VTK_DIR \
+                -D OpenCASCADE_DIR=$HOME/opt/local/occt-7.9.1-novtk/lib/cmake/opencascade \
+                -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
+                -D CMAKE_CXX_STANDARD=17 \
+                $EXTRA_FLAGS \
+                -D CMAKE_CXX_FLAGS="$CXX_FLAGS" \
+                -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-9.5.1/lib" \
+                -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
             for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \
@@ -1404,14 +1403,14 @@ jobs:
             topology/three_d.py \
             topology/utils.py;
           do
-            gsed -i "s/TopoDS.Vertex_s/TopoDS.Vertex/g" src/build123d/$f
-            gsed -i "s/TopoDS.Edge_s/TopoDS.Edge/g" src/build123d/$f
-            gsed -i "s/TopoDS.Wire_s/TopoDS.Wire/g" src/build123d/$f
-            gsed -i "s/TopoDS.Face_s/TopoDS.Face/g" src/build123d/$f
-            gsed -i "s/TopoDS.Shell_s/TopoDS.Shell/g" src/build123d/$f
-            gsed -i "s/TopoDS.Solid_s/TopoDS.Solid/g" src/build123d/$f
-            gsed -i "s/TopoDS.Compound_s/TopoDS.Compound/g" src/build123d/$f
-            gsed -i "s/TopoDS.CompSolid_s/TopoDS.CompSolid/g" src/build123d/$f
+            ${{ matrix.sed_i }} "s/TopoDS.Vertex_s/TopoDS.Vertex/g" src/build123d/$f
+            ${{ matrix.sed_i }} "s/TopoDS.Edge_s/TopoDS.Edge/g" src/build123d/$f
+            ${{ matrix.sed_i }} "s/TopoDS.Wire_s/TopoDS.Wire/g" src/build123d/$f
+            ${{ matrix.sed_i }} "s/TopoDS.Face_s/TopoDS.Face/g" src/build123d/$f
+            ${{ matrix.sed_i }} "s/TopoDS.Shell_s/TopoDS.Shell/g" src/build123d/$f
+            ${{ matrix.sed_i }} "s/TopoDS.Solid_s/TopoDS.Solid/g" src/build123d/$f
+            ${{ matrix.sed_i }} "s/TopoDS.Compound_s/TopoDS.Compound/g" src/build123d/$f
+            ${{ matrix.sed_i }} "s/TopoDS.CompSolid_s/TopoDS.CompSolid/g" src/build123d/$f
           done
 
           # install build123d without ocp_svg dependency (since it is already installed)
@@ -1450,14 +1449,14 @@ jobs:
           for f in \
             cadquery/occ_impl/shapes.py;
           do
-            gsed -i "s/TopoDS.Vertex_s/TopoDS.Vertex/g" $f
-            gsed -i "s/TopoDS.Edge_s/TopoDS.Edge/g" $f
-            gsed -i "s/TopoDS.Wire_s/TopoDS.Wire/g" $f
-            gsed -i "s/TopoDS.Face_s/TopoDS.Face/g" $f
-            gsed -i "s/TopoDS.Shell_s/TopoDS.Shell/g" $f
-            gsed -i "s/TopoDS.Solid_s/TopoDS.Solid/g" $f
-            gsed -i "s/TopoDS.Compound_s/TopoDS.Compound/g" $f
-            gsed -i "s/TopoDS.CompSolid_s/TopoDS.CompSolid/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Vertex_s/TopoDS.Vertex/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Edge_s/TopoDS.Edge/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Wire_s/TopoDS.Wire/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Face_s/TopoDS.Face/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Shell_s/TopoDS.Shell/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Solid_s/TopoDS.Solid/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.Compound_s/TopoDS.Compound/g" $f
+            ${{ matrix.sed_i }} "s/TopoDS.CompSolid_s/TopoDS.CompSolid/g" $f
           done
 
           # if [[ "${{ matrix.python-version }}" == "3.13" ]]; then
