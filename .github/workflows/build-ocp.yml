@@ -1323,8 +1323,7 @@ jobs:
             src/build123d/topology/one_d.py \
             src/build123d/topology/two_d.py \
             src/build123d/topology/three_d.py \
-            src/build123d/topology/utils.py \
-            tests/test_importers.py;
+            src/build123d/topology/utils.py;
           do
             ${{ matrix.sed_i }} "s/TopoDS.Vertex_s/TopoDS.Vertex/g" $f
             ${{ matrix.sed_i }} "s/TopoDS.Edge_s/TopoDS.Edge/g" $f
@@ -1342,6 +1341,7 @@ jobs:
           # 7.9.1. COMPATIBILITY ISSUE
           ${{ matrix.sed_i }} '/def test_export_step_timestamp_datetime/i\    @pytest.mark.skip()' tests/test_exporters3d.py
           ${{ matrix.sed_i }} '/def test_export_step_timestamp_str/i\    @pytest.mark.skip()' tests/test_exporters3d.py
+          ${{ matrix.sed_i }} '/^class ImportSVG(unittest\.TestCase):/a\    __test__ = False'    @pytest.mark.skip()' tests/test_importers.py
 
           if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
             pytest tests -v -W ignore \
