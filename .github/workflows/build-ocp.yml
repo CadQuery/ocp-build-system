@@ -883,9 +883,6 @@ jobs:
           mv new/OCP .
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-            if [[ "$RUNNER_OS" == "macOS" ]]; then 
-              export LDFLAGS="-L$HOME/opt/local/vtk-${{ env.VTK }}/lib"
-            fi          
             VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
           else
             cd OCP
@@ -893,12 +890,15 @@ jobs:
             echo "Patch VTK out of CMakeLists.txt"
             ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
             ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
-
             cd ..
+
             VTK_DIR=""
           fi
 
           if [[ "$RUNNER_OS" == "macOS" ]]; then
+            if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
+              export LDFLAGS="-L$HOME/opt/local/vtk-${{ env.VTK }}/lib"
+            fi
             CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w"
             EXTRA_FLAGS="-D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_OSX_DEPLOYMENT_TARGET=11.1"
           else
@@ -909,7 +909,7 @@ jobs:
           cmake -B build -S OCP -G Ninja \
                 -D CMAKE_BUILD_TYPE=Release \
                 $VTK_DIR \
-                -D OpenCASCADE_DIR=$HOME/opt/local/occt-7.9.1-novtk/lib/cmake/opencascade \
+                -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib/cmake/opencascade \
                 -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
                 -D CMAKE_CXX_STANDARD=17 \
                 $EXTRA_FLAGS \
