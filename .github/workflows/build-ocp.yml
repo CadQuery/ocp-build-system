@@ -672,8 +672,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
-        os: ["macos-13", "macos-15", "ubuntu-22.04"]
+        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
@@ -704,13 +703,13 @@ jobs:
             env: "DUMMY=0"
             shells: "bash"
             ocp_tag: "ubuntu-22.04"
-          # - os: "windows-2022"
-          #   delocate: delvewheel
-          #   plat: win_amd64
-          #   sed_i: "sed -i"
-          #   shells: "bash cmd.exe"
-          #   module: "OCP.*.pyd"
-          #   ocp_tag: "windows-2022"
+          - os: "windows-2022"
+            delocate: delvewheel
+            plat: win_amd64
+            sed_i: "sed -i"
+            shells: "bash cmd.exe"
+            module: "OCP.*.pyd"
+            ocp_tag: "windows-2022"
 
     steps:
       - uses: actions/checkout@v4
@@ -851,38 +850,18 @@ jobs:
 
       # - - -
 
-      # - name: Install Python prerequisites
-      #   if: steps.cache-ocp-restore.outputs.cache-hit != 'true'
-      #   shell: bash -l {0}
-      #   run: |
-      #     set -e
-      #     set -o pipefail
-
-      #     micromamba activate build-ocp
-      #     if [[ "$RUNNER_OS" == "Windows" ]]; then
-      #       micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief python-clang pyparsing
-      #       pip install "pybind11==${{ env.PYBIND11 }}.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
-      #     else
-      #       micromamba install -y py-lief
-      #       pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==15.0.7 pyparsing
-      #     fi
-
-      # - - -
-
-      - name: (Linux, Mac) Generate OCP build files and build OCP
-        if: runner.os != 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
+      - name: (Linux) Generate OCP build files and build OCP
+        if: runner.os == 'Linux' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
           set -e
           set -o pipefail
-          set -x
+
           micromamba activate build-ocp
 
           cd OCP
           
           mv new/OCP .
-
-          if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
             VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
           else
             cd OCP
@@ -890,32 +869,20 @@ jobs:
             echo "Patch VTK out of CMakeLists.txt"
             ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
             ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
-            cd ..
 
+            cd ..
             VTK_DIR=""
           fi
 
-          if [[ "$RUNNER_OS" == "macOS" ]]; then
-            if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-              export LDFLAGS="-L$HOME/opt/local/vtk-${{ env.VTK }}/lib"
-            fi
-            CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w"
-            EXTRA_FLAGS="-D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ -D CMAKE_OSX_DEPLOYMENT_TARGET=11.1"
-          else
-            CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w -D_GLIBCXX_USE_CXX11_ABI=0"
-            EXTRA_FLAGS=""
-          fi
-
           cmake -B build -S OCP -G Ninja \
-                -D CMAKE_BUILD_TYPE=Release \
-                $VTK_DIR \
-                -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib/cmake/opencascade \
-                -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
-                -D CMAKE_CXX_STANDARD=17 \
-                $EXTRA_FLAGS \
-                -D CMAKE_CXX_FLAGS="$CXX_FLAGS" \
-                -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
-                -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
+          -D CMAKE_BUILD_TYPE=Release \
+              $VTK_DIR \
+              -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib/cmake/opencascade \
+              -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
+              -D CMAKE_CXX_STANDARD=17 \
+              -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -D_GLIBCXX_USE_CXX11_ABI=0 -fvisibility=hidden -w" \
+              -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
+              -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
             for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \
@@ -928,101 +895,56 @@ jobs:
 
           ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
-      # - name: (Linux) Generate OCP build files and build OCP
-      #   if: runner.os == 'Linux' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
-      #   shell: bash -l {0}
-      #   run: |
-      #     set -e
-      #     set -o pipefail
+      # - - -
 
-      #     micromamba activate build-ocp
+      - name: (Mac) Generate OCP build files and build OCP
+        if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
+        shell: bash -l {0}
+        run: |
+          set -e
+          set -o pipefail
 
-      #     cd OCP
-          
-      #     mv new/OCP .
-      #       VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
-      #     else
-      #       cd OCP
-      #       # patch -p1 < ../../patches/no-vtk.patch
-      #       echo "Patch VTK out of CMakeLists.txt"
-      #       ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
-      #       ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
+          micromamba activate build-ocp
 
-      #       cd ..
-      #       VTK_DIR=""
-      #     fi
+          cd OCP
 
-      #     cmake -B build -S OCP -G Ninja \
-      #     -D CMAKE_BUILD_TYPE=Release \
-      #         $VTK_DIR \
-      #         -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib/cmake/opencascade \
-      #         -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
-      #         -D CMAKE_CXX_STANDARD=17 \
-      #         -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -D_GLIBCXX_USE_CXX11_ABI=0 -fvisibility=hidden -w" \
-      #         -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
-      #         -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
+          mv new/OCP .
 
-      #     if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-      #       for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \
-      #                libvtkRenderingCore  libvtkRenderingFreeType  libvtkFiltersGeneral \
-      #                libvtkInteractionStyle  libvtkRenderingOpenGL2 \
-      #                libvtkWrappingPythonCore${{ matrix.python-version }}; do
-      #           ${{ matrix.sed_i }} "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
-      #       done
-      #     fi
+          if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
+            export LDFLAGS="-L$HOME/opt/local/vtk-${{ env.VTK }}/lib"
+            VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
+          else
+            cd OCP
+            # patch -p1 < ../../patches/no-vtk.patch
+            echo "Patch VTK out of CMakeLists.txt"
+            ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
+            ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
 
-      #     ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
+            cd ..
+            VTK_DIR=""
+          fi
 
-      # # - - -
+          env ${{ matrix.env }} cmake -B build -S OCP -G Ninja \
+              -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ \
+              -D CMAKE_BUILD_TYPE=Release \
+              -D CMAKE_OSX_DEPLOYMENT_TARGET="11.1" \
+              -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w" \
+              $VTK_DIR \
+              -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib/cmake/opencascade \
+              -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
+              -D CMAKE_CXX_STANDARD=17 \
+              -D CMAKE_OSX_SYSROOT=/opt/MacOSX11.3.sdk
 
-      # - name: (Mac) Generate OCP build files and build OCP
-      #   if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
-      #   shell: bash -l {0}
-      #   run: |
-      #     set -e
-      #     set -o pipefail
+          if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
+            for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \
+                     libvtkRenderingCore  libvtkRenderingFreeType  libvtkFiltersGeneral \
+                     libvtkInteractionStyle  libvtkRenderingOpenGL2 \
+                     libvtkWrappingPythonCore${{ matrix.python-version }}; do
+                ${{ matrix.sed_i }} "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
+            done
+          fi
 
-      #     micromamba activate build-ocp
-
-      #     cd OCP
-
-      #     mv new/OCP .
-
-      #     if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-      #       export LDFLAGS="-L$HOME/opt/local/vtk-${{ env.VTK }}/lib"
-      #       VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
-      #     else
-      #       cd OCP
-      #       # patch -p1 < ../../patches/no-vtk.patch
-      #       echo "Patch VTK out of CMakeLists.txt"
-      #       ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
-      #       ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
-
-      #       cd ..
-      #       VTK_DIR=""
-      #     fi
-
-      #     env ${{ matrix.env }} cmake -B build -S OCP -G Ninja \
-      #         -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ \
-      #         -D CMAKE_BUILD_TYPE=Release \
-      #         -D CMAKE_OSX_DEPLOYMENT_TARGET="11.1" \
-      #         -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w" \
-      #         $VTK_DIR \
-      #         -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib/cmake/opencascade \
-      #         -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
-      #         -D CMAKE_CXX_STANDARD=17 \
-      #         -D CMAKE_OSX_SYSROOT=/opt/MacOSX11.3.sdk
-
-      #     if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-      #       for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \
-      #                libvtkRenderingCore  libvtkRenderingFreeType  libvtkFiltersGeneral \
-      #                libvtkInteractionStyle  libvtkRenderingOpenGL2 \
-      #                libvtkWrappingPythonCore${{ matrix.python-version }}; do
-      #           ${{ matrix.sed_i }} "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
-      #       done
-      #     fi
-
-      #     ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
+          ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
       # - - - Prepare under bash ...
 
