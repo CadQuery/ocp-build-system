@@ -717,18 +717,6 @@ jobs:
 
       # - - -
 
-      - name: Get number of CPUs
-        shell: bash -l {0}
-        id: cpu-count
-        run: |
-          micromamba activate build-ocp
-
-          cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
-          echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
-          echo "=> Using $cpu_count CPUs"
-
-      # - - -
-
       - name: Set up Python ${{ matrix.python-version }} via micromamba
         uses: mamba-org/setup-micromamba@v2
         with:
@@ -738,6 +726,18 @@ jobs:
           cache-downloads: true
           cache-environment: true
           cache-environment-key: environment-${{ env.OCP }}
+          
+      # - - -
+
+      - name: Get number of CPUs
+        shell: bash -l {0}
+        id: cpu-count
+        run: |
+          micromamba activate build-ocp
+
+          cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
+          echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
+          echo "=> Using $cpu_count CPUs"
 
       # - - -
 
@@ -761,10 +761,7 @@ jobs:
           set -o pipefail
 
           micromamba activate build-ocp
-          
-          
-
-
+          micromamba install -y fontconfig=2.13.* freetype=2.12.* freeimage=3.18.*
 
           if [[ "$RUNNER_OS" == "macOS" ]]; then
             brew install gsed
@@ -984,7 +981,8 @@ jobs:
 
           cd OCP
           mv new/OCP .
-
+          
+          micromamba activate build-ocp
           cp -a "${CONDA_PREFIX}/Library/include/rapidjson" "${HOME}/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/inc/rapidjson"
 
       # - - - ... but compile under cmd.exe due to vcvars64.bat
