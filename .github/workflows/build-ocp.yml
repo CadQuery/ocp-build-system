@@ -898,23 +898,24 @@ jobs:
             VTK_DIR=""
           fi
 
-          CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w"
+          EXTRA_FLAGS=""
           if [[ "$RUNNER_OS" == "macOS" ]]; then
-            EXTRA_FLAGS="-D CMAKE_CXX_FLAGS=\"$CXX_FLAGS\""
-            EXTRA_FLAGS="$EXTRA_FLAGS -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ "
+            CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w"
+            EXTRA_FLAGS="-D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ "
             EXTRA_FLAGS="$EXTRA_FLAGS -D CMAKE_OSX_DEPLOYMENT_TARGET=11.1"
           else
-            EXTRA_FLAGS="-D CMAKE_CXX_FLAGS=\"$CXX_FLAGS -D_GLIBCXX_USE_CXX11_ABI=0\""
+            CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w -D_GLIBCXX_USE_CXX11_ABI=0"
           fi
 
           cmake -B build -S OCP -G Ninja \
           -D CMAKE_BUILD_TYPE=Release \
               $VTK_DIR \
-              -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib/cmake/opencascade \
+              -D OpenCASCADE_DIR=$HOME/opt/local/occt-7.9.1-novtk/lib/cmake/opencascade \
               -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
               -D CMAKE_CXX_STANDARD=17 \
               $EXTRA_FLAGS \
-              -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
+              -D CMAKE_CXX_FLAGS="$CXX_FLAGS" \
+              -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-9.5.1/lib" \
               -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
