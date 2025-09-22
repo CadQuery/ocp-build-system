@@ -10,7 +10,7 @@ env:
   OCCT: 7.9.1
   PYBIND11: 2.13
   PYWRAP: true
-  VTK313_URL: https://github.com/CadQuery/ocp-build-system/releases/download/v7.8.1.0-dev
+#  VTK313_URL: https://github.com/CadQuery/ocp-build-system/releases/download/v7.8.1.0-dev
 
 jobs:
   # ================================================================================
@@ -1009,11 +1009,11 @@ jobs:
 
       # - - -
 
-      # - name: Debug Upload module
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: debug_module_${{ matrix.os }}-py_${{ matrix.python-version }}
-      #     path: ./OCP/build/${{ matrix.module }}
+      - name: Debug Upload module
+        uses: actions/upload-artifact@v4
+        with:
+          name: debug_module_${{ matrix.os }}-py_${{ matrix.python-version }}
+          path: ./OCP/build/${{ matrix.module }}
 
       # ================================================================================
       #               OCP wheel
