@@ -1009,11 +1009,11 @@ jobs:
 
       # - - -
 
-      - name: Debug Upload module
-        uses: actions/upload-artifact@v4
-        with:
-          name: debug_module_${{ matrix.os }}-py_${{ matrix.python-version }}
-          path: ./OCP/build/${{ matrix.module }}
+      # - name: Debug Upload module
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: debug_module_${{ matrix.os }}-py_${{ matrix.python-version }}
+      #     path: ./OCP/build/${{ matrix.module }}
 
       # ================================================================================
       #               OCP wheel
@@ -1341,7 +1341,7 @@ jobs:
           # 7.9.1. COMPATIBILITY ISSUE
           ${{ matrix.sed_i }} '/def test_export_step_timestamp_datetime/i\    @pytest.mark.skip()' tests/test_exporters3d.py
           ${{ matrix.sed_i }} '/def test_export_step_timestamp_str/i\    @pytest.mark.skip()' tests/test_exporters3d.py
-          ${{ matrix.sed_i }} '/^class ImportSVG(unittest\.TestCase):/a\    __test__ = False'    @pytest.mark.skip()' tests/test_importers.py
+          ${{ matrix.sed_i }} '/^class ImportSVG(unittest\.TestCase):/a\    __test__ = False' tests/test_importers.py
 
           if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
             pytest tests -v -W ignore \
