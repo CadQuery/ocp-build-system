@@ -50,6 +50,28 @@ def traverse(module, p, depth=0):
                 with open(p2 / "__init__.py", "w") as f:
                     f.write(f"from ..{obj.__name__} import *\n")
 
+                    if obj.__name__ == "OCP.TopoDS":
+                        f.write("# Compatibility with OCP 7.8.x\n")
+                        f.write("TopoDS.Vertex_s = TopoDS.Vertex\n")
+                        f.write("TopoDS.Edge_s = TopoDS.Edge\n")
+                        f.write("TopoDS.Wire_s = TopoDS.Wire\n")
+                        f.write("TopoDS.Face_s = TopoDS.Face\n")
+                        f.write("TopoDS.Shell_s = TopoDS.Shell\n")
+                        f.write("TopoDS.Solid_s = TopoDS.Solid\n")
+                        f.write("TopoDS.Compound_s = TopoDS.Compound\n")
+                        f.write("TopoDS.CompSolid_s = TopoDS.CompSolid\n")
+
+                    if obj.__name__ == "OCP.TopoDS.TopoDS":
+                        f.write("# Compatibility with OCP 7.8.x\n")
+                        f.write("Vertex_s = Vertex\n")
+                        f.write("Edge_s = Edge\n")
+                        f.write("Wire_s = Wire\n")
+                        f.write("Face_s = Face\n")
+                        f.write("Shell_s = Shell\n")
+                        f.write("Solid_s = Solid\n")
+                        f.write("Compound_s = Compound\n")
+                        f.write("CompSolid_s = CompSolid\n")
+
             traverse(obj, p2, depth + 1)
 
 

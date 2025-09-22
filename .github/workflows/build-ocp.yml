@@ -1311,35 +1311,13 @@ jobs:
             ${{ matrix.sed_i }} 's/"cadquery-ocp >= 7\.8, < 7\.9",/"cadquery-ocp >= 7.9, < 8.0",/' pyproject.toml
           fi
 
-          # Patch for OCP 7.9
-          for f in \
-            src/build123d/geometry.py \
-            src/build123d/exporters.py \
-            src/build123d/topology/shape_core.py \
-            src/build123d/topology/composite.py \
-            src/build123d/topology/zero_d.py \
-            src/build123d/topology/one_d.py \
-            src/build123d/topology/two_d.py \
-            src/build123d/topology/three_d.py \
-            src/build123d/topology/utils.py;
-          do
-            ${{ matrix.sed_i }} "s/TopoDS.Vertex_s/TopoDS.Vertex/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Edge_s/TopoDS.Edge/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Wire_s/TopoDS.Wire/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Face_s/TopoDS.Face/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Shell_s/TopoDS.Shell/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Solid_s/TopoDS.Solid/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Compound_s/TopoDS.Compound/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.CompSolid_s/TopoDS.CompSolid/g" $f
-          done
-
           # install build123d without ocp_svg dependency (since it is already installed)
           pip install .
 
           # 7.9.1. COMPATIBILITY ISSUE
           ${{ matrix.sed_i }} '/def test_export_step_timestamp_datetime/i\    @pytest.mark.skip()' tests/test_exporters3d.py
           ${{ matrix.sed_i }} '/def test_export_step_timestamp_str/i\    @pytest.mark.skip()' tests/test_exporters3d.py
-          ${{ matrix.sed_i }} '/^class ImportSVG(unittest\.TestCase):/a\    __test__ = False' tests/test_importers.py
+          # ${{ matrix.sed_i }} '/^class ImportSVG(unittest\.TestCase):/a\    __test__ = False' tests/test_importers.py
 
           if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
             pytest tests -v -W ignore \
@@ -1366,29 +1344,11 @@ jobs:
           # Patch to allow cadquery_ocp v7.9
           ${{ matrix.sed_i }} 's/"cadquery-ocp>=7\.8\.1,<7\.9",/"cadquery-ocp>=7.9,< 8.0",/' setup.py
 
-          # Patch for OCP 7.9
-          for f in \
-            cadquery/occ_impl/shapes.py;
-          do
-            ${{ matrix.sed_i }} "s/TopoDS.Vertex_s/TopoDS.Vertex/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Edge_s/TopoDS.Edge/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Wire_s/TopoDS.Wire/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Face_s/TopoDS.Face/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Shell_s/TopoDS.Shell/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Solid_s/TopoDS.Solid/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.Compound_s/TopoDS.Compound/g" $f
-            ${{ matrix.sed_i }} "s/TopoDS.CompSolid_s/TopoDS.CompSolid/g" $f
-          done
-
           # if [[ "${{ matrix.python-version }}" == "3.13" ]]; then
           #   patch -p1 < ../patches/cadquery.patch
           # fi
 
           micromamba activate test
-
-          # 7.9.1. COMPATIBILITY ISSUE
-          ${{ matrix.sed_i }} '/^from pytest import /s/$/, mark/' tests/test_free_functions.py
-          ${{ matrix.sed_i }} '/def test_cap/i @mark.skip()' tests/test_free_functions.py
 
           # workaround for nlopt 2.9.0 not available for Intel Mac
           # if [[ "${{ matrix.os }}" == "macos-13" ]]; then
