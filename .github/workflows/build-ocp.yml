@@ -773,8 +773,6 @@ jobs:
       - name: Restore VTK SDK cache
         if: matrix.use-vtk == 'vtk'
         id: cache-vtk-restore
-
-
         uses: actions/cache/restore@v4
         with:
           path: |
