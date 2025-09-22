@@ -875,7 +875,7 @@ jobs:
         run: |
           set -e
           set -o pipefail
-
+          set -x
           micromamba activate build-ocp
 
           cd OCP
