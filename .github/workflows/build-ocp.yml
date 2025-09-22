@@ -971,17 +971,18 @@ jobs:
 
       - name: (Windows) Patch CMakeLists.txt
         if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
-        shell: bash
+        shell: bash -l {0}
         run: |
+          cd OCP
+          mv new/OCP .
+
           if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
             echo "Patch VTK out of CMakeLists.txt"
+            cd OCP
             ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
             ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
           fi
 
-          cd OCP
-          mv new/OCP .
-          
           micromamba activate build-ocp
           cp -a "${CONDA_PREFIX}/Library/include/rapidjson" "${HOME}/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/inc/rapidjson"
 
