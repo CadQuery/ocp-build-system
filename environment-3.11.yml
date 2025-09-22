@@ -7,8 +7,8 @@ dependencies:
   - pybind11=2.13.*
   - cmake >3.24
   - ninja
-  - clang==15.0.7
-  - llvmdev==15.0.7
+  - clang==20.1.8
+  - llvmdev==20.1.8
   - tbb-devel
   - pybind11-stubgen
   - rapidjson
