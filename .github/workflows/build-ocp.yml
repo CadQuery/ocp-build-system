@@ -672,7 +672,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
+        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
+        os: ["windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
@@ -981,7 +982,7 @@ jobs:
         shell: cmd
         run: |
           call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
-          call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+          rem call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
           PATH="C:\Program Files\Git\usr\bin";%PATH%
 
@@ -1010,7 +1011,7 @@ jobs:
             -D Python3_FIND_STRATEGY=LOCATION ^
             -D Python3_ROOT_DIR=%CONDA_PREFIX% ^
             -D CMAKE_LINKER=lld-link.exe ^
-            -D CMAKE_CXX_FLAGS="/W0" ^
+            -D CMAKE_CXX_FLAGS="/EHsc /W0" ^
             %VTK_DIR% ^
             -D OpenCASCADE_DIR=%USERPROFILE%\opt\local\occt-${{ env.OCCT }}-${{ matrix.use-vtk }}\cmake ^
             -D pybind11_DIR=%pybind11_DIR%
