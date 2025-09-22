@@ -854,21 +854,21 @@ jobs:
 
       # - - -
 
-      - name: Install Python prerequisites
-        if: steps.cache-ocp-restore.outputs.cache-hit != 'true'
-        shell: bash -l {0}
-        run: |
-          set -e
-          set -o pipefail
+      # - name: Install Python prerequisites
+      #   if: steps.cache-ocp-restore.outputs.cache-hit != 'true'
+      #   shell: bash -l {0}
+      #   run: |
+      #     set -e
+      #     set -o pipefail
 
-          micromamba activate build-ocp
-          if [[ "$RUNNER_OS" == "Windows" ]]; then
-            micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief python-clang pyparsing
-            pip install "pybind11==${{ env.PYBIND11 }}.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
-          else
-            micromamba install -y py-lief
-            pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==15.0.7 pyparsing
-          fi
+      #     micromamba activate build-ocp
+      #     if [[ "$RUNNER_OS" == "Windows" ]]; then
+      #       micromamba install -y logzero toml pandas joblib tqdm jinja2 toposort schema click py-lief python-clang pyparsing
+      #       pip install "pybind11==${{ env.PYBIND11 }}.*" path  # cannot be installed with micromamba on Py3.12 and Py3.13
+      #     else
+      #       micromamba install -y py-lief
+      #       pip install "pybind11==${{ env.PYBIND11 }}.*" logzero toml pandas joblib path tqdm jinja2 toposort schema click clang==15.0.7 pyparsing
+      #     fi
 
       # - - -
 
@@ -973,15 +973,19 @@ jobs:
       # - - - Prepare under bash ...
 
       - name: (Windows) Patch CMakeLists.txt
-        if: runner.os == 'Windows' && matrix.use-vtk == 'novtk' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
+        if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
         shell: bash
         run: |
-          echo "Patch VTK out of CMakeLists.txt"
-          ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
-          ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
+          if [[ "${{ matrix.use-vtk }}" == "novtk" ]]; then
+            echo "Patch VTK out of CMakeLists.txt"
+            ${{ matrix.sed_i }} '/find_package( VTK/,/)/d' CMakeLists.txt
+            ${{ matrix.sed_i }} '/VTK::/d' CMakeLists.txt
+          fi
 
           cd OCP
           mv new/OCP .
+
+          cp -a "${CONDA_PREFIX}/Library/include/rapidjson" "${HOME}/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/inc/rapidjson"
 
       # - - - ... but compile under cmd.exe due to vcvars64.bat
 
@@ -996,8 +1000,6 @@ jobs:
 
           cd OCP
 
-          set pybind11_DIR="%CONDA_PREFIX%\Lib\site-packages\pybind11\share\cmake\pybind11"
-
           set CC=cl.exe
           set CXX=cl.exe
 
@@ -1007,19 +1009,13 @@ jobs:
             set "VTK_DIR= "
           )
 
-          echo "VTK_DIR = %VTK_DIR%"
-          type CMakeLists.txt
-
-          xcopy "%CONDA_PREFIX%/Library/include/rapidjson" "%USERPROFILE%\opt\local\occt-${{ env.OCCT }}-${{ matrix.use-vtk }}\inc\rapidjson" /E /I /H /C
-
           cmake -B build -S OCP -G Ninja ^
             -D CMAKE_BUILD_TYPE=Release ^
             -D Python3_FIND_STRATEGY=LOCATION ^
             -D Python3_ROOT_DIR=%CONDA_PREFIX% ^
-            -D CMAKE_CXX_FLAGS="/W0" ^
             %VTK_DIR% ^
             -D OpenCASCADE_DIR=%USERPROFILE%\opt\local\occt-${{ env.OCCT }}-${{ matrix.use-vtk }}\cmake ^
-            -D pybind11_DIR=%pybind11_DIR%
+            -D pybind11_DIR=%CONDA_PREFIX%\Lib\site-packages\pybind11\share\cmake\pybind11
 
           ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
