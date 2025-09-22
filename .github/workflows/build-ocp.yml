@@ -914,7 +914,7 @@ jobs:
                 -D CMAKE_CXX_STANDARD=17 \
                 $EXTRA_FLAGS \
                 -D CMAKE_CXX_FLAGS="$CXX_FLAGS" \
-                -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-9.5.1/lib" \
+                -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
                 -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
