@@ -42,7 +42,7 @@ runs:
         init-shell: ${{ inputs.shells }}
         cache-downloads: true
         cache-environment: true
-        cache-environment-key: environment-${{ inputs.python-version }}-%{{ inputs.os }}-${{ inputs.use-vtk }}
+        cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-${{ inputs.use-vtk }}
 
     # - - -
 
