@@ -1,0 +1,198 @@
+name: "Test OCP"
+description: "Testing OCP wheels with build123d and CadQuery"
+inputs:
+  os:
+    description: "Operating system to use for the build"
+    required: true
+  python-version:
+    description: "Python version to use for the build"
+    required: true
+  sed-i:
+    description: "Sed in-place command for the OS"
+    required: true
+  use-vtk:
+    description: "Whether to use VTK in the build"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    # - - -
+
+    - name: Create the test environment
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba create -y -n test python=${{ inputs.python-version }}
+        micromamba activate test
+        pip install pytest docutils ipython
+
+    # - - -
+
+    # - name: Download wheel artifact
+    #   if: inputs.python-version == '3.13' && inputs.use-vtk == 'vtk'
+    #   shell: bash -l {0}
+    #   run: |
+    #     if [[ "${{ inputs.os }}" == "macos-15" ]]; then
+    #       echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
+    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
+
+    #     elif [[ "${{ inputs.os }}" == "macos-13" ]]; then
+    #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
+    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_x86_64.whl
+
+    #     elif [[ "${{ inputs.os }}" == "ubuntu-22.04" ]]; then
+    #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
+    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-linux_x86_64.whl
+
+    #     else 
+    #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
+    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-win_amd64.whl
+
+    #     fi
+    #     ls -l
+
+    # - - -
+    
+    - name: Download vtk cadquery_ocp wheel
+      if: inputs.use-vtk == 'vtk'
+      uses: actions/download-artifact@v4
+      with:
+        name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+        path: pypi/wheel/*.whl
+
+    # - - -
+
+    - name: Download novtk cadquery_ocp wheel
+      if: inputs.use-vtk == 'novtk'
+      uses: actions/download-artifact@v4
+      with:
+        name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+        path: pypi/wheel/*.whl  
+
+    # - - -
+
+    - name: Install VTK and OCP wheel
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate test
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          # if [[ ${{ inputs.python-version }} == 3.13 ]]; then
+          #   pip install ./cadquery_vtk*.whl
+          # else
+          #   pip install vtk==${{ env.VTK }}
+          # fi
+          pip install vtk==${{ env.VTK }}
+        fi
+        pip install pypi/wheel/*.whl
+
+        python -c "import OCP; print('Success: OCP', OCP.__version__)"
+
+    # - - -
+
+    - name: Run build123d tests
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate test
+
+        git clone https://github.com/gumyr/build123d.git
+
+        cd build123d
+        
+        # install ocp_svg and svgelements (a ocp_svg dependency) without cadquery_ocp dependency
+        pip install --no-deps ocpsvg svgelements
+        
+        # Patch to remove dependency ocp_svg, since it relies on cadquery_ocp 7.8
+        ${{ inputs.sed-i }} '/ocpsvg/d' pyproject.toml
+        
+        # Patch to allow cadquery_ocp v7.9
+        if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
+          ${{ inputs.sed-i }} 's/"cadquery-ocp >= 7\.8, < 7\.9",/"cadquery-ocp-novtk >= 7.9, < 8.0",/' pyproject.toml
+        else
+          ${{ inputs.sed-i }} 's/"cadquery-ocp >= 7\.8, < 7\.9",/"cadquery-ocp >= 7.9, < 8.0",/' pyproject.toml
+        fi
+
+        # install build123d without ocp_svg dependency (since it is already installed)
+        pip install .
+
+        # 7.9.1. COMPATIBILITY ISSUE
+        ${{ inputs.sed-i }} '/def test_export_step_timestamp_datetime/i\    @pytest.mark.skip()' tests/test_exporters3d.py
+        ${{ inputs.sed-i }} '/def test_export_step_timestamp_str/i\    @pytest.mark.skip()' tests/test_exporters3d.py
+        # ${{ inputs.sed-i }} '/^class ImportSVG(unittest\.TestCase):/a\    __test__ = False' tests/test_importers.py
+
+        if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
+          pytest tests -v -W ignore \
+                 --ignore tests/test_direct_api/test_vtk_poly_data.py \
+                 --ignore tests/test_direct_api/test_jupyter.py \
+                 --ignore tests/test_examples.py  # 7.9.1. COMPATIBILITY ISSUE
+        else
+          pytest tests -v -W ignore \
+                 --ignore tests/test_examples.py  # 7.9.1. COMPATIBILITY ISSUE
+        fi
+
+    # - - -
+
+    - name: Run cadquery tests
+      if: inputs.use-vtk == 'vtk'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        git clone https://github.com/cadquery/cadquery.git
+        cd cadquery
+
+        # Patch to allow cadquery_ocp v7.9
+        ${{ inputs.sed-i }} 's/"cadquery-ocp>=7\.8\.1,<7\.9",/"cadquery-ocp>=7.9,< 8.0",/' setup.py
+
+        # if [[ "${{ inputs.python-version }}" == "3.13" ]]; then
+        #   patch -p1 < ../patches/cadquery.patch
+        # fi
+
+        micromamba activate test
+
+        # 7.9.1. COMPATIBILITY ISSUE
+        ${{ inputs.sed-i }} '/^from pytest import /s/$/, mark/' tests/test_free_functions.py
+        ${{ inputs.sed-i }} '/def test_cap/i @mark.skip()' tests/test_free_functions.py
+        # workaround for nlopt 2.9.0 not available for Intel Mac
+        # if [[ "${{ inputs.os }}" == "macos-13" ]]; then
+        #   micromamba install -y nlopt=2.9
+        # fi
+
+        # workaround for pypi opt and casadi throwing a seg fault on exit 
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          micromamba install -y nlopt casadi
+        fi
+
+        CONDA_PREFIX_BAK=$CONDA_PREFIX
+        unset CONDA_PREFIX
+        pip install .
+        CONDA_PREFIX=$CONDA_PREFIX_BAK
+
+        pytest tests -v -W ignore
+
+    # - - -
+
+    - name: Uninstall test
+      # if: inputs.python-version != '3.13'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate test
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+           pip uninstall -y cadquery_ocp
+        else
+          pip uninstall -y cadquery_ocp_novtk
+        fi

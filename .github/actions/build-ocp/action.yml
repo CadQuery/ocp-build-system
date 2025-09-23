@@ -1,0 +1,549 @@
+name: "Build OCP"
+description: "Building OCP and wheels"
+inputs:
+  os:
+    description: "Operating system to use for the build"
+    required: true
+  python-version:
+    description: "Python version to use for the build"
+    required: true
+  use-vtk:
+    description: "Whether to use VTK in the build"
+    required: true
+  sed-i:
+    description: "Sed in-place command for the OS"
+    required: true
+  shells:
+    description: "Shell configuration for the OS"
+    required: true
+  delocate:
+    description: "delocation command"
+    required: true
+  plat:
+    description: "platform tag"
+    required: true
+  module:
+    description: "pattern for the OCP module"
+    required: true
+  env:
+    description: "compile en variables"
+    required: true
+  ocp-tag:
+    description: "tag for the ocp cache naming"
+    required: true
+
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    # - - -
+
+    - name: Set up Python ${{ inputs.python-version }} via micromamba
+      uses: mamba-org/setup-micromamba@v2
+      with:
+        environment-file: environment-${{ inputs.python-version }}.yml
+        log-level: warning
+        init-shell: ${{ inputs.shells }}
+        cache-downloads: true
+        cache-environment: true
+        cache-environment-key: environment-${{ env.OCP }}
+        
+    # - - -
+
+    - name: Get number of CPUs
+      shell: bash -l {0}
+      id: cpu-count
+      run: |
+        micromamba activate build-ocp
+
+        cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
+        echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
+        echo "=> Using $cpu_count CPUs"
+
+    # - - -
+
+    - name: (Ubuntu) Install dependencies
+      if: runner.os == 'Linux'
+      shell: bash -l {0}
+      run: |
+        sudo apt-get update
+        # do not use freeimage freetype fontconfig from anaconda. Prevents from manylinux_2_31_x86_64 wheel
+        sudo apt-get install -y mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev \
+                                libglu1-mesa-dev freeglut3-dev libxcursor-dev \
+                                libfreeimage-dev libfreetype-dev libfontconfig-dev
+
+    # - - -
+
+    - name: (Mac, Windows) Install dependencies
+      if: runner.os != 'Linux'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate build-ocp
+        micromamba install -y fontconfig=2.13.* freetype=2.12.* freeimage=3.18.*
+
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          brew install gsed
+        fi
+
+    # - - - - - - - - - - - - - - - - - - - - -
+    # Restore SDKs
+    # - - - - - - - - - - - - - - - - - - - - -
+
+    - name: Restore VTK SDK cache
+      if: inputs.use-vtk == 'vtk'
+      id: cache-vtk-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ~/opt/local/vtk-${{ env.VTK }}
+        key: VTK-${{ env.VTK }}-py-${{ inputs.python-version }}-${{ inputs.os }}-
+
+    # - - -
+
+    - name: Restore OCCT SDK cache with VTK support
+      id: cache-occt-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}
+        key: OCCT-${{ env.OCCT }}-py-${{ inputs.python-version }}-${{ inputs.use-vtk }}-${{ inputs.os }}-
+
+    # - - - 
+    # Restore sources (supporting vtk - will be patched later for novtk)
+    # - - - 
+
+    - name: Restore OCP source cache
+      id: cache-ocp-source-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ./OCP
+        key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.ocp-tag }}-
+
+    # - - -
+
+    - name: Patch vtk out of OCP
+      if: inputs.use-vtk == 'novtk'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -u
+        set -o pipefail
+
+        cd OCP/new
+        rm OCP/IVtk*
+        for module in IVtk IVtkOCC IVtkTools IVtkVTK; do
+          ${{ inputs.sed-i }} '/register_IVtk/d' OCP/OCP.cpp
+        done
+
+    # - - - - - - - - - - - - - - - - - - - - -
+    #  Build OCP
+    # - - - - - - - - - - - - - - - - - - - - -
+
+    - name: Restore OCP cache
+      id: cache-ocp-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ./OCP/build/${{ inputs.module }}
+        key: OCP-${{ env.OCP }}-VTK-${{ inputs.use-vtk }}-py${{ inputs.python-version }}-${{ inputs.os }}-
+
+    # - - -
+
+    - name: (Mac) Install MacOS SDK
+      if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -u
+        set -o pipefail
+
+        curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
+        sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
+        sudo mkdir -p /opt/usr/local/
+        sudo mkdir -p /usr/local/include
+        sudo ln -s /opt/MacOSX11.3.sdk/usr/include /opt/usr/local/include
+        sudo ln -s /opt/MacOSX11.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers /usr/local/include/OpenGL
+
+    # - - -
+
+    - name: (Linux) Generate OCP build files and build OCP
+      if: runner.os == 'Linux' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate build-ocp
+
+        cd OCP
+        
+        mv new/OCP .
+          VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
+        else
+          cd OCP
+          # patch -p1 < ../../patches/no-vtk.patch
+          echo "Patch VTK out of CMakeLists.txt"
+          ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
+          ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
+
+          cd ..
+          VTK_DIR=""
+        fi
+
+        cmake -B build -S OCP -G Ninja \
+        -D CMAKE_BUILD_TYPE=Release \
+            $VTK_DIR \
+            -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib/cmake/opencascade \
+            -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
+            -D CMAKE_CXX_STANDARD=17 \
+            -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -D_GLIBCXX_USE_CXX11_ABI=0 -fvisibility=hidden -w" \
+            -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
+            -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \
+                   libvtkRenderingCore  libvtkRenderingFreeType  libvtkFiltersGeneral \
+                   libvtkInteractionStyle  libvtkRenderingOpenGL2 \
+                   libvtkWrappingPythonCore${{ inputs.python-version }}; do
+              ${{ inputs.sed-i }} "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
+          done
+        fi
+
+        ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
+
+    # - - -
+
+    - name: (Mac) Generate OCP build files and build OCP
+      if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate build-ocp
+
+        cd OCP
+
+        mv new/OCP .
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          export LDFLAGS="-L$HOME/opt/local/vtk-${{ env.VTK }}/lib"
+          VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
+        else
+          cd OCP
+          # patch -p1 < ../../patches/no-vtk.patch
+          echo "Patch VTK out of CMakeLists.txt"
+          ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
+          ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
+
+          cd ..
+          VTK_DIR=""
+        fi
+
+        env ${{ inputs.env }} cmake -B build -S OCP -G Ninja \
+            -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D CMAKE_OSX_DEPLOYMENT_TARGET="11.1" \
+            -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -fvisibility=hidden -w" \
+            $VTK_DIR \
+            -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib/cmake/opencascade \
+            -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
+            -D CMAKE_CXX_STANDARD=17 \
+            -D CMAKE_OSX_SYSROOT=/opt/MacOSX11.3.sdk
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \
+                   libvtkRenderingCore  libvtkRenderingFreeType  libvtkFiltersGeneral \
+                   libvtkInteractionStyle  libvtkRenderingOpenGL2 \
+                   libvtkWrappingPythonCore${{ inputs.python-version }}; do
+              ${{ inputs.sed-i }} "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
+          done
+        fi
+
+        ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
+
+    # - - - Prepare under bash ...
+
+    - name: (Windows) Patch CMakeLists.txt
+      if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        cd OCP
+        mv new/OCP .
+
+        if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
+          echo "Patch VTK out of CMakeLists.txt"
+          cd OCP
+          ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
+          ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
+        fi
+
+        micromamba activate build-ocp
+        cp -a "${CONDA_PREFIX}/Library/include/rapidjson" "${HOME}/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/inc/rapidjson"
+
+    # - - - ... but compile under cmd.exe due to vcvars64.bat
+
+    - name: (Windows) Generate OCP build files and build OCP
+      if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+
+        PATH="C:\Program Files\Git\usr\bin";%PATH%
+
+        cd OCP
+
+        set CC=cl.exe
+        set CXX=cl.exe
+
+        if "${{ inputs.use-vtk }}"=="vtk" (
+          set "VTK_DIR=-D VTK_DIR=%USERPROFILE%\opt\local\vtk-${{ env.VTK }}"
+        ) else (
+          set "VTK_DIR= "
+        )
+
+        cmake -B build -S OCP -G Ninja ^
+          -D CMAKE_BUILD_TYPE=Release ^
+          -D Python3_FIND_STRATEGY=LOCATION ^
+          -D Python3_ROOT_DIR=%CONDA_PREFIX% ^
+          %VTK_DIR% ^
+          -D OpenCASCADE_DIR=%USERPROFILE%\opt\local\occt-${{ env.OCCT }}-${{ inputs.use-vtk }}\cmake ^
+          -D pybind11_DIR=%CONDA_PREFIX%\Lib\site-packages\pybind11\share\cmake\pybind11
+
+        ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
+
+    # - - -
+
+    - name: Cache OCP module
+      id: cache-ocp-save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ./OCP/build/${{ inputs.module }}
+        key: ${{ steps.cache-ocp-restore.outputs.cache-primary-key }}
+
+    # - - -
+
+    # - name: Debug Upload module
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: debug_module_${{ inputs.os }}-py_${{ inputs.python-version }}
+    #     path: ./OCP/build/${{ inputs.module }}
+
+    # ================================================================================
+    #               OCP wheel
+    # ================================================================================
+
+    # - - -
+
+    - name: Create the cadquery_ocp wheel
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate build-ocp
+        pip install build wheel ${{ inputs.delocate }}
+
+        cd pypi
+        ${{ inputs.sed-i }} 's/X\.X\.X\.X/${{ env.WHEEL }}/g' pyproject.toml
+        cp ../OCP/build/${{ inputs.module }} .
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          PKG_NAME="cadquery_ocp"
+          # if [[ ${{ inputs.python-version }} == 3.13 ]]; then
+          #   ${{ inputs.sed-i }} '/requires-python/a\dependencies = [ "cadquery_vtk==${{ env.VTK }}" ]' pyproject.toml
+          # else
+          #   ${{ inputs.sed-i }} '/requires-python/a\dependencies = [ "vtk==${{ env.VTK }}" ]' pyproject.toml
+          # fi
+
+          ${{ inputs.sed-i }} '/requires-python/a\dependencies = [ "vtk==${{ env.VTK }}" ]' pyproject.toml
+        else
+          PKG_NAME="cadquery_ocp_novtk"
+          ${{ inputs.sed-i }} 's/cadquery-ocp/cadquery-ocp-novtk/g' pyproject.toml
+          ${{ inputs.sed-i }} 's/cadquery_ocp/cadquery_ocp_novtk/g' pyproject.toml
+          ${{ inputs.sed-i }} 's/sources\"/sources (no VTK support)"/g' pyproject.toml
+          ${{ inputs.sed-i }} 's/cadquery-ocp /cadquery-ocp-novtk /g' README.md # keep spaces
+          ${{ inputs.sed-i }} '/Python wrapper for OCCT/a\Note: VTK is not supported with cadquery-ocp-novtk.' README.md
+        fi
+
+        # PKG_NAME="cadquery_ocp"
+
+        mkdir $PKG_NAME
+        cd $PKG_NAME
+        curl -O https://raw.githubusercontent.com/CadQuery/OCP/refs/heads/master/LICENSE
+        cd ..
+
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+            python ocp-tree.py occt-${{ env.OCCT }}-vtk vtk-${{ env.VTK }} 
+          else
+            python ocp-tree.py occt-${{ env.OCCT }}-novtk 
+          fi
+          mv *.pyd OCP
+
+        elif [[ "$RUNNER_OS" == "macOS" ]]; then
+          DYLD_LIBRARY_PATH=$HOME/opt/local/vtk-${{ env.VTK }}/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib \
+          python ocp-tree.py
+          mv *.so OCP
+          ls -l OCP/*.so
+          strip -x OCP/*.so
+          ls -l OCP/*.so
+          
+        else
+          LD_LIBRARY_PATH=$HOME/opt/local/vtk-${{ env.VTK }}/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib \
+          python ocp-tree.py
+          mv *.so OCP
+          ls -l OCP/*.so
+          strip OCP/*.so
+          ls -l OCP/*.so
+
+        fi
+
+        python -m build -w -n
+
+        PY_VER=$(python -c "import sys; print(f'cp{sys.version_info.major}{sys.version_info.minor}')")
+        python -m wheel tags --remove \
+                            --platform-tag ${{ inputs.plat }} \
+                            --abi-tag $PY_VER \
+                            --python-tag $PY_VER \
+                            dist/*.whl
+
+        # Patch Root-is-purelib to false to ensure installation to lib64 on Fedora / Debian
+        mkdir work
+        cd work
+        python -m wheel unpack ../dist/${PKG_NAME}*.whl
+        cd ${PKG_NAME}*
+        ${{ inputs.sed-i }} "s/Root-Is-Purelib: true/Root-Is-Purelib: false/" ${PKG_NAME}*/WHEEL
+        cd ..
+        python -m wheel pack ${PKG_NAME}*
+        rm ../dist/${PKG_NAME}*.whl
+        mv *.whl ../dist/
+        cd ..
+
+        unzip -l dist/${PKG_NAME}*.whl
+
+    # - - -
+
+    - name: (Linux) Delocate the cadquery_ocp wheel
+      if: runner.os == 'Linux'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate build-ocp
+        cd pypi
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          EXCLUDE="--exclude $(ls -1  ~/opt/local/vtk-${{ env.VTK }}/lib/ | xargs | sed 's/ / --exclude /g')"
+          PKG_NAME="cadquery_ocp"
+        else
+          EXCLUDE=""
+          PKG_NAME="cadquery_ocp_novtk"
+        fi
+
+        env LD_LIBRARY_PATH=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:$CONDA_PREFIX/lib \
+            python -m auditwheel \
+            repair \
+            --plat=${{ inputs.plat }} \
+            $EXCLUDE \
+            --wheel-dir=wheel \
+            dist/*.whl
+
+        cd wheel
+        python -m wheel unpack ${PKG_NAME}*.whl
+        rm ${PKG_NAME}*.whl
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          patchelf --add-rpath '$ORIGIN/../vtk.libs'    ${PKG_NAME}-${{ env.WHEEL }}/OCP/OCP.*.so
+          patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.WHEEL }}/OCP/OCP.*.so
+          patchelf --add-rpath '$ORIGIN/../vtkmodules'  ${PKG_NAME}-${{ env.WHEEL }}/${PKG_NAME}.libs/*
+        fi
+
+        patchelf --add-rpath '$ORIGIN/../'${PKG_NAME}.libs ${PKG_NAME}-${{ env.WHEEL }}/${PKG_NAME}.libs/*
+        python -m wheel pack ${PKG_NAME}-${{ env.WHEEL }}
+        cd ..
+
+    # - - -
+
+    - name: (Mac) Delocate the cadquery_ocp wheel
+      if: runner.os == 'macOS'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate build-ocp
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          PKG_NAME="cadquery_ocp"
+        else
+          PKG_NAME="cadquery_ocp_novtk"
+        fi
+
+        cd pypi/dist
+        python -m wheel unpack ${PKG_NAME}*.whl
+        rm ${PKG_NAME}*.whl
+        install_name_tool -delete_rpath $(realpath ~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib) ${PKG_NAME}-${{ env.WHEEL }}/OCP/OCP.*.so
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          install_name_tool -add_rpath @loader_path/../vtkmodules/.dylibs/ ${PKG_NAME}-${{ env.WHEEL }}/OCP/OCP.*.so
+        fi
+
+        python -m wheel pack ${PKG_NAME}*
+        cd ..
+
+        # env MACOSX_DEPLOYMENT_TARGET=11.1 \
+        env DYLD_LIBRARY_PATH=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:$HOME/opt/local/vtk-${{ env.VTK }}/lib:$CONDA_PREFIX/lib \
+            python -m delocate.cmd.delocate_wheel \
+            -e libvtk \
+            --wheel-dir=wheel \
+            dist/*.whl
+
+    # - - -
+
+    - name: (Windows) Delocate the cadquery_ocp wheel
+      if: runner.os == 'Windows'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate build-ocp
+
+        cd pypi/
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          EXCLUDE="--exclude $(ls -1  ~/opt/local/vtk-${{ env.VTK }}/bin/vtk*.dll | xargs -n 1 basename | xargs | sed 's/ /;/g')"
+          PKG_NAME="cadquery_ocp"
+        else
+          EXCLUDE=""
+          PKG_NAME="cadquery_ocp_novtk"
+        fi
+
+        PATH=~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/win64/vc14/bin/:$PATH delvewheel repair $EXCLUDE --wheel-dir wheel --namespace-pkg ${PKG_NAME} dist/*.whl
+
+    # - - -
+
+    - name: Upload vtk cadquery_ocp wheel
+      if: inputs.use-vtk == 'vtk'
+      uses: actions/upload-artifact@v4
+      with:
+        name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+        path: pypi/wheel/*.whl
+
+    # - - -
+
+    - name: Upload novtk cadquery_ocp wheel
+      if: inputs.use-vtk == 'novtk'
+      uses: actions/upload-artifact@v4
+      with:
+        name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+        path: pypi/wheel/*.whl  

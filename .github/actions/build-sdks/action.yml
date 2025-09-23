@@ -1,0 +1,432 @@
+name: "Build SDKs"
+description: "Building OCCT and VTK SDK"
+inputs:
+  os:
+    description: "Operating system to use for the build"
+    required: true
+  python-version:
+    description: "Python version to use for the build"
+    required: true
+  use-vtk:
+    description: "Whether to use VTK in the build"
+    required: true
+  vtk-libs:
+    description: "VTK libraries to use"
+    required: true
+  vtk-suffix:
+    description: "VTK suffix for library paths"
+    required: true
+  vtk-prefix:
+    description: "VTK prefix for library paths"
+    required: true
+  sed-i:
+    description: "Sed in-place command for the OS"
+    required: true
+  shells:
+    description: "Shell configuration for the OS"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+ 
+    # - - -
+
+    - name: Restore VTK SDK cache
+      if: inputs.use-vtk == 'vtk'
+      id: cache-vtk-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ~/opt/local/vtk-${{ env.VTK }}
+        key: VTK-${{ env.VTK }}-py-${{ inputs.python-version }}-${{ inputs.os }}-
+
+    # - - -
+
+    - name: Restore OCCT SDK cache
+      id: cache-occt-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}
+        key: OCCT-${{ env.OCCT }}-py-${{ inputs.python-version }}-${{ inputs.use-vtk }}-${{ inputs.os }}-
+
+    # - - -
+
+    - name: Set up Python ${{ inputs.python-version }} via micromamba
+      if: steps.cache-occt-restore.outputs.cache-hit != 'true'
+      uses: mamba-org/setup-micromamba@v2
+      with:
+        environment-file: environment-${{ inputs.python-version }}.yml
+        log-level: warning
+        init-shell: ${{ inputs.shells }}
+        cache-downloads: true
+        cache-environment: true
+        cache-environment-key: environment-pywrap-${{ env.OCP }}
+
+    # - - -
+
+    - name: Get number of CPUs
+      if: steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      id: cpu-count
+      run: |
+        micromamba activate build-ocp
+
+        cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())")
+        echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
+        echo "=> Using $cpu_count CPUs"
+
+    # - - - - - - - - - - - - - - - - - - - - -
+    # Install toolchain if needed
+    # - - - - - - - - - - - - - - - - - - - - -
+
+    # - - -
+
+    - name: (Ubuntu) Install dependencies
+      if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        # do not use freeimage freetype fontconfig from anaconda. Prevents from manylinux_2_31_x86_64 wheel
+        sudo apt-get update
+        sudo apt-get install -y mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev \
+                                libglu1-mesa-dev freeglut3-dev libxcursor-dev \
+                                libfreeimage-dev libfreetype-dev libfontconfig-dev
+
+    # - - -
+
+    - name: (Mac, Windows) Install dependencies
+      if: runner.os != 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        micromamba activate build-ocp
+        micromamba install -y fontconfig=2.13.* freetype=2.12.* freeimage=3.18.*
+
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          brew install gsed
+        fi
+
+    # - - - - - - - - - - - - - - - - - - - - -
+    #                VTK SDK
+    # - - - - - - - - - - - - - - - - - - - - -
+
+    # - - -
+    # - name: Download wheel artifact
+    #   if: inputs.python-version == '3.13' && inputs.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
+    #   shell: bash -l {0}
+    #   run: |
+    #     if [[ "${{ inputs.os }}" == "macos-15" ]]; then
+    #       echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
+    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
+
+    #     elif [[ "${{ inputs.os }}" == "macos-13" ]]; then
+    #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
+    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl
+
+    #     elif [[ "${{ inputs.os }}" == "ubuntu-22.04" ]]; then
+    #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
+    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl
+
+    #     else 
+    #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
+    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl
+
+    #     fi
+    #     ls -l
+
+    # - - -
+
+    - name: Install VTK SDK include files
+      if: inputs.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        # Create an environment with conda VTK to get the include files
+        micromamba create -y -n vtk python=${{ inputs.python-version }}
+        micromamba activate vtk
+        micromamba install -y vtk=${{ env.VTK }}
+
+        DEST=~/opt/local/vtk-${{ env.VTK }}
+        rm -fr $DEST
+        mkdir -p $DEST/include
+        mkdir -p $DEST/bin
+        mkdir -p $DEST/lib
+        mkdir -p $DEST/lib/cmake
+
+        cp -r $CONDA_PREFIX/${{ inputs.vtk-prefix }}include/vtk-${{ env.VTK_MAJOR }}/ $DEST/include/
+        cp cmake/vtk-config-${{ inputs.os }}.cmake $DEST/vtk-config.cmake
+
+        micromamba deactivate
+
+    # - - -
+
+    - name: (Linux, Mac) Install VTK SDK libs
+      if: inputs.use-vtk == 'vtk' && runner.os != 'Windows' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        PY_VER=${{ inputs.python-version }}
+
+        micromamba create -y -n vtk-$PY_VER python=$PY_VER
+        micromamba activate vtk-$PY_VER
+
+        # if [[ $PY_VER == 3.13 ]]; then
+        #   pip install cadquery_vtk-9.3.1*.whl
+        # else
+        #   pip install vtk==${{ env.VTK }}
+        # fi
+
+        pip install vtk==${{ env.VTK }}
+
+        DEST=~/opt/local/vtk-${{ env.VTK }}
+
+        cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtkmodules/${{ inputs.vtk-libs }} $DEST/lib/
+        cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtk.py $DEST
+
+        # if [[ "$RUNNER_OS" == "Linux" && "$PY_VER" != "3.13" ]]; then
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtk.libs/* $DEST/lib/
+        fi
+
+        micromamba deactivate
+
+    # - - -
+
+    - name: (Windows) Install VTK SDK libs
+      if: inputs.use-vtk == 'vtk' && runner.os  == 'Windows'  && steps.cache-vtk-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        PY_VER=${{ inputs.python-version }}
+
+        micromamba create -y -n vtk-$PY_VER python=$PY_VER
+        micromamba activate vtk-$PY_VER
+
+        # if [[ $PY_VER == 3.13 ]]; then
+        #   pip install cadquery_vtk-9.3.1*.whl
+        #   PKG=cadquery_vtk
+        # else
+        #   pip install vtk==${{ env.VTK }}
+        #   PKG=vtk
+        # fi
+
+        pip install vtk==${{ env.VTK }}
+        PKG=vtk
+
+        DEST=~/opt/local/vtk-${{ env.VTK }}
+
+        CONDA_PREFIX_POSIX=$(cygpath -u $CONDA_PREFIX)
+        cp $CONDA_PREFIX_POSIX/Lib/site-packages/$PKG.libs/*.dll $DEST/bin/
+        cp $CONDA_PREFIX_POSIX/Lib/site-packages/vtk.py $DEST
+
+        # Create the lib files needed for compilation
+
+        cp create_lib.sh $DEST
+        pushd $DEST/lib/
+        ../create_lib.sh
+        popd
+
+        micromamba deactivate
+
+    # - - -
+
+    - name: Cache VTK build folder
+      if: inputs.use-vtk == 'vtk'
+      id: cache-vtk-save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ~/opt/local/vtk-${{ env.VTK }}
+        key: ${{ steps.cache-vtk-restore.outputs.cache-primary-key }}
+
+    # - - - - - - - - - - - - - - - - - - - - -
+    #                OCCT SDK
+    # - - - - - - - - - - - - - - - - - - - - -
+
+    - name: Download and prepare OCCT SDK
+      if: steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -u
+        set -o pipefail
+
+        git clone https://github.com/Open-Cascade-SAS/OCCT.git
+        cd OCCT
+        OCCT=$(echo ${{ env.OCCT }} | tr '.' '_')
+        git checkout -b V$OCCT tags/V$OCCT
+
+        patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/switch-vtk-freetype-cmake-order.patch
+
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          echo vtkCommonTransforms >> src/TKIVtk/EXTERNLIB
+          echo vtkCommonMath >> src/TKIVtk/EXTERNLIB
+          echo vtkCommonExecutionModel >> src/TKIVtk/EXTERNLIB
+          echo vtkCommonDataModel >> src/TKIVtk/EXTERNLIB
+          echo vtksys >> src/TKIVtk/EXTERNLIB
+        fi
+
+        mkdir -p ~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}
+
+    # - - -
+
+    - name: (Linux, Mac) Compile and install OCCT SDK
+      if: runner.os  != 'Windows' && steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate build-ocp
+        cd OCCT
+
+        rm -fr build
+
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          export CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" # Disables the C++11 ABI features for VTK compatibility
+        fi
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          
+          env ${{ inputs.env }} cmake -S . -B build  -G Ninja \
+            -D CMAKE_INSTALL_PREFIX=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }} \
+            \
+            -D USE_VTK=ON \
+            -D USE_TBB=OFF \
+            -D USE_FREEIMAGE=ON \
+            -D USE_FREETYPE=ON \
+            -D USE_RAPIDJSON=ON \
+            -D USE_FFMPEG=OFF \
+            \
+            -D BUILD_CPP_STANDARD=C++17 \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D BUILD_RELEASE_DISABLE_EXCEPTIONS=OFF \
+            -D BUILD_MODULE_Draw=OFF  \
+            -D BUILD_OPT_PROFILE=Production \
+            -D CMAKE_PREFIX_PATH=$CONDA_PREFIX \
+            \
+            -D VTK_RENDERING_BACKEND=OpenGL2 \
+            -D 3RDPARTY_VTK_INCLUDE_DIR=$HOME/opt/local/vtk-${{ env.VTK }}/include${{ inputs.vtk-suffix }} \
+            -D 3RDPARTY_VTK_LIBRARY_DIR=$HOME/opt/local/vtk-${{ env.VTK }}/lib/ \
+            -D CMAKE_CXX_STANDARD_LIBRARIES="-lvtkCommonMath -lvtkCommonTransforms -lvtksys -lvtkCommonExecutionModel -lvtkCommonDataModel"
+            # -D CMAKE_CXX_STANDARD_LIBRARIES="-lvtkCommonMath-${{ env.VTK_MAJOR }} -lvtkCommonTransforms-${{ env.VTK_MAJOR }} -lvtksys-${{ env.VTK_MAJOR }} -lvtkCommonExecutionModel-${{ env.VTK_MAJOR }} -lvtkCommonDataModel-${{ env.VTK_MAJOR }}"
+
+            # Patch build file to use VTK libraries with "${{ env.VTK_MAJOR }}" suffix
+            # for l in vtkCommonCore  vtkRenderingCore  vtkRenderingFreeType  vtkFiltersGeneral  vtkInteractionStyle  vtkRenderingOpenGL2; do
+            #     ${{ inputs.sed-i }} "s/-l$l/-l$l-${{ env.VTK_MAJOR }}/" build/build.ninja
+            # done
+
+        else
+          env ${{ inputs.env }} cmake -S . -B build  -G Ninja \
+            -D CMAKE_INSTALL_PREFIX=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }} \
+            \
+            -D USE_VTK=OFF \
+            -D USE_TBB=OFF \
+            -D USE_FREEIMAGE=ON \
+            -D USE_FREETYPE=ON \
+            -D USE_RAPIDJSON=ON \
+            -D USE_FFMPEG=OFF \
+            \
+            -D BUILD_CPP_STANDARD=C++17 \
+            -D CMAKE_BUILD_TYPE=Release \
+            -D BUILD_RELEASE_DISABLE_EXCEPTIONS=OFF \
+            -D BUILD_MODULE_Draw=OFF \
+            -D BUILD_OPT_PROFILE=Production \
+            -D CMAKE_PREFIX_PATH=$CONDA_PREFIX
+        fi
+
+        # Build OCCT
+        ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
+        ninja -C build install
+
+    # - - -
+
+    - name: (Windows) Compile and install OCCT SDK
+      if: runner.os  == 'Windows' && steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: cmd
+      run: |
+        call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp 
+        cd OCCT
+
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        set CC=cl.exe
+        set CXX=cl.exe
+
+        if "${{ inputs.use-vtk }}"=="vtk" (
+          cmake -S . -B build -G Ninja ^
+            -D USE_VTK=ON ^
+            -D USE_TBB=OFF ^
+            -D USE_FREEIMAGE=ON ^
+            -D USE_FREETYPE=ON ^
+            -D USE_RAPIDJSON=ON ^
+            -D USE_FFMPEG=OFF ^
+            ^
+            -D Python3_EXECUTABLE=%CONDA_PREFIX%\python.exe ^
+            ^
+            -D BUILD_CPP_STANDARD=C++17 ^
+            -D CMAKE_BUILD_TYPE=Release ^
+            -D BUILD_RELEASE_DISABLE_EXCEPTIONS=OFF ^
+            -D BUILD_MODULE_Draw=OFF ^
+            -D BUILD_OPT_PROFILE=Production ^
+            ^
+            -D CMAKE_INSTALL_PREFIX=%USERPROFILE%\opt\local\occt-${{ env.OCCT }}-${{ inputs.use-vtk }} ^
+            -D CMAKE_PREFIX_PATH=%CONDA_PREFIX%\Library ^
+            ^
+            -D VTK_RENDERING_BACKEND=OpenGL2 ^
+            -D VTK_DIR=%USERPROFILE%\opt\local\vtk-${{ env.VTK }} ^
+            -D 3RDPARTY_VTK_INCLUDE_DIR=%USERPROFILE%\opt\local\vtk-${{ env.VTK }}\include\vtk-${{ env.VTK_MAJOR }} ^
+            -D 3RDPARTY_VTK_LIBRARY_DIR=%USERPROFILE%\opt\local\vtk-${{ env.VTK }}\lib ^
+            -D 3RDPARTY_VTK_DLL_DIR=%USERPROFILE%\opt\local\vtk-${{ env.VTK }}\bin
+
+        ) else (
+          cmake -S . -B build -G Ninja ^
+            -D USE_VTK=OFF ^
+            -D USE_TBB=OFF ^
+            -D USE_FREEIMAGE=ON ^
+            -D USE_FREETYPE=ON ^
+            -D USE_RAPIDJSON=ON ^
+            -D USE_FFMPEG=OFF ^
+            ^
+            -D Python3_EXECUTABLE=%CONDA_PREFIX%\python.exe ^
+            ^
+            -D BUILD_CPP_STANDARD=C++17 ^
+            -D CMAKE_BUILD_TYPE="Release" ^
+            -D BUILD_RELEASE_DISABLE_EXCEPTIONS=OFF ^
+            -D BUILD_MODULE_Draw=OFF ^
+            -D BUILD_OPT_PROFILE=Production ^
+            ^
+            -D CMAKE_INSTALL_PREFIX=%USERPROFILE%\opt\local\occt-${{ env.OCCT }}-${{ inputs.use-vtk }} ^
+            -D CMAKE_PREFIX_PATH=%CONDA_PREFIX%\Library
+        )
+
+        ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
+        ninja -C build install
+
+    # - - -
+
+    - name: Cache OCCT build folder
+      id: cache-occt-save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}
+        key: ${{ steps.cache-occt-restore.outputs.cache-primary-key }}
+
+    # ================================================================================
+    #                 SDK
+    # ================================================================================
+
+    # - - -
+
+    - name: Upload SDK
+      uses: actions/upload-artifact@v4
+      with:
+        name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
+        path: ~/opt/local

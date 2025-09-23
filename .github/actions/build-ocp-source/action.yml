@@ -1,0 +1,181 @@
+name: "Build or download OCP Source"
+description: "Building or downloading OCP Source"
+inputs:
+  os:
+    description: "Operating system to use for the build"
+    required: true
+  python-version:
+    description: "Python version to use for the build"
+    required: true
+  sed-i:
+    description: "Sed in-place command for the OS"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+
+    # - - -
+
+    - name: Restore OCP source cache
+      id: cache-ocp-source-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: |
+          ./OCP
+        key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.os }}-
+
+    # - - -
+
+    - name: Set up Python ${{ inputs.python-version }} via micromamba [PYWRAP=true]
+      if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      uses: mamba-org/setup-micromamba@v2
+      with:
+        environment-file: environment-pywrap-${{ inputs.python-version }}.yml
+        log-level: warning
+        init-shell: ${{ inputs.shells }}
+        # do not cache, else cache overflow
+
+    # - - -
+
+    - name: (Mac) Install MacOS SDK [PYWRAP=true]
+      if: env.PYWRAP == 'true' && runner.os == 'macOS' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -u
+        set -o pipefail
+
+        curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
+        sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
+        sudo mkdir -p /opt/usr/local/
+        sudo mkdir -p /usr/local/include
+        sudo ln -s /opt/MacOSX11.3.sdk/usr/include /opt/usr/local/include
+        sudo ln -s /opt/MacOSX11.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers /usr/local/include/OpenGL
+        
+        brew install gsed
+
+    # - - -
+
+    - name: (Linux) Install gl headers [PYWRAP=true]
+      if: env.PYWRAP == 'true' && runner.os == 'Linux' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -u
+        set -o pipefail
+
+        sudo apt-get update && sudo apt-get install g++-13 mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
+
+    # - - - - - - - - - - - - - - - - - - - - -
+    # Option 1: Build OCP sources using pywrap
+    # (env.PYWRAP=true)
+    # - - - - - - - - - - - - - - - - - - - - -
+
+    # - - -
+
+    - name: Clone OCP [PYWRAP=true]
+      if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -u
+        set -o pipefail
+
+        git clone https://github.com/cadquery/OCP.git
+        cd OCP
+        # use master for the time being
+        # git checkout -b V${{ env.OCP }} tags/${{ env.OCP }}
+        git submodule update --init
+
+        # TODO: remove if fixed
+        ${{ inputs.sed-i }} 's/"7.9.0.0"/"${{ env.OCP }}"/' ocp.toml
+
+    # - - -
+
+    - name: (Linux, Mac) Generate OCP source [PYWRAP=true]
+      if: env.PYWRAP == 'true' && runner.os != 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate build-ocp-source
+        cd OCP
+
+        cmake -DPython_ROOT_DIR=$CONDA_PREFIX \
+              -DPython3_ROOT_DIR=$CONDA_PREFIX \
+              -DPython_FIND_VIRTUALENV=ONLY \
+              -DPython3_FIND_VIRTUALENV=ONLY \
+              -B new -S . -G Ninja
+        
+        cd new
+        cmake --build .        
+
+    # - - -
+
+    - name: (Windows) Generate OCP source [PYWRAP=true]
+      if: env.PYWRAP == 'true' && runner.os == 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        micromamba activate build-ocp-source
+        cd OCP
+        micromamba create --yes --platform win-64 --no-deps --prefix ./occt  occt=${{ env.OCCT }}
+
+        cmake -DPython_ROOT_DIR=$CONDA_PREFIX \
+              -DPython3_ROOT_DIR=$CONDA_PREFIX \
+              -DPython_FIND_VIRTUALENV=ONLY \
+              -DPython3_FIND_VIRTUALENV=ONLY \
+              -DOCCT_LIB_DIR=./occt/Library/bin/\*.dll \
+              -DPLATFORM=Windows \
+              -B new -S . -G Ninja
+        
+        cd new
+        cmake --build . -- -v
+
+    # - - - - - - - - - - - - - - - - - - - - -
+    # Option 2: Download official OCP sources
+    # (env.PYWRAP=false)
+    # - - - - - - - - - - - - - - - - - - - - -
+
+    - name: Download official OCP source [PYWRAP=false]
+      if: env.PYWRAP == 'false'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -u
+        set -o pipefail
+
+        rm -fr OCP  # remove the cached sources again
+
+        if [[ ${{ inputs.os }} == "macos-13" || ${{ inputs.os }} == "macos-15" ]]; then
+          curl -L -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_macOS-latest.zip
+        else
+          curl -L -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_${{ inputs.os }}.zip
+        fi
+        unzip OCP_src_stubs_*
+        rm *.zip
+        mkdir OCP
+        mv OCP_src_stubs_* OCP/OCP
+
+    # - - -
+
+    - name: Cache OCP source folder
+      id: cache-ocp-source-save
+      uses: actions/cache/save@v4
+      with:
+        path: |
+          ./OCP
+        key: ${{ steps.cache-ocp-source-restore.outputs.cache-primary-key }}
+
+    # - - -
+
+    - name: Upload OCP source
+      uses: actions/upload-artifact@v4
+      with:
+        name: OCP-source_${{ env.OCP }}-${{ inputs.os }}
+        path: ./OCP  
