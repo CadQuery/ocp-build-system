@@ -144,7 +144,7 @@ runs:
     #  Build OCP
     # - - - - - - - - - - - - - - - - - - - - -
 
-    - name: Restore OCP cache
+    - name: Restore OCP module cache
       id: cache-ocp-restore
       uses: actions/cache/restore@v4
       with:

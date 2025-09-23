@@ -77,6 +77,13 @@ jobs:
             shells: "bash cmd.exe"
     steps:
       - uses: actions/checkout@v4
+      
+      - name: debug
+        run: |
+          echo "RUNNER under Ubuntu"
+          echo "pwd              = $(pwd)"
+          echo "github.workspace = ${{ github.workspace }}"
+
       - name: Build SDKs
         id: build-sdks
         uses: ./.github/actions/build-sdks
@@ -105,8 +112,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-15", "ubuntu-22.04", "windows-2022"]
-        os: ["macos-15", "ubuntu-22.04"]
+        os: ["macos-15", "ubuntu-22.04", "windows-2022"]
         python-version: ["3.13"]
         use-vtk: ["vtk"]
 
@@ -115,8 +121,8 @@ jobs:
             sed-i: "gsed -i"
           - os: "ubuntu-22.04"
             sed-i: "sed -i"
-          # - os: "windows-2022"
-          #   sed-i: "sed -i"
+          - os: "windows-2022"
+            sed-i: "sed -i"
 
     steps:
       - uses: actions/checkout@v4
