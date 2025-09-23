@@ -51,6 +51,7 @@ jobs:
 
   sdks-win-mac:
     name: Build OCCT SDK for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
+    if: false
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
