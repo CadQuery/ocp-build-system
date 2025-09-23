@@ -34,7 +34,7 @@ jobs:
       - name: Install ca-certificates
         run: |
           apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates git    
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates git patch    
       - uses: actions/checkout@v4
       - name: Build SDKs
         id: build-sdks
@@ -161,7 +161,7 @@ jobs:
       - name: Install ca-certificates
         run: |
           apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates git    
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates git patch    
       - uses: actions/checkout@v4
       - name: Build OCP
         id: build-ocp
@@ -266,7 +266,7 @@ jobs:
         if: ${{ runner.os == 'Linux' }}
         run: |
           apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates git   
+          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates git patch   
       - uses: actions/checkout@v4
       - name: Test OCP
         id: test-ocp
