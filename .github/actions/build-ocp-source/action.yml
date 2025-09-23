@@ -36,8 +36,9 @@ runs:
         set -u
         set -o pipefail
 
-        apt-get update 
-        DEBIAN_FRONTEND=noninteractive apt-get install \
+        # native container needs sudo
+        sudo apt-get update 
+        sudo apt-get install \
           ca-certificates g++-13 mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
 
     # - - - (micromamba needs ca-certificates for ubuntu)
