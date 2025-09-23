@@ -54,6 +54,19 @@ runs:
 
     # - - -
 
+    - name: Get number of CPUs
+      if: steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      id: cpu-count
+      run: |
+        micromamba activate build-ocp
+
+        cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())")
+        echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
+        echo "=> Using $cpu_count CPUs"
+        
+    # - - -
+
     - name: (Mac) Install MacOS SDK [PYWRAP=true]
       if: env.PYWRAP == 'true' && runner.os == 'macOS' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
@@ -111,6 +124,7 @@ runs:
               -DPython3_ROOT_DIR=$CONDA_PREFIX \
               -DPython_FIND_VIRTUALENV=ONLY \
               -DPython3_FIND_VIRTUALENV=ONLY \
+              -DN_PROC=${{ steps.cpu-count.outputs.cpu_count }}
               -B new -S . -G Ninja
         
         cd new
@@ -135,6 +149,7 @@ runs:
               -DPython3_FIND_VIRTUALENV=ONLY \
               -DOCCT_LIB_DIR=./occt/Library/bin/\*.dll \
               -DPLATFORM=Windows \
+              -DN_PROC=${{ steps.cpu-count.outputs.cpu_count }}
               -B new -S . -G Ninja
         
         cd new
