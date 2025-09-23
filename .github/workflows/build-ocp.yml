@@ -33,14 +33,6 @@ jobs:
         use-vtk: ["vtk", "novtk"]
     steps:
       - uses: actions/checkout@v4
-      
-      - name: debug
-        shell: bash -l {0}
-        run: |
-          echo "RUNNER"
-          echo "pwd              = $(pwd)"
-          echo "github.workspace = ${{ github.workspace }}"
-          ls -lR . | grep -v total | grep -v rw
 
       - name: Build SDKs
         id: build-sdks
@@ -86,14 +78,6 @@ jobs:
             shells: "bash cmd.exe"
     steps:
       - uses: actions/checkout@v4
-
-      - name: debug
-        shell: bash -l {0}
-        run: |
-          echo "RUNNER"
-          echo "pwd              = $(pwd)"
-          echo "github.workspace = ${{ github.workspace }}"
-          ls -lR . | grep -v total | grep -v rw
 
       - name: Build SDKs
         id: build-sdks
