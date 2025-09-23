@@ -21,6 +21,19 @@ runs:
     
     # - - -
 
+    - name: (Linux) Install ca-certificates
+      if: env.PYWRAP == 'true' && runner.os == 'Linux' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -u
+        set -o pipefail
+
+        apt-get update 
+        DEBIAN_FRONTEND=noninteractive apt-get install ca-certificates
+
+    # - - -
+    
     - name: Set up Python ${{ inputs.python-version }} via micromamba
       uses: mamba-org/setup-micromamba@v2
       with:

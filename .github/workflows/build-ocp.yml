@@ -31,10 +31,6 @@ jobs:
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
     steps:
-      - name: Install ca-certificates
-        run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates   
       - uses: actions/checkout@v4
       - name: Build SDKs
         id: build-sdks
@@ -51,7 +47,6 @@ jobs:
 
   sdks-win-mac:
     name: Build OCCT SDK for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
-    if: false
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -124,11 +119,6 @@ jobs:
           #   sed-i: "sed -i"
 
     steps:
-      - name: Install ca-certificates
-        if: ${{ runner.os == 'Linux' }}
-        run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates
       - uses: actions/checkout@v4
       - name: Build or download OCP Source
         id: build-ocp-source
@@ -157,11 +147,7 @@ jobs:
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
-    steps:
-      - name: Install ca-certificates
-        run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates   
+    steps: 
       - uses: actions/checkout@v4
       - name: Build OCP
         id: build-ocp
@@ -262,11 +248,6 @@ jobs:
             sed-i: "sed -i"
 
     steps:
-      - name: Install ca-certificates
-        if: ${{ runner.os == 'Linux' }}
-        run: |
-          apt-get update
-          DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends ca-certificates  
       - uses: actions/checkout@v4
       - name: Test OCP
         id: test-ocp

@@ -40,6 +40,18 @@ runs:
 
     # - - -
 
+    - name: (Ubuntu) Install dependencies
+      if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        # do not use freeimage freetype fontconfig from anaconda. Prevents from manylinux_2_31_x86_64 wheel
+        apt-get update
+        DEBIAN_FRONTEND=noninteractive apt-get install -y \
+          mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
+          libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential ca-certificates  
+
+    # - - -
+    
     - name: Set up Python ${{ inputs.python-version }} via micromamba
       uses: mamba-org/setup-micromamba@v2
       with:
@@ -62,19 +74,6 @@ runs:
         cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
         echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
         echo "=> Using $cpu_count CPUs"
-
-    # - - -
-
-    - name: (Ubuntu) Install dependencies
-      if: runner.os == 'Linux'
-      shell: bash -l {0}
-      run: |
-        apt-get update
-        # do not use freeimage freetype fontconfig from anaconda. Prevents from manylinux_2_31_x86_64 wheel
-        DEBIAN_FRONTEND=noninteractive apt-get install -y mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev \
-                                                          libglu1-mesa-dev freeglut3-dev libxcursor-dev \
-                                                          libfreeimage-dev libfreetype-dev libfontconfig-dev \
-                                                          git patch clang build-essential
 
     # - - -
 

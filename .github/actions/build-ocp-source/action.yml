@@ -28,6 +28,20 @@ runs:
 
     # - - -
 
+    - name: (Linux) Install gl headers [PYWRAP=true]
+      if: env.PYWRAP == 'true' && runner.os == 'Linux' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -u
+        set -o pipefail
+
+        apt-get update 
+        DEBIAN_FRONTEND=noninteractive apt-get install \
+          ca-certificates g++-13 mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
+
+    # - - - (micromamba needs ca-certificates for ubuntu)
+
     - name: Set up Python ${{ inputs.python-version }} via micromamba [PYWRAP=true]
       if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
       uses: mamba-org/setup-micromamba@v2
@@ -55,18 +69,6 @@ runs:
         sudo ln -s /opt/MacOSX11.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers /usr/local/include/OpenGL
         
         brew install gsed
-
-    # - - -
-
-    - name: (Linux) Install gl headers [PYWRAP=true]
-      if: env.PYWRAP == 'true' && runner.os == 'Linux' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
-      shell: bash -l {0}
-      run: |
-        set -e
-        set -u
-        set -o pipefail
-
-        apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install g++-13 mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
 
     # - - - - - - - - - - - - - - - - - - - - -
     # Option 1: Build OCP sources using pywrap
