@@ -88,6 +88,11 @@ runs:
         cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())")
         echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
         echo "=> Using $cpu_count CPUs"
+        
+        echo "CONTAINER under Ubuntu"
+        echo "pwd              = $(pwd)"
+        echo "github.workspace = ${{ github.workspace }}"
+
 
     # - - -
 
