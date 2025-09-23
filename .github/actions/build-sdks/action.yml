@@ -61,9 +61,8 @@ runs:
         environment-file: environment-${{ inputs.python-version }}.yml
         log-level: warning
         init-shell: ${{ inputs.shells }}
-        cache-downloads: true
         cache-environment: true
-        cache-environment-key: environment-pywrap-${{ env.OCP }}
+        cache-environment-key: environment-${{ inputs.python-version }}-%{{ inputs-os }}-${{ inputs.use-vtk }}
 
     # - - -
 
