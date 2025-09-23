@@ -125,7 +125,7 @@ jobs:
 
     steps:
       - name: Install ca-certificates
-        if: runner.os  == "Linux"
+        if: ${{ runner.os == 'Linux' }}
         run: |
           apt-get update
           apt-get install -y --no-install-recommends ca-certificates
@@ -263,7 +263,7 @@ jobs:
 
     steps:
       - name: Install ca-certificates
-        if: runner.os  == "Linux"
+        if: ${{ runner.os == 'Linux' }}
         run: |
           apt-get update
           apt-get install -y --no-install-recommends ca-certificates    
