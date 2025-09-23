@@ -148,8 +148,7 @@ runs:
       id: cache-ocp-restore
       uses: actions/cache/restore@v4
       with:
-        path: |
-          ./OCP/build/${{ inputs.module }}
+        path: ${{ github.workspace }}/OCP/build/${{ inputs.module }}
         key: OCP-${{ env.OCP }}-VTK-${{ inputs.use-vtk }}-py${{ inputs.python-version }}-${{ inputs.os }}-
 
     # - - -
