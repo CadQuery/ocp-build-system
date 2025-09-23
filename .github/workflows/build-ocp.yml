@@ -158,8 +158,7 @@ jobs:
           sed-i: "sed -i"
           shells: "bash"
           delocate: auditwheel patchelf
-          plat: manylinux_2_34_x86_64
-          compilers: ""
+          plat: manylinux_2_31_x86_64
           module: "OCP.*.so"
           env: "DUMMY=0"
           ocp_tag: "ubuntu-22.04"

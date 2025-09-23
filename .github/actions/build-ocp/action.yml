@@ -50,8 +50,8 @@ runs:
           mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
           libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential ca-certificates  
 
-    # - - -
-    
+    # - - -  (micromamba needs ca-certificates for ubuntu)
+
     - name: Set up Python ${{ inputs.python-version }} via micromamba
       uses: mamba-org/setup-micromamba@v2
       with:
@@ -60,9 +60,8 @@ runs:
         init-shell: ${{ inputs.shells }}
         cache-downloads: true
         cache-environment: true
-        cache-environment-key: environment-${{ inputs.python-version }}-%{{ inputs-os }}-${{ inputs.use-vtk }}
+        cache-environment-key: environment-${{ inputs.python-version }}-%{{ inputs.os }}-${{ inputs.use-vtk }}
 
-        
     # - - -
 
     - name: Get number of CPUs
