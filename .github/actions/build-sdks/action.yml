@@ -89,9 +89,9 @@ runs:
       run: |
         # do not use freeimage freetype fontconfig from anaconda. Prevents from manylinux_2_31_x86_64 wheel
         apt-get update
-        apt-get install -y mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev \
-                           libglu1-mesa-dev freeglut3-dev libxcursor-dev \
-                           libfreeimage-dev libfreetype-dev libfontconfig-dev
+        DEBIAN_FRONTEND=noninteractive apt-get install -y mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev \
+                                                          libglu1-mesa-dev freeglut3-dev libxcursor-dev \
+                                                          libfreeimage-dev libfreetype-dev libfontconfig-dev
 
     # - - -
 
