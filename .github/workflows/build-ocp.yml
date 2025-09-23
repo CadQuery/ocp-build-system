@@ -162,7 +162,7 @@ jobs:
           plat: manylinux_2_31_x86_64
           module: "OCP.*.so"
           env: "DUMMY=0"
-          ocp_tag: "ubuntu-22.04"
+          ocp-tag: "ubuntu-22.04"
 
   ocp-win-mac:
     name: Build OCP for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
@@ -183,7 +183,7 @@ jobs:
             module: "OCP.*.so"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-            ocp_tag: "macos-15"
+            ocp-tag: "macos-15"
           - os: "macos-13"
             delocate: delocate
             plat: macosx_11_1_x86_64
@@ -191,14 +191,14 @@ jobs:
             module: "OCP.*.so"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-            ocp_tag: "macos-15"
+            ocp-tag: "macos-15"
           - os: "windows-2022"
             delocate: delvewheel
             plat: win_amd64
             sed-i: "sed -i"
             shells: "bash cmd.exe"
             module: "OCP.*.pyd"
-            ocp_tag: "windows-2022"
+            ocp-tag: "windows-2022"
     steps:
       - uses: actions/checkout@v4
       - name: Build OCP
