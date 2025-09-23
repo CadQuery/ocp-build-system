@@ -672,16 +672,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-<<<<<<< HEAD
         # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
         os: ["windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
-=======
-        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
-        # python-version: ["3.13"]
->>>>>>> b1698e5dd2dde1e0d915fd54bf3ea1bd42b4a956
         use-vtk: ["vtk", "novtk"]
 
         include:
