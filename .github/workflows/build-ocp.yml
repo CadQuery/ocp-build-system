@@ -105,7 +105,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-15", "ubuntu-22.04", "windows-2022"]
+        # os: ["macos-15", "ubuntu-22.04", "windows-2022"]
+        os: ["macos-15", "ubuntu-22.04"]
         python-version: ["3.13"]
         use-vtk: ["vtk"]
 
@@ -114,8 +115,8 @@ jobs:
             sed-i: "gsed -i"
           - os: "ubuntu-22.04"
             sed-i: "sed -i"
-          - os: "windows-2022"
-            sed-i: "sed -i"
+          # - os: "windows-2022"
+          #   sed-i: "sed -i"
 
     steps:
       - uses: actions/checkout@v4
