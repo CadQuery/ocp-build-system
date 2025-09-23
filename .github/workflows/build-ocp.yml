@@ -31,6 +31,7 @@ jobs:
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
     steps:
+      - uses: actions/checkout@v4
       - name: Build SDKs
         id: build-sdks
         uses: ./.github/actions/build-sdks
@@ -75,6 +76,7 @@ jobs:
           #   sed-i: "sed -i"
           #   shells: "bash cmd.exe"
     steps:
+      - uses: actions/checkout@v4
       - name: Build SDKs
         id: build-sdks
         uses: ./.github/actions/build-sdks
@@ -117,6 +119,7 @@ jobs:
           #   sed-i: "sed -i"
 
     steps:
+      - uses: actions/checkout@v4
       - name: Build or download OCP Source
         id: build-ocp-source
         uses: ./.github/actions/build-ocp-source
@@ -145,6 +148,7 @@ jobs:
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
     steps:
+      - uses: actions/checkout@v4
       - name: Build OCP
         id: build-ocp
         uses: ./.github/actions/build-ocp
@@ -164,6 +168,7 @@ jobs:
   ocp-win-mac:
     name: Build OCP for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
     runs-on: ${{ matrix.os }}
+    needs: sources
     strategy:
       fail-fast: false
       matrix:
@@ -197,6 +202,7 @@ jobs:
             module: "OCP.*.pyd"
             ocp_tag: "windows-2022"
     steps:
+      - uses: actions/checkout@v4
       - name: Build OCP
         id: build-ocp
         uses: ./.github/actions/build-ocp
@@ -242,6 +248,7 @@ jobs:
             sed-i: "sed -i"
 
     steps:
+      - uses: actions/checkout@v4
       - name: Test OCP
         id: test-ocp
         uses: ./.github/actions/test-ocp
