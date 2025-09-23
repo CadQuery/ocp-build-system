@@ -66,7 +66,7 @@ runs:
         set -u
         set -o pipefail
 
-        apt-get update && apt-get install g++-13 mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
+        apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install g++-13 mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
 
     # - - - - - - - - - - - - - - - - - - - - -
     # Option 1: Build OCP sources using pywrap
