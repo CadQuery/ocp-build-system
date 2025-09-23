@@ -93,8 +93,8 @@ jobs:
           log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
-          cache-environment: true
-          cache-environment-key: environment-pywrap-${{ env.OCP }}
+          # cache-environment: true
+          # cache-environment-key: environment-pywrap-${{ env.OCP }}
 
       # - - -
 
@@ -514,8 +514,8 @@ jobs:
           log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
-          cache-environment: true
-          cache-environment-key: environment-pywrap-${{ env.OCP }}
+          # cache-environment: true
+          # cache-environment-key: environment-pywrap-${{ env.OCP }}
 
       # - - -
 
@@ -672,7 +672,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
+        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
+        os: ["windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
@@ -723,8 +724,8 @@ jobs:
           log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
-          cache-environment: true
-          cache-environment-key: environment-${{ env.OCP }}
+          # cache-environment: true
+          # cache-environment-key: environment-${{ env.OCP }}
           
       # - - -
 
@@ -1353,7 +1354,6 @@ jobs:
           # 7.9.1. COMPATIBILITY ISSUE
           ${{ matrix.sed_i }} '/^from pytest import /s/$/, mark/' tests/test_free_functions.py
           ${{ matrix.sed_i }} '/def test_cap/i @mark.skip()' tests/test_free_functions.py
-          
           # workaround for nlopt 2.9.0 not available for Intel Mac
           # if [[ "${{ matrix.os }}" == "macos-13" ]]; then
           #   micromamba install -y nlopt=2.9
