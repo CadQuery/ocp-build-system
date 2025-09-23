@@ -29,8 +29,8 @@ runs:
         set -u
         set -o pipefail
 
-        apt-get update 
-        DEBIAN_FRONTEND=noninteractive apt-get install ca-certificates
+        apt-get update -qq  
+        DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates
 
     # - - -
     

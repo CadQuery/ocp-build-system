@@ -83,6 +83,7 @@ jobs:
           echo "RUNNER"
           echo "pwd              = $(pwd)"
           echo "github.workspace = ${{ github.workspace }}"
+          ls -lR . | grep -v total | grep -v rw
 
       - name: Build SDKs
         id: build-sdks
