@@ -121,8 +121,7 @@ runs:
       id: cache-ocp-source-restore
       uses: actions/cache/restore@v4
       with:
-        path: |
-          ./OCP
+        path: ${{ github.workspace }}/OCP
         key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.ocp-tag }}-
 
     # - - -
@@ -325,8 +324,7 @@ runs:
       id: cache-ocp-save
       uses: actions/cache/save@v4
       with:
-        path: |
-          ./OCP/build/${{ inputs.module }}
+        path: ${{ github.workspace }}/OCP/build/${{ inputs.module }}
         key: ${{ steps.cache-ocp-restore.outputs.cache-primary-key }}
 
     # - - -

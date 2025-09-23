@@ -55,7 +55,7 @@ runs:
     # - - -
 
     - name: Get number of CPUs
-      if: steps.cache-occt-restore.outputs.cache-hit != 'true'
+      if: steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       id: cpu-count
       run: |
