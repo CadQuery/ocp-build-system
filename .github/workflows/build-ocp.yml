@@ -93,8 +93,8 @@ jobs:
           log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
-          # cache-environment: true
-          # cache-environment-key: environment-pywrap-${{ env.OCP }}
+          cache-environment: true
+          cache-environment-key: environment-pywrap-${{ env.OCP }}
 
       # - - -
 
@@ -513,9 +513,7 @@ jobs:
           environment-file: environment-pywrap-${{ matrix.python-version }}.yml
           log-level: warning
           init-shell: ${{ matrix.shells }}
-          cache-downloads: true
-          # cache-environment: true
-          # cache-environment-key: environment-pywrap-${{ env.OCP }}
+          # do not cache, else cache overflow
 
       # - - -
 
@@ -724,8 +722,8 @@ jobs:
           log-level: warning
           init-shell: ${{ matrix.shells }}
           cache-downloads: true
-          # cache-environment: true
-          # cache-environment-key: environment-${{ env.OCP }}
+          cache-environment: true
+          cache-environment-key: environment-${{ env.OCP }}
           
       # - - -
 
@@ -1360,9 +1358,9 @@ jobs:
           # fi
 
           # workaround for pypi opt and casadi throwing a seg fault on exit 
-          # if [[ "$RUNNER_OS" == "Windows" ]]; then
-          #   micromamba install -y nlopt casadi
-          # fi
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            micromamba install -y nlopt casadi
+          fi
 
           CONDA_PREFIX_BAK=$CONDA_PREFIX
           unset CONDA_PREFIX
