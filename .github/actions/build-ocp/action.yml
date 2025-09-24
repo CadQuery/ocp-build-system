@@ -49,7 +49,7 @@ runs:
         apt-get update -qq
         DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
           mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
-          libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential ca-certificates  
+          libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential ca-certificates curl 
 
     # - - -  (micromamba needs ca-certificates for ubuntu)
 
@@ -188,7 +188,7 @@ runs:
         cd OCP
         
         mv new/OCP .
-        
+
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
         else
