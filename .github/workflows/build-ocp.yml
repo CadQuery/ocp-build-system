@@ -102,7 +102,6 @@ jobs:
   sources-ubuntu:
     name: Build OCP source on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    needs: [sdks-ubuntu]
 
     container:
       image: ubuntu:20.04
@@ -130,7 +129,6 @@ jobs:
   sources-win-mac:
     name: Build OCP source on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    needs: [sdks-win-mac]
 
     strategy:
       fail-fast: false
@@ -163,7 +161,7 @@ jobs:
     container:
       image: ubuntu:20.04
       options: --name ci-ubuntu-20  # needed for manylinux_3_31
-    needs: sources-ubuntu
+    needs: [sdks-ubuntu, sources-ubuntu]
 
     strategy:
       fail-fast: false
@@ -192,7 +190,7 @@ jobs:
   ocp-win-mac:
     name: Build OCP for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
     runs-on: ${{ matrix.os }}
-    needs: sources-win-mac
+    needs: [sdks-win-mac, sources-win-mac]
     strategy:
       fail-fast: false
       matrix:
