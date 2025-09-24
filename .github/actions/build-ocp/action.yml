@@ -49,7 +49,8 @@ runs:
         apt-get update -qq
         DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
           mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
-          libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential ca-certificates curl 
+          libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential \
+          ca-certificates curl unzip
 
     # - - -  (micromamba needs ca-certificates for ubuntu)
 
