@@ -58,6 +58,10 @@ runs:
         micromamba activate test
         pip install pytest docutils ipython
 
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          brew install gsed
+        fi
+
     # - - -
 
     # - name: Download wheel artifact
