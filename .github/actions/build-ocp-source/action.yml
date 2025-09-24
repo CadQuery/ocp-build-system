@@ -37,7 +37,7 @@ runs:
 
         apt-get update -qq 
         apt-get install -qq \
-          ca-certificates g++-13 mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
+          ca-certificates mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev
 
     # - - - (micromamba needs ca-certificates for ubuntu)
 
