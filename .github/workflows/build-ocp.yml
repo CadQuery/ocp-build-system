@@ -189,33 +189,33 @@ jobs:
 
   ocp-win-mac:
     name: Build OCP for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
-    if: false
     runs-on: ${{ matrix.os }}
     needs: [sdks-win-mac, sources-win-mac]
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-15", "windows-2022"]
+        # os: ["macos-13", "macos-15", "windows-2022"]
+        os: ["windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
         include:
-          - os: "macos-15"
-            delocate: delocate
-            plat: macosx_11_1_arm64
-            sed-i: "gsed -i"
-            module: "OCP.*.so"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-            ocp-tag: "macos-15"
-          - os: "macos-13"
-            delocate: delocate
-            plat: macosx_11_1_x86_64
-            sed-i: "gsed -i"
-            module: "OCP.*.so"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-            ocp-tag: "macos-15"
+          # - os: "macos-15"
+          #   delocate: delocate
+          #   plat: macosx_11_1_arm64
+          #   sed-i: "gsed -i"
+          #   module: "OCP.*.so"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          #   ocp-tag: "macos-15"
+          # - os: "macos-13"
+          #   delocate: delocate
+          #   plat: macosx_11_1_x86_64
+          #   sed-i: "gsed -i"
+          #   module: "OCP.*.so"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          #   ocp-tag: "macos-15"
           - os: "windows-2022"
             delocate: delvewheel
             plat: win_amd64
