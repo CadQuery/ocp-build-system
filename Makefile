@@ -1,23 +1,12 @@
-.PHONY: clean Build
+.PHONY: cache-clean cache-list cache-size
 
-clean:
-	rm -fr ./OCCT ./OCP ./build123d ./cadquery
-	rm -fr pypi/build pypi/wheel pypi/dist pypi/OCP pypi/cadquery_ocp* pypi/cadquery_ocp*.egg-info 
-	rm -fr ~/opt/local/*
-	# rm -f /usr/local/include/OpenGL  /opt/usr/local/include
-	
-	@echo "Removing build-ocp environment"
-	-micromamba env remove -y -n build-ocp
+cache-clean:
+	@gh cache delete -a
 
-	@echo "Removing vtk environment"
-	-micromamba env remove -y -n vtk
+cache-list:
+	@gh cache list -L 100 | sort -k 2
 
-	@echo "Removing test environment"
-	-micromamba env remove -y -n test
-
-	micromamba env list
-	PATH=$(echo $PATH | tr ':' '\n' | grep -v /opt/homebrew/opt/llvm@15/bin | paste -s -d':' -)
-	
-Build:
-	python get-config.py $(vtk);
-
+cache-info: cache-list
+	@echo "\nTotal:"
+	@gh cache list -L 100 | \
+	awk '/MiB/ && $$3 ~ /^[0-9.]+$$/ {sum+=$$3} END {print sum+0}'
