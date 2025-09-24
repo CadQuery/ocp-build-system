@@ -25,6 +25,7 @@ runs:
       if: env.PYWRAP == 'true' && runner.os == 'Linux' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Linux) Install ca-certificates
         set -e
         set -u
         set -o pipefail
@@ -49,6 +50,7 @@ runs:
     - name: Create the test environment
       shell: bash -l {0}
       run: |
+        # Create the test environment
         set -e
         set -o pipefail
 
@@ -102,10 +104,9 @@ runs:
     - name: Install VTK and OCP wheel
       shell: bash -l {0}
       run: |
+        # Install VTK and OCP wheel
         set -e
         set -o pipefail
-
-        ls -lR . | egrep '^/'
         
         micromamba activate test
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
@@ -116,7 +117,8 @@ runs:
           # fi
           pip install vtk==${{ env.VTK }}
         fi
-        pip install pypi/wheel/*.whl
+        ls -l
+        pip install *.whl
 
         python -c "import OCP; print('Success: OCP', OCP.__version__)"
 
@@ -125,6 +127,7 @@ runs:
     - name: Run build123d tests
       shell: bash -l {0}
       run: |
+        # Run build123d tests
         set -e
         set -o pipefail
 
@@ -171,6 +174,7 @@ runs:
       if: inputs.use-vtk == 'vtk'
       shell: bash -l {0}
       run: |
+        # Run cadquery tests
         set -e
         set -o pipefail
 
@@ -212,6 +216,7 @@ runs:
       # if: inputs.python-version != '3.13'
       shell: bash -l {0}
       run: |
+        # Uninstall test
         set -e
         set -o pipefail
 
