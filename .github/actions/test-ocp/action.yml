@@ -88,7 +88,6 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
-        path: pypi/wheel/*.whl
 
     # - - -
 
@@ -97,7 +96,6 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
-        path: pypi/wheel/*.whl  
 
     # - - -
 
@@ -107,6 +105,8 @@ runs:
         set -e
         set -o pipefail
 
+        ls -lR . | egrep '^/'
+        
         micromamba activate test
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           # if [[ ${{ inputs.python-version }} == 3.13 ]]; then
