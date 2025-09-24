@@ -189,6 +189,7 @@ jobs:
 
   ocp-win-mac:
     name: Build OCP for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
+    if: false
     runs-on: ${{ matrix.os }}
     needs: [sdks-win-mac, sources-win-mac]
     strategy:
