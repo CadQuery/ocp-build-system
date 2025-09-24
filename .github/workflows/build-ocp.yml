@@ -138,8 +138,8 @@ jobs:
         os: ["windows-2022"]
         python-version: ["3.13"]
         include:
-          - os: "macos-15"
-            sed-i: "gsed -i"
+          # - os: "macos-15"
+          #   sed-i: "gsed -i"
           - os: "windows-2022"
             sed-i: "sed -i"
 
