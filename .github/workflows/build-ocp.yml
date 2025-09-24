@@ -262,10 +262,10 @@ jobs:
         use-vtk: ["vtk", "novtk"]
 
         include:
-          - os: "macos-13"
-            sed-i: "gsed -i"
-          - os: "macos-15"
-            sed-i: "gsed -i"
+          # - os: "macos-13"
+          #   sed-i: "gsed -i"
+          # - os: "macos-15"
+          #   sed-i: "gsed -i"
           - os: "windows-2022"
             sed-i: "sed -i"
           - os: "ubuntu-22.04"
