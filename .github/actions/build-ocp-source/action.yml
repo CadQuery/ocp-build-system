@@ -37,9 +37,9 @@ runs:
         set -o pipefail
 
         apt-get update -qq 
-        apt-get install -qq \
+        DEBIAN_FRONTEND=noninteractive apt-get install -qq \
           ca-certificates mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev \
-          git patch clang build-essential
+          git patch clang build-essential  > /dev/null 2>&1
 
     # - - - (micromamba needs ca-certificates for ubuntu)
 
