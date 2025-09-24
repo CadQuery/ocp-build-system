@@ -99,23 +99,47 @@ jobs:
   # micromamba env based approach for all packages.
   # ================================================================================
 
-  sources:
+  sources-ubuntu:
     name: Build OCP source on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
-    needs: [sdks-ubuntu, sdks-win-mac]
+    needs: [sdks-ubuntu]
+
+    container:
+      image: ubuntu:20.04
+      options: --name ci-ubuntu-20  # needed for manylinux_3_31
 
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-15", "ubuntu-22.04", "windows-2022"]
+        os: ["ubuntu-22.04"]
         python-version: ["3.13"]
-        use-vtk: ["vtk"]
+        include:
+          - os: "ubuntu-22.04"
+            sed-i: "sed -i"
 
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build or download OCP Source
+        id: build-ocp-source
+        uses: ./.github/actions/build-ocp-source
+        with:
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+          sed-i: ${{ matrix.sed-i }}
+
+  sources-win-mac:
+    name: Build OCP source on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    needs: [sdks-win-mac]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["macos-15", "windows-2022"]
+        python-version: ["3.13"]
         include:
           - os: "macos-15"
             sed-i: "gsed -i"
-          - os: "ubuntu-22.04"
-            sed-i: "sed -i"
           - os: "windows-2022"
             sed-i: "sed -i"
 
@@ -139,7 +163,7 @@ jobs:
     container:
       image: ubuntu:20.04
       options: --name ci-ubuntu-20  # needed for manylinux_3_31
-    needs: sources
+    needs: sources-ubuntu
 
     strategy:
       fail-fast: false
@@ -167,9 +191,8 @@ jobs:
 
   ocp-win-mac:
     name: Build OCP for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
-    if: false
     runs-on: ${{ matrix.os }}
-    needs: sources
+    needs: sources-win-mac
     strategy:
       fail-fast: false
       matrix:
