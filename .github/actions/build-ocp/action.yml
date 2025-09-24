@@ -188,6 +188,8 @@ runs:
         cd OCP
         
         mv new/OCP .
+        
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
         else
           cd OCP
