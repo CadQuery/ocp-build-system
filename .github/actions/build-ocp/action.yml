@@ -44,6 +44,7 @@ runs:
       if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Ubuntu) Install dependencies
         # do not use freeimage freetype fontconfig from anaconda. Prevents from manylinux_2_31_x86_64 wheel
         apt-get update -qq
         DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
@@ -68,6 +69,7 @@ runs:
       shell: bash -l {0}
       id: cpu-count
       run: |
+        # Get number of CPUs
         micromamba activate build-ocp
 
         cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
@@ -80,6 +82,7 @@ runs:
       if: runner.os != 'Linux'
       shell: bash -l {0}
       run: |
+        # (Mac, Windows) Install dependencies
         set -e
         set -o pipefail
 
@@ -130,6 +133,7 @@ runs:
       if: inputs.use-vtk == 'novtk'
       shell: bash -l {0}
       run: |
+        # Patch vtk out of OCP
         set -e
         set -u
         set -o pipefail
@@ -157,6 +161,7 @@ runs:
       if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Mac) Install MacOS SDK
         set -e
         set -u
         set -o pipefail
@@ -174,6 +179,7 @@ runs:
       if: runner.os == 'Linux' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Linux) Generate OCP build files and build OCP
         set -e
         set -o pipefail
 
@@ -221,6 +227,7 @@ runs:
       if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Mac) Generate OCP build files and build OCP
         set -e
         set -o pipefail
 
@@ -272,6 +279,7 @@ runs:
       if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Windows) Patch CMakeLists.txt
         cd OCP
         mv new/OCP .
 
@@ -291,6 +299,7 @@ runs:
       if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: cmd
       run: |
+        rem (Windows) Generate OCP build files and build OCP
         call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
@@ -343,6 +352,7 @@ runs:
     - name: Create the cadquery_ocp wheel
       shell: bash -l {0}
       run: |
+        # Create the cadquery_ocp wheel
         set -e
         set -o pipefail
 
@@ -433,6 +443,7 @@ runs:
       if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
+        # (Linux) Delocate the cadquery_ocp wheel
         set -e
         set -o pipefail
 
@@ -475,6 +486,7 @@ runs:
       if: runner.os == 'macOS'
       shell: bash -l {0}
       run: |
+        # (Mac) Delocate the cadquery_ocp wheel
         set -e
         set -o pipefail
 
@@ -511,6 +523,7 @@ runs:
       if: runner.os == 'Windows'
       shell: bash -l {0}
       run: |
+        # (Windows) Delocate the cadquery_ocp wheel
         set -e
         set -o pipefail
 

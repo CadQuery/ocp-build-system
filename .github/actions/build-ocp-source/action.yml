@@ -31,6 +31,7 @@ runs:
       if: env.PYWRAP == 'true' && runner.os == 'Linux' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Linux) Install gl headers [PYWRAP=true]
         set -e
         set -u
         set -o pipefail
@@ -58,6 +59,7 @@ runs:
       shell: bash -l {0}
       id: cpu-count
       run: |
+        # Get number of CPUs
         micromamba activate build-ocp
 
         cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())")
@@ -70,6 +72,7 @@ runs:
       if: env.PYWRAP == 'true' && runner.os == 'macOS' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Mac) Install MacOS SDK [PYWRAP=true]
         set -e
         set -u
         set -o pipefail
@@ -94,6 +97,7 @@ runs:
       if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # Clone OCP [PYWRAP=true]
         set -e
         set -u
         set -o pipefail
@@ -113,6 +117,7 @@ runs:
       if: env.PYWRAP == 'true' && runner.os != 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Linux, Mac) Generate OCP source [PYWRAP=true]
         set -e
         set -o pipefail
 
@@ -135,6 +140,7 @@ runs:
       if: env.PYWRAP == 'true' && runner.os == 'Windows' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Windows) Generate OCP source [PYWRAP=true]
         set -e
         set -o pipefail
 
@@ -163,6 +169,7 @@ runs:
       if: env.PYWRAP == 'false'
       shell: bash -l {0}
       run: |
+        # Download official OCP source [PYWRAP=false]
         set -e
         set -u
         set -o pipefail

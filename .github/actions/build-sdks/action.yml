@@ -58,6 +58,7 @@ runs:
       if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Ubuntu) Install dependencies
         # do not use freeimage freetype fontconfig from anaconda. Prevents from manylinux_2_31_x86_64 wheel
         apt-get update -qq
         DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
@@ -83,6 +84,7 @@ runs:
       shell: bash -l {0}
       id: cpu-count
       run: |
+        # Get number of CPUs
         micromamba activate build-ocp
 
         cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())")
@@ -95,6 +97,7 @@ runs:
       if: runner.os != 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Mac, Windows) Install dependencies
         micromamba activate build-ocp
         micromamba install -y fontconfig=2.13.* freetype=2.12.* freeimage=3.18.*
 
@@ -136,6 +139,7 @@ runs:
       if: inputs.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # Install VTK SDK include files
         set -e
         set -o pipefail
 
@@ -162,6 +166,7 @@ runs:
       if: inputs.use-vtk == 'vtk' && runner.os != 'Windows' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Linux, Mac) Install VTK SDK libs
         set -e
         set -o pipefail
 
@@ -196,6 +201,7 @@ runs:
       if: inputs.use-vtk == 'vtk' && runner.os  == 'Windows'  && steps.cache-vtk-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Windows) Install VTK SDK libs
         set -e
         set -o pipefail
 
@@ -249,6 +255,7 @@ runs:
       if: steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # Download and prepare OCCT SDK
         set -e
         set -u
         set -o pipefail
@@ -276,6 +283,7 @@ runs:
       if: runner.os  != 'Windows' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
+        # (Linux, Mac) Compile and install OCCT SDK
         set -e
         set -o pipefail
 
@@ -347,6 +355,7 @@ runs:
       if: runner.os  == 'Windows' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: cmd
       run: |
+        rem (Windows) Compile and install OCCT SDK
         call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp 
         cd OCCT
 
