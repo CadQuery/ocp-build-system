@@ -1,4 +1,4 @@
-name: Build OCP with pypi VTK V2
+name: Build OCP Addons
 
 # on: workflow_dispatch
 on:
@@ -32,6 +32,7 @@ jobs:
                   python-version: ${{ matrix.python-version }}
                   use-vtk: ${{ matrix.use-vtk }}
                   sed-i: "sed -i"
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
 
     addons-win-mac:
         name: Build OCP addons for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
@@ -63,3 +64,4 @@ jobs:
                   python-version: ${{ matrix.python-version }}
                   use-vtk: ${{ matrix.use-vtk }}
                   sed-i: ${{ matrix.sed-i }}
+                  github_token: ${{ secrets.GITHUB_TOKEN }}
