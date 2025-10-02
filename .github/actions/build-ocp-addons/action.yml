@@ -46,25 +46,6 @@ runs:
         cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-${{ inputs.use-vtk }}
 
     # - - -
-
-    - name: Create the addons environment
-      shell: bash -l {0}
-      run: |
-        # Create the addons environment
-        set -e
-        set -o pipefail
-
-        micromamba create -y -n addons python=${{ inputs.python-version }}
-        micromamba activate addons
-        pip install pytest docutils ipython
-
-        if [[ "$RUNNER_OS" == "macOS" ]]; then
-          brew install gsed
-        fi
-
-        git clone https://github.com/jdegenstein/ocp-addons.git
-
-    # - - -
     
     - name: Download OCCT and VTK SDK
       uses: actions/download-artifact@v4
@@ -112,6 +93,7 @@ runs:
       if: ${{ matrix.os == 'ubuntu-22.04' }}
       shell: bash -l {0}
       run: |
+        # Install Linux Dependencies (x86_64)
         set -e
         set -o pipefail
 
@@ -131,10 +113,11 @@ runs:
       if: ${{ matrix.os == 'macos-13' || matrix.os == 'macos-14'}}
       shell: bash -l {0}
       run: |
+        # Install MacOS Dependencies (x86_64 / arm64)
         set -e
         set -o pipefail
         
-        brew install automake
+        brew install automake gsed
 
         micromamba activate addons
         pip install delocate
@@ -145,6 +128,7 @@ runs:
       if: ${{ matrix.os == 'windows-2019' }}
       shell: bash -l {0}
       run: |
+        # Install Windows Dependencies (x86_64)
         set -e
         set -o pipefail
         
@@ -155,10 +139,22 @@ runs:
 
     # - - -
 
+    - name: Clone ocp-addons
+      shell: bash -l {0}
+      run: |
+        # Clone ocp-addons
+        set -e
+        set -o pipefail
+
+        git clone https://github.com/jdegenstein/ocp-addons.git
+
+    # - - -
+
     - name: Build Wheel 
       shell: bash -l {0}
       run: |
-        
+        # Build Wheel 
+
         micromamba activate addons
 
         cd ocp-addons
@@ -174,6 +170,8 @@ runs:
       if: ${{ matrix.os == 'ubuntu-22.04' }}
       shell: bash -l {0}
       run: |
+        # Repair Linux Wheel (x86_64)
+
         set -e
         set -o pipefail
         
@@ -187,6 +185,8 @@ runs:
       if: ${{ matrix.os == 'macos-13' || matrix.os == 'macos-14'}}
       shell: bash -l {0}
       run: |
+        # Repair MacOS Wheel (x86_64 / arm64)
+
         set -e
         set -o pipefail
         
@@ -200,6 +200,7 @@ runs:
       if: ${{ matrix.os == 'windows-2019' }}
       shell: bash -l {0}
       run: |
+        # Repair Windows Wheel (x86_64)
         set -e
         set -o pipefail
         
@@ -212,6 +213,7 @@ runs:
     - name: Test Repaired Wheel and Run Package Tests
       shell: bash -l {0}
       run: |
+        # Test Repaired Wheel and Run Package Tests
         set -e
         set -o pipefail
         
