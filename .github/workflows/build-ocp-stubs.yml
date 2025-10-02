@@ -1,7 +1,10 @@
 name: Build OCP stubs
 
-on: workflow_dispatch
-
+# on: workflow_dispatch
+on:
+  push:
+    branches:
+      - v7.9
 env:
   OCP: 7.8.1.2
   WHEEL: 7.8.1.2
@@ -13,12 +16,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-20.04"]  
-        python-version: ["3.12"]  
+        os: ["ubuntu-20.04"]
+        python-version: ["3.12"]
 
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Set up Python ${{ matrix.python-version }} via micromamba
         uses: mamba-org/setup-micromamba@v1
         with:
@@ -49,10 +52,9 @@ jobs:
           pip install build setuptools wheel
           cd pypi-stubs
           python -m build -w -n
-  
+
       - name: Upload cadquery_ocp stubs wheel
         uses: actions/upload-artifact@v4
         with:
           name: cadquery-ocp-${{ env.WHEEL }}-stubs
-          path: pypi-stubs/dist/*.whl          
-          
+          path: pypi-stubs/dist/*.whl
