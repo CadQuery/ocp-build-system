@@ -13,7 +13,7 @@ inputs:
   use-vtk:
     description: "Whether to use VTK in the build"
     required: true
-  github_token:
+  github-token:
     required: true
     description: 'GitHub Token'
 
@@ -55,7 +55,7 @@ runs:
       with:
         name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
         run-id: 17977419943
-        github_token: ${{ inputs.github_token }}
+        github-token: ${{ inputs.github-token }}
 
     # - - -
     
@@ -65,7 +65,7 @@ runs:
       with:
         name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
         run-id: 17977419943
-        github_token: ${{ inputs.github_token }}
+        github-token: ${{ inputs.github-token }}
 
     # - - -
 
@@ -75,7 +75,7 @@ runs:
       with:
         name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
         run-id: 17977419943
-        github_token: ${{ inputs.github_token }}
+        github-token: ${{ inputs.github-token }}
 
     # - - -
 
