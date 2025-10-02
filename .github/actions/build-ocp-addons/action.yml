@@ -1,0 +1,234 @@
+name: "Build OCP addons"
+description: "Use the build environment to also build OCP Addons (https://github.com/jdegenstein/ocp-addons)"
+inputs:
+  os:
+    description: "Operating system to use for the build"
+    required: true
+  python-version:
+    description: "Python version to use for the build"
+    required: true
+  sed-i:
+    description: "Sed in-place command for the OS"
+    required: true
+  use-vtk:
+    description: "Whether to use VTK in the build"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v4
+    
+    # - - -
+
+    - name: (Linux) Install ca-certificates
+      if: env.PYWRAP == 'true' && runner.os == 'Linux' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        # (Linux) Install ca-certificates
+        set -e
+        set -u
+        set -o pipefail
+
+        sudo apt-get update -qq  
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates > /dev/null 2>&1
+
+    # - - -
+    
+    - name: Set up Python ${{ inputs.python-version }} via micromamba
+      uses: mamba-org/setup-micromamba@v2
+      with:
+        environment-file: environment-${{ inputs.python-version }}.yml
+        log-level: warning
+        init-shell: ${{ inputs.shells }}
+        cache-downloads: true
+        cache-environment: true
+        cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-${{ inputs.use-vtk }}
+
+    # - - -
+
+    - name: Create the addons environment
+      shell: bash -l {0}
+      run: |
+        # Create the addons environment
+        set -e
+        set -o pipefail
+
+        micromamba create -y -n addons python=${{ inputs.python-version }}
+        micromamba activate addons
+        pip install pytest docutils ipython
+
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          brew install gsed
+        fi
+
+        git clone https://github.com/jdegenstein/ocp-addons.git
+
+    # - - -
+    
+    - name: Download OCCT and VTK SDK
+      uses: actions/download-artifact@v4
+      with:
+        name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
+
+    # - - -
+    
+    - name: Download vtk cadquery_ocp wheel
+      if: inputs.use-vtk == 'vtk'
+      uses: actions/download-artifact@v4
+      with:
+        name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+
+    # - - -
+
+    - name: Download novtk cadquery_ocp wheel
+      if: inputs.use-vtk == 'novtk'
+      uses: actions/download-artifact@v4
+      with:
+        name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+
+    # - - -
+
+    - name: Install VTK and OCP wheel
+      shell: bash -l {0}
+      run: |
+        # Install VTK and OCP wheel
+        set -e
+        set -o pipefail
+        
+        micromamba activate addons
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          pip install vtk==${{ env.VTK }}
+        fi
+        ls -l
+        pip install *.whl
+
+        python -c "import OCP; print('Success: OCP', OCP.__version__)"
+
+    # - - -
+
+    - name: Install Linux Dependencies (x86_64)
+      if: ${{ matrix.os == 'ubuntu-22.04' }}
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+
+        sudo apt-get update
+        sudo apt-get install freetype* libfreetype6-dev libgl1-mesa-glx
+
+        micromamba activate addons
+
+        micromamba install -c conda-forge gxx_linux-64=12
+        pip install auditwheel patchelf
+        micromamba info
+        micromamba list
+
+    # - - -
+
+    - name: Install MacOS Dependencies (x86_64 / arm64)
+      if: ${{ matrix.os == 'macos-13' || matrix.os == 'macos-14'}}
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+        
+        brew install automake
+
+        micromamba activate addons
+        pip install delocate
+
+    # - - -
+
+    - name: Install Windows Dependencies (x86_64)
+      if: ${{ matrix.os == 'windows-2019' }}
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+        
+        micromamba activate addons
+
+        micromamba install vs2019_win-64 -c conda-forge
+        pip install delvewheel
+
+    # - - -
+
+    - name: Build Wheel 
+      shell: bash -l {0}
+      run: |
+        
+        micromamba activate addons
+
+        cd ocp-addons
+        
+        ${{ matrix.sed-i }} '/include_dirs=\[/a\    os.path.join(os.environ["HOME"], "opt", "local", "occt-7.9.1", "include", "opencascade"),' setup.py
+        ${{ matrix.sed-i }} '/library_dirs=\[/a\    os.path.join(os.environ["HOME"], "opt", "local", "occt-7.9.1", "lib"),' setup.py
+
+        python -m build -n
+
+    # - - -
+
+    - name: Repair Linux Wheel (x86_64) # TODO: eliminate hardcoded GLIBC ver
+      if: ${{ matrix.os == 'ubuntu-22.04' }}
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+        
+        cd ocp-addons
+
+        auditwheel repair --plat manylinux_2_35_x86_64 dist/ocp_addons-*.whl
+
+    # - - -
+
+    - name: Repair MacOS Wheel (x86_64 / arm64)
+      if: ${{ matrix.os == 'macos-13' || matrix.os == 'macos-14'}}
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+        
+        cd ocp-addons
+
+        DYLD_LIBRARY_PATH=$CONDA_PREFIX/lib python -m delocate.cmd.delocate_wheel --wheel-dir=wheelhouse dist/ocp_addons*.whl
+
+    # - - -
+
+    - name: Repair Windows Wheel (x86_64) 
+      if: ${{ matrix.os == 'windows-2019' }}
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+        
+        cd ocp-addons
+
+        python -m delvewheel repair --wheel-dir=wheelhouse dist/ocp_addons*.whl
+
+    # - - -
+
+    - name: Test Repaired Wheel and Run Package Tests
+      shell: bash -l {0}
+      run: |
+        set -e
+        set -o pipefail
+        
+        micromamba deactivate
+        micromamba create --name ocpaddonstest python=${{ matrix.python-version }} --file env.yml --yes
+        micromamba activate ocpaddonstest
+        micromamba info --envs
+        ls wheelhouse/*
+        pip install wheelhouse/ocp_addons*.whl
+        micromamba list
+        python -c "import ocp_addons;print('ocp_addons imported successfully')"
+        python test.py
+
+    # - - -
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ocp_addons-${{ matrix.os }}-cp${{ matrix.python-version }}
+        path: wheelhouse/*.whl
