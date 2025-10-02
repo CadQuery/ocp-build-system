@@ -22,7 +22,7 @@ runs:
     # - - -
 
     - name: (Linux) Install ca-certificates
-      if: env.PYWRAP == 'true' && runner.os == 'Linux' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
         # (Linux) Install ca-certificates
@@ -52,6 +52,7 @@ runs:
       with:
         name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
         run-id: 17977419943
+        github_token: ${{ secrets.GITHUB_TOKEN }}
 
     # - - -
     
@@ -61,6 +62,7 @@ runs:
       with:
         name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
         run-id: 17977419943
+        github_token: ${{ secrets.GITHUB_TOKEN }}
 
     # - - -
 
@@ -70,6 +72,7 @@ runs:
       with:
         name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
         run-id: 17977419943
+        github_token: ${{ secrets.GITHUB_TOKEN }}
 
     # - - -
 
