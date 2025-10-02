@@ -33,8 +33,8 @@ runs:
         set -u
         set -o pipefail
 
-        sudo apt-get update -qq  
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates > /dev/null 2>&1
+        apt-get update -qq  
+        DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates > /dev/null 2>&1
 
     # - - -
     
@@ -54,7 +54,7 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
-        run-id: 17977419943
+        run-id: ${{ env.SDK_RUNID }}
         github-token: ${{ inputs.github-token }}
 
     # - - -
@@ -64,7 +64,7 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
-        run-id: 17977419943
+        run-id: ${{ env.SDK_RUNID }}
         github-token: ${{ inputs.github-token }}
 
     # - - -
@@ -74,7 +74,7 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
-        run-id: 17977419943
+        run-id: ${{ env.SDK_RUNID }}
         github-token: ${{ inputs.github-token }}
 
     # - - -

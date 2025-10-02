@@ -5,6 +5,10 @@ on:
     push:
         branches:
             - v7.9
+env:
+    OCP: 7.9.1.0
+    WHEEL: 7.9.1.0
+    SDK_RUNID: 17977419943
 
 jobs:
     addons-ubuntu:
