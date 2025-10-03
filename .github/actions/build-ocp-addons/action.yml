@@ -144,6 +144,9 @@ runs:
         if [[ "$RUNNER_OS" == "Linux" ]]; then
           ${{ inputs.sed-i }} 's/\(extra_compile_args=\["-O3"\)\(.*\)/\1, "-D_GLIBCXX_USE_CXX11_ABI=0", "-std=c++17"\2/' setup.py
         fi
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          ${{ inputs.sed-i }} 's/\(extra_compile_args=\["-O3"\)\(.*\)/\1, "-Wl,-headerpad_max_install_names"\2/' setup.py
+        fi
 
         cat setup.py
 
@@ -159,16 +162,6 @@ runs:
         # Build Wheel 
 
         cd ocp-addons
-
-        if [[ "$RUNNER_OS" == "macOS" ]]; then
-          LDFLAGS="-Wl,-headerpad_max_install_names"
-
-        #   export SDKROOT=/opt/MacOSX11.3.sdk
-
-        #   export CFLAGS="-isysroot $SDKROOT $CFLAGS"
-        #   export CXXFLAGS="-isysroot $SDKROOT $CXXFLAGS"
-        #   export LDFLAGS="-isysroot $SDKROOT $LDFLAGS"
-        fi
 
         python -m build -n -w
         ls -l dist
