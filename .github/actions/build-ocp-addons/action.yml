@@ -62,7 +62,6 @@ runs:
         apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx  git \
                                 patch clang build-essential> /dev/null 2>&1
 
-        # micromamba activate addons
 
         micromamba install -c conda-forge gxx_linux-64=12
         pip install auditwheel patchelf build wheel
@@ -81,7 +80,6 @@ runs:
         
         brew install automake gsed
 
-        # micromamba activate addons
         pip install delocate build wheel
 
     # - - -
@@ -94,8 +92,6 @@ runs:
         set -e
         set -o pipefail
         
-        # micromamba activate addons
-
         micromamba install vs2019_win-64 -c conda-forge
         pip install delvewheel build wheel
 
@@ -110,13 +106,13 @@ runs:
 
     # - - -
     
-    - name: Download vtk cadquery_ocp wheel
-      if: inputs.use-vtk == 'vtk'
-      uses: actions/download-artifact@v4
-      with:
-        name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
-        run-id: ${{ env.SDK_RUNID }}
-        github-token: ${{ inputs.github-token }}
+    # - name: Download vtk cadquery_ocp wheel
+    #   if: inputs.use-vtk == 'vtk'
+    #   uses: actions/download-artifact@v4
+    #   with:
+    #     name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+    #     run-id: ${{ env.SDK_RUNID }}
+    #     github-token: ${{ inputs.github-token }}
 
     # - - -
 
@@ -137,8 +133,6 @@ runs:
         set -e
         set -o pipefail
         
-        # micromamba activate addons
-
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           pip install vtk==${{ env.VTK }}
         fi
@@ -175,15 +169,12 @@ runs:
       run: |
         # Build Wheel 
 
-        # micromamba activate addons
-
         cd ocp-addons
-        
         python -m build -n
 
     # - - -
 
-    - name: Repair Linux Wheel (x86_64) # TODO: eliminate hardcoded GLIBC ver
+    - name: Repair Linux Wheel (x86_64)
       if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
@@ -193,8 +184,7 @@ runs:
         set -o pipefail
         
         cd ocp-addons
-
-        auditwheel repair --plat manylinux_2_35_x86_64 dist/ocp_addons-*.whl
+        LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib auditwheel repair --plat manylinux_2_31_x86_64 dist/ocp_addons-*.whl
 
     # - - -
 
@@ -208,8 +198,7 @@ runs:
         set -o pipefail
         
         cd ocp-addons
-
-        DYLD_LIBRARY_PATH=$CONDA_PREFIX/lib python -m delocate.cmd.delocate_wheel --wheel-dir=wheelhouse dist/ocp_addons*.whl
+        DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib python -m delocate.cmd.delocate_wheel --wheel-dir=wheelhouse dist/ocp_addons*.whl
 
     # - - -
 
@@ -222,7 +211,8 @@ runs:
         set -o pipefail
         
         cd ocp-addons
-
+        
+        PATH=LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib:$PATH
         python -m delvewheel repair --wheel-dir=wheelhouse dist/ocp_addons*.whl
 
     # - - -
