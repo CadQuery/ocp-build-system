@@ -57,7 +57,7 @@ runs:
 
         apt-get update -qq
         apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx  git \
-                                patch gcc g++ build-essential> /dev/null 2>&1
+                                patch gcc g++ build-essential # > /dev/null 2>&1
 
         # micromamba install -c conda-forge gxx_linux-64=12
         pip install auditwheel patchelf build wheel
@@ -149,6 +149,8 @@ runs:
       shell: bash -l {0}
       run: |
         # Build Wheel 
+        set -e
+        set -o pipefail
 
         cd ocp-addons
         if [[ "$RUNNER_OS" == "macOS" ]]; then
