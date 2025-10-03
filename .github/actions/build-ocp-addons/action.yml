@@ -51,7 +51,7 @@ runs:
     # - - -
 
     - name: Install Linux Dependencies (x86_64)
-      if: ${{ matrix.os == 'ubuntu-22.04' }}
+      if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
         # Install Linux Dependencies (x86_64)
@@ -71,7 +71,7 @@ runs:
     # - - -
 
     - name: Install MacOS Dependencies (x86_64 / arm64)
-      if: ${{ matrix.os == 'macos-13' || matrix.os == 'macos-14'}}
+      if: runner.os == 'macOS'
       shell: bash -l {0}
       run: |
         # Install MacOS Dependencies (x86_64 / arm64)
@@ -86,7 +86,7 @@ runs:
     # - - -
 
     - name: Install Windows Dependencies (x86_64)
-      if: ${{ matrix.os == 'windows-2019' }}
+      if: runner.os == 'Windows'
       shell: bash -l {0}
       run: |
         # Install Windows Dependencies (x86_64)
@@ -176,7 +176,7 @@ runs:
     # - - -
 
     - name: Repair Linux Wheel (x86_64) # TODO: eliminate hardcoded GLIBC ver
-      if: ${{ matrix.os == 'ubuntu-22.04' }}
+      if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
         # Repair Linux Wheel (x86_64)
@@ -191,7 +191,7 @@ runs:
     # - - -
 
     - name: Repair MacOS Wheel (x86_64 / arm64)
-      if: ${{ matrix.os == 'macos-13' || matrix.os == 'macos-14'}}
+      if: runner.os == 'macOS'
       shell: bash -l {0}
       run: |
         # Repair MacOS Wheel (x86_64 / arm64)
@@ -206,7 +206,7 @@ runs:
     # - - -
 
     - name: Repair Windows Wheel (x86_64) 
-      if: ${{ matrix.os == 'windows-2019' }}
+      if: runner.os == 'Windows'
       shell: bash -l {0}
       run: |
         # Repair Windows Wheel (x86_64)
