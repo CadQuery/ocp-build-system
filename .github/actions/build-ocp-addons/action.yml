@@ -158,9 +158,9 @@ runs:
         ${{ inputs.sed-i }} '/library_dirs=\[/a\    os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-7.9.1-${{ inputs.use-vtk }}", "lib"),' setup.py
        
         cat setup.py
-        ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/
+        # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/
         # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/include/opencascade
-        ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib
+        # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib
 
     # - - -
 
@@ -171,6 +171,9 @@ runs:
 
         cd ocp-addons
         python -m build -n
+
+        ls -l build/lib.linux*/*.so
+        objdump -T build/lib.linux*/*.so | grep GLIBC_ | sed 's/.*GLIBC_\\([.0-9]*\\).*/\\1/g' | sort -Vu
 
     # - - -
 
@@ -198,7 +201,7 @@ runs:
         set -o pipefail
         
         cd ocp-addons
-        DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib python -m delocate.cmd.delocate_wheel --wheel-dir=wheelhouse dist/ocp_addons*.whl
+        DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib:/usr/lib python -m delocate.cmd.delocate_wheel --wheel-dir=wheelhouse dist/ocp_addons*.whl
 
     # - - -
 
