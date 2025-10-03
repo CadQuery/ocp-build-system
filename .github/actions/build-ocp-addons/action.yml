@@ -215,7 +215,7 @@ runs:
         python -m wheel pack ocp_addons-${VERSION}
         cd ..
 
-        DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:/usr/lib python \ 
+        DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:/usr/lib python \
             -m delocate.cmd.delocate_wheel --wheel-dir=wheelhouse dist/ocp_addons-${VERSION}*.whl
 
     # - - -
