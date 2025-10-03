@@ -132,12 +132,12 @@ runs:
 
         ${{ inputs.sed-i }} '/include_dirs=\[/,/\],/c\
         include_dirs=[\
-             os.path.join(os.environ["GITHUB_WORKSPACE"], "occt -${{ env.OCCT }}-${{ inputs.use-vtk }}", "include", "opencascade")\
+             os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-${{ env.OCCT }}-${{ inputs.use-vtk }}", "include", "opencascade")\
         ],
         ' setup.py
         ${{ inputs.sed-i }} '/library_dirs=\[/,/\],/c\
         library_dirs=[\
-             os.path.join(os.environ["GITHUB_WORKSPACE"], "occt -${{ env.OCCT }}-${{ inputs.use-vtk }}", "lib")\
+             os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-${{ env.OCCT }}-${{ inputs.use-vtk }}", "lib")\
         ],
         ' setup.py 
 
