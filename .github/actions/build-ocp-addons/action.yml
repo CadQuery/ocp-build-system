@@ -201,8 +201,6 @@ runs:
         
         cd ocp-addons
 
-        python -m wheel pack ocp_addons-*
-
         # Patch @rpath/libc++.1.dylib to /usr/lib/libc++.1.dylib
         cd dist
         python -m wheel unpack ocp_addons-*.whl
