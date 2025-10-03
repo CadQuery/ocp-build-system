@@ -106,7 +106,7 @@ runs:
       with:
         name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
         run-id: ${{ env.SDK_RUNID }}
-        path: ~/
+        path: ~/opt/local/
         github-token: ${{ inputs.github-token }}
 
     # - - -
