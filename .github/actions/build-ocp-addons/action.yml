@@ -38,7 +38,7 @@ runs:
     - name: Set up Python ${{ inputs.python-version }} via micromamba
       uses: mamba-org/setup-micromamba@v2
       with:
-        environment-file: environment-${{ inputs.python-version }}.yml
+        environment-file: environment-ocpaddons-${{ inputs.python-version }}.yml
         log-level: warning
         init-shell: bash
         cache-downloads: true
@@ -158,9 +158,9 @@ runs:
           clang++ --version
 
         elif [[ "$RUNNER_OS" == "Linux" ]]; then
-        
-          export CC=gcc
-          export CXX=g++
+
+          export CC=/usr/bin/gcc
+          export CXX=/usr/bin/g++
           g++ --version
         fi
         
