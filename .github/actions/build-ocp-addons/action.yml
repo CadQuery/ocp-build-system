@@ -160,13 +160,13 @@ runs:
 
         cd ocp-addons
 
-        ${{ matrix.sed-i }} '/include_dirs=\[/a\    os.path.join(os.environ["GITHUB_WORKSPACE"], "opt", "local", "occt-7.9.1-${{ matrix.use-vtk }}", "include", "opencascade"),' setup.py
-        ${{ matrix.sed-i }} '/library_dirs=\[/a\    os.path.join(os.environ["GITHUB_WORKSPACE"], "opt", "local", "occt-7.9.1-${{ matrix.use-vtk }}", "lib"),' setup.py
+        ${{ inputs.sed-i }} '/include_dirs=\[/a\    os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-7.9.1-${{ inputs.use-vtk }}", "include", "opencascade"),' setup.py
+        ${{ inputs.sed-i }} '/library_dirs=\[/a\    os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-7.9.1-${{ inputs.use-vtk }}", "lib"),' setup.py
        
         cat setup.py
-        ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ matrix.use-vtk }}/
-        # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ matrix.use-vtk }}/include/opencascade
-        ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ matrix.use-vtk }}/lib
+        ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/
+        # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/include/opencascade
+        ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib
 
     # - - -
 
@@ -235,7 +235,7 @@ runs:
         set -o pipefail
         
         micromamba deactivate
-        micromamba create --name ocpaddonstest python=${{ matrix.python-version }} --file env.yml --yes
+        micromamba create --name ocpaddonstest python=${{ inputs.python-version }} --file env.yml --yes
         micromamba activate ocpaddonstest
         micromamba info --envs
         ls wheelhouse/*
@@ -249,5 +249,5 @@ runs:
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ocp_addons-${{ matrix.os }}-cp${{ matrix.python-version }}
+        name: ocp_addons-${{ inputs.os }}-cp${{ inputs.python-version }}
         path: wheelhouse/*.whl
