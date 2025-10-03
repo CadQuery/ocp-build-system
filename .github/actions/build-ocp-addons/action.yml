@@ -160,13 +160,15 @@ runs:
 
         cd ocp-addons
 
-        # if [[ "$RUNNER_OS" == "macOS" ]]; then
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          LDFLAGS="-Wl,-headerpad_max_install_names"
+
         #   export SDKROOT=/opt/MacOSX11.3.sdk
 
         #   export CFLAGS="-isysroot $SDKROOT $CFLAGS"
         #   export CXXFLAGS="-isysroot $SDKROOT $CXXFLAGS"
         #   export LDFLAGS="-isysroot $SDKROOT $LDFLAGS"
-        # fi
+        fi
 
         python -m build -n -w
         ls -l dist
