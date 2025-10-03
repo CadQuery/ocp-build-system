@@ -132,7 +132,6 @@ runs:
 
         ${{ inputs.sed-i }} '/include_dirs=\[/a\    os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-7.9.1-${{ inputs.use-vtk }}", "include", "opencascade"),' setup.py
         ${{ inputs.sed-i }} '/library_dirs=\[/a\    os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-7.9.1-${{ inputs.use-vtk }}", "lib"),' setup.py
-        ${{ inputs.sed-i }} 's/__version__ = "0.1.0"/__version__ = "${{ env.WHEEL }}"/' setup.py
 
         if [[ "$RUNNER_OS" == "Linux" ]]; then
           ${{ inputs.sed-i }} 's/\(extra_compile_args=\["-O3"\)\(.*\)/\1, "-D_GLIBCXX_USE_CXX11_ABI=0", "-std=c++17"\2/' setup.py
@@ -212,6 +211,7 @@ runs:
         rm ocp_addons-${VERSION}*.whl
         install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib ocp_addons*/*.so
         otool -L ocp_addons*/*.so
+        ls -l
         python -m wheel pack ocp_addons-${VERSION}
         cd ..
 
