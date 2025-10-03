@@ -106,7 +106,6 @@ runs:
       with:
         name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
         run-id: ${{ env.SDK_RUNID }}
-        path: ~/opt/local/
         github-token: ${{ inputs.github-token }}
 
     # - - -
@@ -161,13 +160,13 @@ runs:
 
         cd ocp-addons
 
-        ${{ matrix.sed-i }} '/include_dirs=\[/a\    os.path.join(os.environ["HOME"], "opt", "local", "occt-7.9.1-${{ matrix.use-vtk }}", "include", "opencascade"),' setup.py
-        ${{ matrix.sed-i }} '/library_dirs=\[/a\    os.path.join(os.environ["HOME"], "opt", "local", "occt-7.9.1-${{ matrix.use-vtk }}", "lib"),' setup.py
+        ${{ matrix.sed-i }} '/include_dirs=\[/a\    os.path.join(os.environ["GITHUB_WORKSPACE"], "opt", "local", "occt-7.9.1-${{ matrix.use-vtk }}", "include", "opencascade"),' setup.py
+        ${{ matrix.sed-i }} '/library_dirs=\[/a\    os.path.join(os.environ["GITHUB_WORKSPACE"], "opt", "local", "occt-7.9.1-${{ matrix.use-vtk }}", "lib"),' setup.py
        
         cat setup.py
-        ls -l ~/opt/local/occt-7.9.1-${{ matrix.use-vtk }}/
-        # ls -l ~/opt/local/occt-7.9.1-${{ matrix.use-vtk }}/include/opencascade
-        ls -l ~/opt/local/occt-7.9.1-${{ matrix.use-vtk }}/lib
+        ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ matrix.use-vtk }}/
+        # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ matrix.use-vtk }}/include/opencascade
+        ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ matrix.use-vtk }}/lib
 
     # - - -
 
