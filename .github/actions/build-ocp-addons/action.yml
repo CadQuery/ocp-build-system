@@ -116,33 +116,6 @@ runs:
 
     # - - -
 
-    - name: Download novtk cadquery_ocp wheel
-      if: inputs.use-vtk == 'novtk'
-      uses: actions/download-artifact@v4
-      with:
-        name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
-        run-id: ${{ env.SDK_RUNID }}
-        github-token: ${{ inputs.github-token }}
-
-    # - - -
-
-    - name: Install VTK and OCP wheel
-      shell: bash -l {0}
-      run: |
-        # Install VTK and OCP wheel
-        set -e
-        set -o pipefail
-        
-        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
-          pip install vtk==${{ env.VTK }}
-        fi
-        ls -l
-        pip install *.whl
-
-        python -c "import OCP; print('Success: OCP', OCP.__version__)"
-
-    # - - -
-
     - name: Clone ocp-addons
       shell: bash -l {0}
       run: |
@@ -172,8 +145,13 @@ runs:
         cd ocp-addons
         python -m build -n
 
-        ls -l build/lib.linux*/*.so
-        objdump -T build/lib.linux*/*.so | grep GLIBC_ | sed 's/.*GLIBC_\\([.0-9]*\\).*/\\1/g' | sort -Vu
+    # - - -
+
+    - name: Upload wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: ocp-addons-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+        path: dist/*.whl
 
     # - - -
 
@@ -187,6 +165,10 @@ runs:
         set -o pipefail
         
         cd ocp-addons
+
+        # ls -l build/lib.linux*/*.so
+        # objdump -T build/lib.linux*/*.so | grep GLIBC_ | sed 's/.*GLIBC_\\([.0-9]*\\).*/\\1/g' | sort -Vu
+
         LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib auditwheel repair --plat manylinux_2_31_x86_64 dist/ocp_addons-*.whl
 
     # - - -
@@ -217,6 +199,33 @@ runs:
         
         PATH=LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib:$PATH
         python -m delvewheel repair --wheel-dir=wheelhouse dist/ocp_addons*.whl
+
+    # - - -
+
+    - name: Download novtk cadquery_ocp wheel
+      if: inputs.use-vtk == 'novtk'
+      uses: actions/download-artifact@v4
+      with:
+        name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+        run-id: ${{ env.SDK_RUNID }}
+        github-token: ${{ inputs.github-token }}
+
+    # - - -
+
+    - name: Install VTK and OCP wheel
+      shell: bash -l {0}
+      run: |
+        # Install VTK and OCP wheel
+        set -e
+        set -o pipefail
+        
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          pip install vtk==${{ env.VTK }}
+        fi
+        ls -l
+        pip install *.whl
+
+        python -c "import OCP; print('Success: OCP', OCP.__version__)"
 
     # - - -
 
