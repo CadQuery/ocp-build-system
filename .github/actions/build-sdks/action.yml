@@ -294,6 +294,10 @@ runs:
 
         if [[ "$RUNNER_OS" == "Linux" ]]; then
           export CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" # Disables the C++11 ABI features for VTK compatibility
+        elif  [[ "$RUNNER_OS" == "macOS" ]]; then
+          export CFLAGS="-mmacosx-version-min=11.1"
+          export CXXFLAGS="-mmacosx-version-min=11.1"
+          export LDFLAGS="-mmacosx-version-min=11.1"
         fi
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
