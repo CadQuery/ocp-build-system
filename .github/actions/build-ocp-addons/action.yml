@@ -70,20 +70,20 @@ runs:
 
     # - - -
 
-    - name: Install MacOS Dependencies (x86_64 / arm64)
-      if: runner.os == 'macOS'
-      shell: bash -l {0}
-      run: |
-        # Install MacOS Dependencies (x86_64 / arm64)
-        set -e
-        set -o pipefail
+    # - name: Install MacOS Dependencies (x86_64 / arm64)
+    #   if: runner.os == 'macOS'
+    #   shell: bash -l {0}
+    #   run: |
+    #     # Install MacOS Dependencies (x86_64 / arm64)
+    #     set -e
+    #     set -o pipefail
         
-        brew install automake gsed
+    #     brew install automake gsed
 
-        pip install delocate build wheel
+    #     pip install delocate build wheel
 
-        curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
-        sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
+    #     curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
+    #     sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
 
     # - - -
 
@@ -152,13 +152,13 @@ runs:
 
         cd ocp-addons
 
-        if [[ "$RUNNER_OS" == "macOS" ]]; then
-          export SDKROOT=/opt/MacOSX11.3.sdk
+        # if [[ "$RUNNER_OS" == "macOS" ]]; then
+        #   export SDKROOT=/opt/MacOSX11.3.sdk
 
-          export CFLAGS="-isysroot $SDKROOT $CFLAGS"
-          export CXXFLAGS="-isysroot $SDKROOT $CXXFLAGS"
-          export LDFLAGS="-isysroot $SDKROOT $LDFLAGS"
-        fi
+        #   export CFLAGS="-isysroot $SDKROOT $CFLAGS"
+        #   export CXXFLAGS="-isysroot $SDKROOT $CXXFLAGS"
+        #   export LDFLAGS="-isysroot $SDKROOT $LDFLAGS"
+        # fi
 
         python -m build -n
 
@@ -200,6 +200,18 @@ runs:
         set -o pipefail
         
         cd ocp-addons
+
+        python -m wheel pack ocp_addons-*
+
+        # Patch @rpath/libc++.1.dylib to /usr/lib/libc++.1.dylib
+        cd dist
+        python -m wheel unpack ocp_addons-*.whl
+        rm ocp_addons-*.whl
+        install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib ocp_addons*/*.so
+        otool -L ocp_addons*/*.so
+        python -m wheel pack ocp_addons-*
+        cd ..
+
         DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib:/usr/lib python -m delocate.cmd.delocate_wheel --wheel-dir=wheelhouse dist/ocp_addons*.whl
 
     # - - -
