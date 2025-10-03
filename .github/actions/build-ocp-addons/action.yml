@@ -86,7 +86,7 @@ runs:
         set -e
         set -o pipefail
         
-        micromamba activate addons
+        # micromamba activate addons
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           pip install vtk==${{ env.VTK }}
@@ -109,7 +109,7 @@ runs:
         sudo apt-get update
         sudo apt-get install freetype* libfreetype6-dev libgl1-mesa-glx
 
-        micromamba activate addons
+        # micromamba activate addons
 
         micromamba install -c conda-forge gxx_linux-64=12
         pip install auditwheel patchelf
@@ -128,7 +128,7 @@ runs:
         
         brew install automake gsed
 
-        micromamba activate addons
+        # micromamba activate addons
         pip install delocate
 
     # - - -
@@ -141,7 +141,7 @@ runs:
         set -e
         set -o pipefail
         
-        micromamba activate addons
+        # micromamba activate addons
 
         micromamba install vs2019_win-64 -c conda-forge
         pip install delvewheel
@@ -164,7 +164,7 @@ runs:
       run: |
         # Build Wheel 
 
-        micromamba activate addons
+        # micromamba activate addons
 
         cd ocp-addons
         
