@@ -156,8 +156,8 @@ runs:
 
         cd ocp-addons
         if [[ "$RUNNER_OS" == "macOS" ]]; then
-          export CC=clang
-          export CXX=clang++
+          export CC=$CONDA_PREFIX/clang
+          export CXX=$CONDA_PREFIX/clang++
         fi
         
         clang++ --version
