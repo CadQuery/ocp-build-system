@@ -43,7 +43,7 @@ runs:
         init-shell: bash
         cache-downloads: true
         cache-environment: true
-        cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-novtk
+        cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
 
     # - - -
 
