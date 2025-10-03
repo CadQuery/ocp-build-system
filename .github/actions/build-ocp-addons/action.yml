@@ -161,7 +161,7 @@ runs:
         #   export LDFLAGS="-isysroot $SDKROOT $LDFLAGS"
         # fi
 
-        python -m build -n
+        python -m build -n -w
         ls -l dist
 
     # - - -
