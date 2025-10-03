@@ -161,12 +161,12 @@ runs:
 
         cd ocp-addons
 
-        ${{ matrix.sed-i }} '/include_dirs=\[/a\    os.path.join(os.environ["HOME"], "opt", "local", "occt-7.9.1", "include", "opencascade"),' setup.py
-        ${{ matrix.sed-i }} '/library_dirs=\[/a\    os.path.join(os.environ["HOME"], "opt", "local", "occt-7.9.1", "lib"),' setup.py
+        ${{ matrix.sed-i }} '/include_dirs=\[/a\    os.path.join(os.environ["HOME"], "opt", "local", "occt-7.9.1-${{ matrix.use-vtk }}", "include", "opencascade"),' setup.py
+        ${{ matrix.sed-i }} '/library_dirs=\[/a\    os.path.join(os.environ["HOME"], "opt", "local", "occt-7.9.1-${{ matrix.use-vtk }}", "lib"),' setup.py
        
         cat setup.py
-        ls -l ~/opt/local/
-        ls -l ~/opt/local/occt-7.9.1-${{ matrix.use-vtk }}/include/opencascade
+        ls -l ~/opt/local/occt-7.9.1-${{ matrix.use-vtk }}/
+        # ls -l ~/opt/local/occt-7.9.1-${{ matrix.use-vtk }}/include/opencascade
         ls -l ~/opt/local/occt-7.9.1-${{ matrix.use-vtk }}/lib
 
     # - - -
