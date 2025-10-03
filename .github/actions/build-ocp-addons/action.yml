@@ -82,6 +82,9 @@ runs:
 
         pip install delocate build wheel
 
+        curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
+        sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
+
     # - - -
 
     - name: Install Windows Dependencies (x86_64)
@@ -135,7 +138,7 @@ runs:
         fi
 
         cat setup.py
-        
+
         # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/
         # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/include/opencascade
         # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib
@@ -148,6 +151,15 @@ runs:
         # Build Wheel 
 
         cd ocp-addons
+
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          export SDKROOT=/opt/MacOSX11.3.sdk
+
+          export CFLAGS="-isysroot $SDKROOT $CFLAGS"
+          export CXXFLAGS="-isysroot $SDKROOT $CXXFLAGS"
+          export LDFLAGS="-isysroot $SDKROOT $LDFLAGS"
+        fi
+
         python -m build -n
 
     # - - -
@@ -174,7 +186,7 @@ runs:
         # ls -l build/lib.linux*/*.so
         # objdump -T build/lib.linux*/*.so | grep GLIBC_ | sed 's/.*GLIBC_\\([.0-9]*\\).*/\\1/g' | sort -Vu
 
-        LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib auditwheel repair --plat manylinux_2_31_x86_64 dist/ocp_addons-*.whl
+        env LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib auditwheel repair --plat manylinux_2_31_x86_64 dist/ocp_addons-*.whl
 
     # - - -
 
