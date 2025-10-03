@@ -142,7 +142,17 @@ runs:
         ' setup.py 
 
         if [[ "$RUNNER_OS" == "Linux" ]]; then
+        
           ${{ inputs.sed-i }} 's/\(extra_compile_args=\["-O3"\)\(.*\)/\1, "-D_GLIBCXX_USE_CXX11_ABI=0", "-std=c++17"\2/' setup.py
+
+        elif [[ "$RUNNER_OS" == "macOS" ]]; then
+
+          ${{ inputs.sed-i }} '/extra_compile_args=\[/a\
+        extra_link_args=[\
+            "-Wl,-headerpad_max_install_names",\
+            "-mmacosx-version-min=11.1",\
+        ],
+        ' setup.py
         fi
 
         cat setup.py
