@@ -49,54 +49,6 @@ runs:
         cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-${{ inputs.use-vtk }}
 
     # - - -
-    
-    - name: Download OCCT and VTK SDK
-      uses: actions/download-artifact@v4
-      with:
-        name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
-        run-id: ${{ env.SDK_RUNID }}
-        github-token: ${{ inputs.github-token }}
-
-    # - - -
-    
-    - name: Download vtk cadquery_ocp wheel
-      if: inputs.use-vtk == 'vtk'
-      uses: actions/download-artifact@v4
-      with:
-        name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
-        run-id: ${{ env.SDK_RUNID }}
-        github-token: ${{ inputs.github-token }}
-
-    # - - -
-
-    - name: Download novtk cadquery_ocp wheel
-      if: inputs.use-vtk == 'novtk'
-      uses: actions/download-artifact@v4
-      with:
-        name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
-        run-id: ${{ env.SDK_RUNID }}
-        github-token: ${{ inputs.github-token }}
-
-    # - - -
-
-    - name: Install VTK and OCP wheel
-      shell: bash -l {0}
-      run: |
-        # Install VTK and OCP wheel
-        set -e
-        set -o pipefail
-        
-        # micromamba activate addons
-
-        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
-          pip install vtk==${{ env.VTK }}
-        fi
-        ls -l
-        pip install *.whl
-
-        python -c "import OCP; print('Success: OCP', OCP.__version__)"
-
-    # - - -
 
     - name: Install Linux Dependencies (x86_64)
       if: ${{ matrix.os == 'ubuntu-22.04' }}
@@ -145,6 +97,54 @@ runs:
 
         micromamba install vs2019_win-64 -c conda-forge
         pip install delvewheel
+
+    # - - -
+    
+    - name: Download OCCT and VTK SDK
+      uses: actions/download-artifact@v4
+      with:
+        name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
+        run-id: ${{ env.SDK_RUNID }}
+        github-token: ${{ inputs.github-token }}
+
+    # - - -
+    
+    - name: Download vtk cadquery_ocp wheel
+      if: inputs.use-vtk == 'vtk'
+      uses: actions/download-artifact@v4
+      with:
+        name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+        run-id: ${{ env.SDK_RUNID }}
+        github-token: ${{ inputs.github-token }}
+
+    # - - -
+
+    - name: Download novtk cadquery_ocp wheel
+      if: inputs.use-vtk == 'novtk'
+      uses: actions/download-artifact@v4
+      with:
+        name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+        run-id: ${{ env.SDK_RUNID }}
+        github-token: ${{ inputs.github-token }}
+
+    # - - -
+
+    - name: Install VTK and OCP wheel
+      shell: bash -l {0}
+      run: |
+        # Install VTK and OCP wheel
+        set -e
+        set -o pipefail
+        
+        # micromamba activate addons
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          pip install vtk==${{ env.VTK }}
+        fi
+        ls -l
+        pip install *.whl
+
+        python -c "import OCP; print('Success: OCP', OCP.__version__)"
 
     # - - -
 
