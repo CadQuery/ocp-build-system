@@ -59,7 +59,8 @@ runs:
         set -o pipefail
 
         apt-get update -qq
-        apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx  > /dev/null 2>&1
+        apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx  git \
+                                patch clang build-essential> /dev/null 2>&1
 
         # micromamba activate addons
 
@@ -105,6 +106,7 @@ runs:
       with:
         name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
         run-id: ${{ env.SDK_RUNID }}
+        path: ~/
         github-token: ${{ inputs.github-token }}
 
     # - - -
