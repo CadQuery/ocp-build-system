@@ -10,9 +10,6 @@ inputs:
   sed-i:
     description: "Sed in-place command for the OS"
     required: true
-  use-vtk:
-    description: "Whether to use VTK in the build"
-    required: true
   github-token:
     required: true
     description: 'GitHub Token'
@@ -46,7 +43,7 @@ runs:
         init-shell: bash
         cache-downloads: true
         cache-environment: true
-        cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-${{ inputs.use-vtk }}
+        cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-novtk
 
     # - - -
 
@@ -60,10 +57,9 @@ runs:
 
         apt-get update -qq
         apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx  git \
-                                patch clang build-essential> /dev/null 2>&1
+                                patch gcc g++ build-essential> /dev/null 2>&1
 
-
-        micromamba install -c conda-forge gxx_linux-64=12
+        # micromamba install -c conda-forge gxx_linux-64=12
         pip install auditwheel patchelf build wheel
         micromamba info
         micromamba list
@@ -103,19 +99,9 @@ runs:
     - name: Download OCCT and VTK SDK
       uses: actions/download-artifact@v4
       with:
-        name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
+        name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-novtk
         run-id: ${{ env.SDK_RUNID }}
         github-token: ${{ inputs.github-token }}
-
-    # - - -
-    
-    # - name: Download vtk cadquery_ocp wheel
-    #   if: inputs.use-vtk == 'vtk'
-    #   uses: actions/download-artifact@v4
-    #   with:
-    #     name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
-    #     run-id: ${{ env.SDK_RUNID }}
-    #     github-token: ${{ inputs.github-token }}
 
     # - - -
 
@@ -132,12 +118,12 @@ runs:
 
         ${{ inputs.sed-i }} '/include_dirs=\[/,/\],/c\
         include_dirs=[\
-             os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-${{ env.OCCT }}-${{ inputs.use-vtk }}", "include", "opencascade")\
+             os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-${{ env.OCCT }}-novtk", "include", "opencascade")\
         ],
         ' setup.py
         ${{ inputs.sed-i }} '/library_dirs=\[/,/\],/c\
         library_dirs=[\
-             os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-${{ env.OCCT }}-${{ inputs.use-vtk }}", "lib")\
+             os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-${{ env.OCCT }}-novtk", "lib")\
         ],
         ' setup.py 
 
@@ -168,9 +154,16 @@ runs:
         if [[ "$RUNNER_OS" == "macOS" ]]; then
           export CC=clang
           export CXX=clang++
+          
+          clang++ --version
+
+        elif [[ "$RUNNER_OS" == "Linux" ]]; then
+        
+          export CC=gcc
+          export CXX=g++
+          g++ --version
         fi
         
-        clang++ --version
 
         python -m build -n -w
         ls -l dist
@@ -200,7 +193,7 @@ runs:
         # ls -l build/lib.linux*/*.so
         # objdump -T build/lib.linux*/*.so | grep GLIBC_ | sed 's/.*GLIBC_\\([.0-9]*\\).*/\\1/g' | sort -Vu
 
-        env LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib auditwheel repair \
+        env LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib auditwheel repair \
             --plat manylinux_2_31_x86_64 dist/ocp_addons-${VERSION}*.whl
 
     # - - -
@@ -229,7 +222,7 @@ runs:
         cd ..
 
         # @rpath/libc++.1.dylib confuses delocate but can safely be ignored
-        DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:/usr/lib python \
+        DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib:/usr/lib python \
             -m delocate.cmd.delocate_wheel \
             --ignore-missing-dependencies \
             --wheel-dir=wheelhouse dist/ocp_addons-${VERSION}*.whl
@@ -247,13 +240,12 @@ runs:
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
 
-        PATH=LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:$PATH
+        PATH=LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib:$PATH
         python -m delvewheel repair --wheel-dir=wheelhouse dist/ocp_addons-${VERSION}*.whl
 
     # - - -
 
     - name: Download novtk cadquery_ocp wheel
-      if: inputs.use-vtk == 'novtk'
       uses: actions/download-artifact@v4
       with:
         name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
@@ -262,17 +254,13 @@ runs:
 
     # - - -
 
-    - name: Install VTK and OCP wheel
+    - name: Install OCP wheel
       shell: bash -l {0}
       run: |
         # Install VTK and OCP wheel
         set -e
         set -o pipefail
         
-        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
-          pip install vtk==${{ env.VTK }}
-        fi
-        ls -l
         pip install *.whl
 
         python -c "import OCP; print('Success: OCP', OCP.__version__)"
