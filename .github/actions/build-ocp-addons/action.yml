@@ -144,15 +144,8 @@ runs:
         if [[ "$RUNNER_OS" == "Linux" ]]; then
           ${{ inputs.sed-i }} 's/\(extra_compile_args=\["-O3"\)\(.*\)/\1, "-D_GLIBCXX_USE_CXX11_ABI=0", "-std=c++17"\2/' setup.py
         fi
-        if [[ "$RUNNER_OS" == "macOS" ]]; then
-          ${{ inputs.sed-i }} 's/\(extra_compile_args=\["-O3"\)\(.*\)/\1, "-Wl,-headerpad_max_install_names"\2/' setup.py
-        fi
 
         cat setup.py
-
-        # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/
-        # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/include/opencascade
-        # ls -l $GITHUB_WORKSPACE/occt-7.9.1-${{ inputs.use-vtk }}/lib
 
     # - - -
 
@@ -162,6 +155,12 @@ runs:
         # Build Wheel 
 
         cd ocp-addons
+        if [[ "$RUNNER_OS" == "macOS" ]]; then
+          export CC=clang
+          export CXX=clang++
+        fi
+        
+        clang++ --version
 
         python -m build -n -w
         ls -l dist
