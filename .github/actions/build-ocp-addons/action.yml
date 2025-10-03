@@ -165,8 +165,9 @@ runs:
         ${{ matrix.sed-i }} '/library_dirs=\[/a\    os.path.join(os.environ["HOME"], "opt", "local", "occt-7.9.1", "lib"),' setup.py
        
         cat setup.py
-        ls -l "~/opt/local/occt-7.9.1/include/opencascade"
-        ls -l "~/opt/local/occt-7.9.1/lib"
+        ls -l ~/opt/local/
+        ls -l ~/opt/local/occt-7.9.1-${{ matrix.use-vtk }}/include/opencascade
+        ls -l ~/opt/local/occt-7.9.1-${{ matrix.use-vtk }}/lib
 
     # - - -
 
