@@ -218,8 +218,11 @@ runs:
         python -m wheel pack ocp_addons-${VERSION}
         cd ..
 
+        # @rpath/libc++.1.dylib confuses delocate but can safely be ignored
         DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:/usr/lib python \
-            -m delocate.cmd.delocate_wheel --wheel-dir=wheelhouse dist/ocp_addons-${VERSION}*.whl
+            -m delocate.cmd.delocate_wheel \
+            --ignore-missing-dependencies \
+            --wheel-dir=wheelhouse dist/ocp_addons-${VERSION}*.whl
 
     # - - -
 
