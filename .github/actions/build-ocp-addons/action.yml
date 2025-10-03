@@ -130,7 +130,7 @@ runs:
         if [[ "$RUNNER_OS" == "Linux" ]]; then
         
           ${{ inputs.sed-i }} 's/\(extra_compile_args=\["-O3"\)\(.*\)/\1, "-D_GLIBCXX_USE_CXX11_ABI=0", "-std=c++17"\2/' setup.py
-          ${{ inputs.sed-i }} '/if platform.system() == "Linux":/,/os.environ\["CXX"\] = archprefix \+ "-conda-linux-gnu-g\+\+"/d' setup.py
+          ${{ inputs.sed-i }} '/^if platform\.system/,+8d' setup.py
 
         elif [[ "$RUNNER_OS" == "macOS" ]]; then
 
