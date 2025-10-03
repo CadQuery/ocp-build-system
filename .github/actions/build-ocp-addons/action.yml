@@ -58,13 +58,13 @@ runs:
         set -e
         set -o pipefail
 
-        sudo apt-get update
-        sudo apt-get install freetype* libfreetype6-dev libgl1-mesa-glx
+        apt-get update
+        apt-get install freetype* libfreetype6-dev libgl1-mesa-glx
 
         # micromamba activate addons
 
         micromamba install -c conda-forge gxx_linux-64=12
-        pip install auditwheel patchelf
+        pip install auditwheel patchelf build wheel
         micromamba info
         micromamba list
 
@@ -81,7 +81,7 @@ runs:
         brew install automake gsed
 
         # micromamba activate addons
-        pip install delocate
+        pip install delocate build wheel
 
     # - - -
 
@@ -96,7 +96,7 @@ runs:
         # micromamba activate addons
 
         micromamba install vs2019_win-64 -c conda-forge
-        pip install delvewheel
+        pip install delvewheel build wheel
 
     # - - -
     
