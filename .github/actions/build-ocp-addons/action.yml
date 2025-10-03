@@ -151,7 +151,7 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: ocp-addons-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
-        path: dist/*.whl
+        path: ocp-addons/dist/*.whl
 
     # - - -
 
