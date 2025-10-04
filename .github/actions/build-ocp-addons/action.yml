@@ -181,7 +181,7 @@ runs:
         rm ocp_addons-${VERSION}*.whl
         # install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib ocp_addons*/*.so
         install_name_tool -add_rpath /usr/lib ocp_addons*/*.so
-        for lib in ocp_addons.dylibs/libTK*.dylib; do
+        for lib in ocp_addons*/ocp_addons.dylibs/libTK*.dylib; do
           install_name_tool -add_rpath /usr/lib  $lib
         done
         python -m wheel pack ocp_addons-${VERSION}
