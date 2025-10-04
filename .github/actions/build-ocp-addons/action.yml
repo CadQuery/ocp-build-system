@@ -128,6 +128,8 @@ runs:
       shell: cmd
       run: |
         rem Clone ocp-addons and build wheel 
+        call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
+        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
         git clone https://github.com/jdegenstein/ocp-addons.git
         
