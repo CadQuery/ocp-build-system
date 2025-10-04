@@ -73,7 +73,7 @@ runs:
         set -e
         set -o pipefail
         
-        brew install automake gsed
+        brew install automake gsed tree
 
         pip install delocate build wheel
 
@@ -177,6 +177,7 @@ runs:
 
         # Patch @rpath/libc++.1.dylib to /usr/lib/libc++.1.dylib
         cd dist
+        tree
         python -m wheel unpack ocp_addons-${VERSION}*.whl
         rm ocp_addons-${VERSION}*.whl
         # install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib ocp_addons*/*.so
