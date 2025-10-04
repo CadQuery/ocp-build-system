@@ -56,8 +56,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-13", "macos-15", "windows-2022"]
-        os: ["macos-13", "macos-15"]
+        os: ["macos-13", "macos-15", "windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
@@ -74,12 +73,12 @@ jobs:
             vtk-prefix: ""
             sed-i: "gsed -i"
             shells: "bash"
-          # - os: "windows-2022"
-          #   vtk-libs: "vtk*.dll"
-          #   vtk-suffix: "/"
-          #   vtk-prefix: "Library/"
-          #   sed-i: "sed -i"
-          #   shells: "bash cmd.exe"
+          - os: "windows-2022"
+            vtk-libs: "vtk*.dll"
+            vtk-suffix: "/"
+            vtk-prefix: "Library/"
+            sed-i: "sed -i"
+            shells: "bash cmd.exe"
     steps:
       - uses: actions/checkout@v4
 
@@ -136,14 +135,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-15", "windows-2022"]
-        os: ["macos-15"]
+        os: ["macos-15", "windows-2022"]
         python-version: ["3.13"]
         include:
           - os: "macos-15"
             sed-i: "gsed -i"
-          # - os: "windows-2022"
-          #   sed-i: "sed -i"
+          - os: "windows-2022"
+            sed-i: "sed -i"
 
     steps:
       - uses: actions/checkout@v4
@@ -198,8 +196,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-13", "macos-15", "windows-2022"]
-        os: ["macos-13", "macos-15"]
+        os: ["macos-13", "macos-15", "windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
@@ -220,13 +217,13 @@ jobs:
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
             ocp-tag: "macos-15"
-          # - os: "windows-2022"
-          #   delocate: delvewheel
-          #   plat: win_amd64
-          #   sed-i: "sed -i"
-          #   shells: "bash cmd.exe"
-          #   module: "OCP.*.pyd"
-          #   ocp-tag: "windows-2022"
+          - os: "windows-2022"
+            delocate: delvewheel
+            plat: win_amd64
+            sed-i: "sed -i"
+            shells: "bash cmd.exe"
+            module: "OCP.*.pyd"
+            ocp-tag: "windows-2022"
     steps:
       - uses: actions/checkout@v4
       - name: Build OCP
@@ -256,8 +253,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
-        os: ["macos-13", "macos-15", "ubuntu-22.04"]
+        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
@@ -267,8 +263,8 @@ jobs:
             sed-i: "gsed -i"
           - os: "macos-15"
             sed-i: "gsed -i"
-          # - os: "windows-2022"
-          #   sed-i: "sed -i"
+          - os: "windows-2022"
+            sed-i: "sed -i"
           - os: "ubuntu-22.04"
             sed-i: "sed -i"
 
