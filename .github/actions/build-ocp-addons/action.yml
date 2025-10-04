@@ -222,7 +222,7 @@ runs:
     - name: Download vtk cadquery_ocp wheel
       uses: actions/download-artifact@v4
       with:
-        name: cadquery-ocp-vtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+        name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
         run-id: ${{ env.SDK_RUNID }}
         github-token: ${{ inputs.github-token }}
 
