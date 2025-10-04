@@ -116,19 +116,6 @@ runs:
         cd ocp-addons
         git switch ocp-build-system
         
-        # if [[ "$RUNNER_OS" == "macOS" ]]; then
-        #   export CC=clang
-        #   export CXX=clang++
-          
-        #   clang++ --version
-
-        # elif [[ "$RUNNER_OS" == "Linux" ]]; then
-
-        #   export CC=/usr/bin/gcc
-        #   export CXX=/usr/bin/g++
-        #   g++ --version
-        # fi
-
         export OCCT_SDK="$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk"
         python -m build -n -w
         ls -l dist
@@ -155,9 +142,6 @@ runs:
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
 
-        # ls -l build/lib.linux*/*.so
-        # objdump -T build/lib.linux*/*.so | grep GLIBC_ | sed 's/.*GLIBC_\\([.0-9]*\\).*/\\1/g' | sort -Vu
-
         env LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib auditwheel repair \
             --plat manylinux_2_31_x86_64 dist/ocp_addons-${VERSION}*.whl
 
@@ -178,13 +162,15 @@ runs:
         # Patch @rpath/libc++.1.dylib to /usr/lib/libc++.1.dylib
         cd dist
         python -m wheel unpack ocp_addons-${VERSION}*.whl
-        tree "$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib"
+        
         rm ocp_addons-${VERSION}*.whl
+        
         install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib ocp_addons*/*.so
-        # install_name_tool -add_rpath /usr/lib ocp_addons-${VERSION}/*.so
+        
         for lib in "$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib"/libTK*.dylib; do
           install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib $lib
         done
+        
         python -m wheel pack ocp_addons-${VERSION}
         cd ..
                
