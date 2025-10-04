@@ -245,6 +245,12 @@ runs:
         pip install *.whl
         python -c "import OCP; print('Success: OCP', OCP.__version__)"
 
+        git clone https://github.com/gumyr/build123d.git
+        cd build123d 
+        ${{ inputs.sed-i }} 's/cadquery-ocp >= 7\.8, < 7\.9/cadquery-ocp >= 7.8, < 8.0/g' pyproject.toml
+        pip install .
+        cd ..
+
         # micromamba deactivate
         # micromamba create --name ocpaddonstest python=${{ inputs.python-version }} --file env.yml --yes
         # micromamba activate ocpaddonstest
@@ -252,7 +258,7 @@ runs:
 
         ls ocp-addons/wheelhouse/*
         pip install ocp-addons/wheelhouse/ocp_addons*.whl
-
+        
         python -c "import ocp_addons;print('ocp_addons imported successfully')"
         python ocp-addons/test.py
 
