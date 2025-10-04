@@ -182,10 +182,6 @@ runs:
         # # install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib ocp_addons*/*.so
         # install_name_tool -add_rpath /usr/lib ocp_addons*/*.so
 
-        # otool -L ocp_addons*/*.so
-        # python -m wheel pack ocp_addons-${VERSION}
-        # cd ..
-
         # @rpath/libc++.1.dylib confuses delocate but can safely be ignored
         DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib:/usr/lib python \
             -m delocate.cmd.delocate_wheel \

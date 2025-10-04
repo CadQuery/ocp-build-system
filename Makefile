@@ -1,7 +1,7 @@
 .PHONY: cache-clean cache-list cache-size
 
 cache-clean:
-	@gh cache delete -a
+	@echo "Call: gh cache delete -a"
 
 cache-list:
 	@gh cache list -L 100 | sort -k 2
