@@ -276,7 +276,7 @@ runs:
         pip install ocp-addons/wheelhouse/ocp_addons*.whl
         python -c "import ocp_addons;print('ocp_addons imported successfully')"
         
-        pip list
+        micromamba list
         command -v python
         python ocp-addons/test.py
 
