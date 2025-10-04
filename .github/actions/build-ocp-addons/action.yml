@@ -96,7 +96,7 @@ runs:
 
     # - - -
     
-    - name: Download OCCT and VTK SDK
+    - name: Download OCCT SDK
       uses: actions/download-artifact@v4
       with:
         name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-novtk
@@ -105,69 +105,33 @@ runs:
 
     # - - -
 
-    - name: Clone ocp-addons
+    - name: Clone ocp-addons and build wheel 
       shell: bash -l {0}
       run: |
-        # Clone ocp-addons
+        # Clone ocp-addons and build wheel 
         set -e
         set -o pipefail
 
         git clone https://github.com/jdegenstein/ocp-addons.git
-
-        cd ocp-addons
-
-        ${{ inputs.sed-i }} '/include_dirs=\[/,/\],/c\
-        include_dirs=[\
-             os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-${{ env.OCCT }}-novtk", "include", "opencascade")\
-        ],
-        ' setup.py
-        ${{ inputs.sed-i }} '/library_dirs=\[/,/\],/c\
-        library_dirs=[\
-             os.path.join(os.environ["GITHUB_WORKSPACE"], "occt-${{ env.OCCT }}-novtk", "lib")\
-        ],
-        ' setup.py 
-
-        if [[ "$RUNNER_OS" == "Linux" ]]; then
+        git switch ocp-build-system
         
-          ${{ inputs.sed-i }} 's/\(extra_compile_args=\["-O3"\)\(.*\)/\1, "-D_GLIBCXX_USE_CXX11_ABI=0", "-std=c++17"\2/' setup.py
-          ${{ inputs.sed-i }} '/^if platform\.system/,+8d' setup.py
-
-        elif [[ "$RUNNER_OS" == "macOS" ]]; then
-
-          ${{ inputs.sed-i }} '/extra_compile_args=\[/a\
-        extra_link_args=[\
-            "-Wl,-headerpad_max_install_names",\
-            "-mmacosx-version-min=11.1",\
-        ],
-        ' setup.py
-        fi
-
-        cat setup.py
-
-    # - - -
-
-    - name: Build Wheel 
-      shell: bash -l {0}
-      run: |
-        # Build Wheel 
-        set -e
-        set -o pipefail
-
         cd ocp-addons
-        if [[ "$RUNNER_OS" == "macOS" ]]; then
-          export CC=clang
-          export CXX=clang++
+        # if [[ "$RUNNER_OS" == "macOS" ]]; then
+        #   export CC=clang
+        #   export CXX=clang++
           
-          clang++ --version
+        #   clang++ --version
 
-        elif [[ "$RUNNER_OS" == "Linux" ]]; then
+        # elif [[ "$RUNNER_OS" == "Linux" ]]; then
 
-          export CC=/usr/bin/gcc
-          export CXX=/usr/bin/g++
-          g++ --version
-        fi
+        #   export CC=/usr/bin/gcc
+        #   export CXX=/usr/bin/g++
+        #   g++ --version
+        # fi
         
+        $CXX --version
 
+        export OCCT_SDK="$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk"
         python -m build -n -w
         ls -l dist
 
@@ -214,15 +178,15 @@ runs:
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
 
         # Patch @rpath/libc++.1.dylib to /usr/lib/libc++.1.dylib
-        cd dist
-        python -m wheel unpack ocp_addons-${VERSION}*.whl
-        rm ocp_addons-${VERSION}*.whl
-        # install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib ocp_addons*/*.so
-        install_name_tool -add_rpath /usr/lib ocp_addons*/*.so
+        # cd dist
+        # python -m wheel unpack ocp_addons-${VERSION}*.whl
+        # rm ocp_addons-${VERSION}*.whl
+        # # install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib ocp_addons*/*.so
+        # install_name_tool -add_rpath /usr/lib ocp_addons*/*.so
 
-        otool -L ocp_addons*/*.so
-        python -m wheel pack ocp_addons-${VERSION}
-        cd ..
+        # otool -L ocp_addons*/*.so
+        # python -m wheel pack ocp_addons-${VERSION}
+        # cd ..
 
         # @rpath/libc++.1.dylib confuses delocate but can safely be ignored
         DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib:/usr/lib python \
