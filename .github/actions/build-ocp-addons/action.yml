@@ -138,7 +138,7 @@ runs:
     - name: Upload wheel
       uses: actions/upload-artifact@v4
       with:
-        name: ocp-addons-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
+        name: ocp-addons-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}-orig
         path: ocp-addons/dist/*.whl
 
     # - - -
