@@ -90,7 +90,7 @@ runs:
       run: |
         rem Install Windows Dependencies (x86_64)
         
-        micromamba install -n build-ocp -y -c conda-forge vs2019_win-64
+        # micromamba install -n build-ocp -y -c conda-forge vs2019_win-64
         micromamba list  -n build-ocp 
 
     # - - -
