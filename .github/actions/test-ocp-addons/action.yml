@@ -27,8 +27,8 @@ runs:
         set -u
         set -o pipefail
 
-        apt-get update -qq  
-        DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates > /dev/null 2>&1
+        sudo apt-get update -qq  
+        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates > /dev/null 2>&1
 
     # - - -
     
