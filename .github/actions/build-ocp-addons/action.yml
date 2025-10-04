@@ -89,9 +89,10 @@ runs:
       shell: cmd
       run: |
         rem Install Windows Dependencies (x86_64)
-        
+        call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
+
         micromamba install vs2019_win-64 -c conda-forge
-        %CONDA_PREFIX%/pip install delvewheel build wheel
+        %CONDA_PREFIX%\pip install delvewheel build wheel
         micromamba list
 
     # - - -
@@ -140,7 +141,7 @@ runs:
         set OCCT_SDK=%GITHUB_WORKSPACE%\occt-${{ env.OCCT }}-novtk
 
         echo "CONDA_PREFIX: %CONDA_PREFIX%"
-        %CONDA_PREFIX%/python -m build -n -w
+        %CONDA_PREFIX%\python -m build -n -w
         
         dir dist
 
