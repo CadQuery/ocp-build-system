@@ -222,9 +222,6 @@ runs:
         set -e
         set -o pipefail
         
-        pip install *.whl
-
-        python -c "import OCP; print('Success: OCP', OCP.__version__)"
 
     # - - -
 
@@ -235,13 +232,17 @@ runs:
         set -e
         set -o pipefail
         
-        micromamba deactivate
-        micromamba create --name ocpaddonstest python=${{ inputs.python-version }} --file env.yml --yes
-        micromamba activate ocpaddonstest
-        micromamba info --envs
+        pip install *.whl
+        python -c "import OCP; print('Success: OCP', OCP.__version__)"
+
+        # micromamba deactivate
+        # micromamba create --name ocpaddonstest python=${{ inputs.python-version }} --file env.yml --yes
+        # micromamba activate ocpaddonstest
+        # micromamba info --envs
+
         ls wheelhouse/*
         pip install wheelhouse/ocp_addons*.whl
-        micromamba list
+
         python -c "import ocp_addons;print('ocp_addons imported successfully')"
         python test.py
 
