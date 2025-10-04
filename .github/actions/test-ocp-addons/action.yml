@@ -41,6 +41,18 @@ runs:
         cache-downloads: true
         cache-environment: true
         cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
+    
+    # - - -
+
+    - name: Install MacOS Dependencies (x86_64 / arm64)
+      if: runner.os == 'macOS'
+      shell: bash -l {0}
+      run: |
+        # Install MacOS Dependencies (x86_64 / arm64)
+        set -e
+        set -o pipefail
+        
+        brew install gsed tree
 
     # - - -
 
