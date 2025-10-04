@@ -41,7 +41,6 @@ runs:
         environment-file: environment-ocpaddons-${{ inputs.python-version }}.yml
         log-level: warning
         init-shell: bash cmd.exe
-        cache-downloads: true
         cache-environment: true
         cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
 
