@@ -40,7 +40,7 @@ runs:
       with:
         environment-file: environment-ocpaddons-${{ inputs.python-version }}.yml
         log-level: warning
-        init-shell: bash
+        init-shell: bash cmd
         cache-downloads: true
         cache-environment: true
         cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
@@ -105,6 +105,7 @@ runs:
     # - - -
 
     - name: Clone ocp-addons and build wheel 
+      if runner.os != "Windows"
       shell: bash -l {0}
       run: |
         # Clone ocp-addons and build wheel 
@@ -119,6 +120,25 @@ runs:
         export OCCT_SDK="$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk"
         python -m build -n -w
         ls -l dist
+
+    # - - -
+
+    - name: Clone ocp-addons and build wheel 
+      if runner.os == "Windows"
+      shell: cmd
+      run: |
+        rem Clone ocp-addons and build wheel 
+
+        git clone https://github.com/jdegenstein/ocp-addons.git
+        
+        cd ocp-addons
+        git switch ocp-build-system
+        
+        export OCCT_SDK=$GITHUB_WORKSPACE\occt-${{ env.OCCT }}-novtk
+        dir %OCCT_SDK%
+        python -m build -n -w
+        
+        dir dist
 
     # - - -
 
