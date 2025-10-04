@@ -139,9 +139,9 @@ runs:
         set OCCT_SDK=%GITHUB_WORKSPACE%\occt-${{ env.OCCT }}-novtk
 
         where python
-        python -c "import sys; print(sys.executable)"
+        %CONDA_PREFIX%/python -c "import sys; print(sys.executable)"
         echo "CONDA_PREFIX: %CONDA_PREFIX%"
-        python -m build -n -w
+        %CONDA_PREFIX%/python -m build -n -w
         
         dir dist
 
