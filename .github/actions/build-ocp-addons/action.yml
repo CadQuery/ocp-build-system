@@ -93,8 +93,6 @@ runs:
         call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
 
         micromamba install -y -c conda-forge vs2019_win-64
-        pip install delvewheel wheel
-
         micromamba list
 
     # - - -
@@ -132,6 +130,7 @@ runs:
       shell: cmd
       run: |
         rem Clone ocp-addons and build wheel 
+        
         call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
@@ -141,10 +140,7 @@ runs:
         git switch ocp-build-system
         
         set OCCT_SDK=%GITHUB_WORKSPACE%\occt-${{ env.OCCT }}-novtk
-
-        micromamba activate build-ocp
-
-        echo "CONDA_PREFIX: %CONDA_PREFIX%"
+        echo "START"
         python -m build -n -w
         
         dir dist
