@@ -10,6 +10,9 @@ inputs:
   sed-i:
     description: "Sed in-place command for the OS"
     required: true
+  shells:
+    description: "Shell configuration for the OS"
+    required: true
   github-token:
     required: true
     description: 'GitHub Token'
@@ -40,7 +43,7 @@ runs:
       with:
         environment-file: environment-ocpaddons-${{ inputs.python-version }}.yml
         log-level: warning
-        init-shell: "bash cmd.exe"
+        init-shell: ${{ input.shells }}
         cache-environment: true
         cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
 

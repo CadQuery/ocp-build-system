@@ -50,10 +50,13 @@ jobs:
                 include:
                     - os: "macos-15"
                       sed-i: "gsed -i"
+                      shells: "bash"
                     - os: "macos-13"
                       sed-i: "gsed -i"
+                      shells: "bash"
                     - os: "windows-2022"
                       sed-i: "sed -i"
+                      shells: "bash cmd.exe"
         steps:
             - uses: actions/checkout@v4
 
@@ -64,6 +67,7 @@ jobs:
                   os: ${{ matrix.os }}
                   python-version: ${{ matrix.python-version }}
                   sed-i: ${{ matrix.sed-i }}
+                  shells: ${{ matrix.shells }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}
 
     tests:
