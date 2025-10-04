@@ -136,8 +136,9 @@ runs:
         cd ocp-addons
         git switch ocp-build-system
         
+        echo "GITHUB_WORKSPACE: %GITHUB_WORKSPACE%"
         set OCCT_SDK=%GITHUB_WORKSPACE%\occt-${{ env.OCCT }}-novtk
-        echo "START"
+        echo "START: %OCCT_SDK%"
         micromamba run -n build-ocp python -m build -n -w
         
         dir dist
