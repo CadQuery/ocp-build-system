@@ -181,8 +181,8 @@ runs:
         rm ocp_addons-${VERSION}*.whl
         # install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib ocp_addons*/*.so
         install_name_tool -add_rpath /usr/lib ocp_addons*/*.so
-        for lib in ocp_addons.dylibs/libTK*.dylib; done
-          install_name_tool -add_rpath $lib
+        for lib in ocp_addons.dylibs/libTK*.dylib; do
+          install_name_tool -add_rpath /usr/lib  $lib
         done
         python -m wheel pack ocp_addons-${VERSION}
         cd ..
@@ -247,6 +247,12 @@ runs:
         
         pip install *.whl
         python -c "import OCP; print('Success: OCP', OCP.__version__)"
+
+        git clone https://github.com/snoyer/ocpsvg.git
+        cd ocpsvg
+        ${{ inputs.sed-i }} 's/cadquery-ocp >= 7\.8\.1, < 7\.9\.0/cadquery-ocp >= 7.8, < 8.0/g' pyproject.toml
+        pip install .
+        cd ..
 
         git clone https://github.com/gumyr/build123d.git
         cd build123d 
