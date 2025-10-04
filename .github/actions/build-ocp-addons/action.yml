@@ -86,7 +86,7 @@ runs:
 
     # - name: Install Windows Dependencies (x86_64)
     #   if: runner.os == 'Windows'
-    #   shell: cmd.exe
+    #   shell: cmd
     #   run: |
     #     rem Install Windows Dependencies (x86_64)
         
@@ -125,7 +125,7 @@ runs:
 
     - name: Clone ocp-addons and build wheel 
       if: runner.os == 'Windows'
-      shell: cmd.exe
+      shell: cmd
       env:
         OCCT_SDK: ${{ github.workspace }}\occt-${{ env.OCCT }}-novtk      
       run: |
