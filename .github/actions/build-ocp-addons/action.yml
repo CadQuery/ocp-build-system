@@ -61,7 +61,7 @@ runs:
         apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx  git \
                                patch gcc g++ build-essential  > /dev/null 2>&1
 
-        pip install auditwheel patchelf build wheel
+        pip install auditwheel patchelf
         micromamba info
         micromamba list
 
@@ -77,21 +77,21 @@ runs:
         
         brew install automake gsed tree
 
-        pip install delocate build wheel
+        pip install delocate
 
         # curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
         # sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
 
     # - - -
 
-    - name: Install Windows Dependencies (x86_64)
-      if: runner.os == 'Windows'
-      shell: cmd
-      run: |
-        rem Install Windows Dependencies (x86_64)
+    # - name: Install Windows Dependencies (x86_64)
+    #   if: runner.os == 'Windows'
+    #   shell: cmd
+    #   run: |
+    #     rem Install Windows Dependencies (x86_64)
         
-        # micromamba install -n build-ocp -y -c conda-forge vs2019_win-64
-        micromamba list  -n build-ocp 
+    #     micromamba install -n build-ocp -y -c conda-forge vs2019_win-64
+    #     micromamba list -n build-ocp 
 
     # - - -
     
