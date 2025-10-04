@@ -86,11 +86,9 @@ runs:
 
     - name: Install Windows Dependencies (x86_64)
       if: runner.os == 'Windows'
-      shell: bash -l {0}
+      shell: cmd
       run: |
-        # Install Windows Dependencies (x86_64)
-        set -e
-        set -o pipefail
+        rem Install Windows Dependencies (x86_64)
         
         micromamba install vs2019_win-64 -c conda-forge
         pip install delvewheel build wheel
