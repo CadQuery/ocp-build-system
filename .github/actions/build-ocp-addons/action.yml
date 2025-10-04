@@ -40,7 +40,7 @@ runs:
       with:
         environment-file: environment-ocpaddons-${{ inputs.python-version }}.yml
         log-level: warning
-        init-shell: bash cmd.exe
+        init-shell: "bash cmd.exe"
         cache-environment: true
         cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
 
