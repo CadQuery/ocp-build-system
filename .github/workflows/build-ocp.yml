@@ -1,10 +1,10 @@
 name: Build OCP with pypi VTK V2
 
-# on: workflow_dispatch
-on:
-  push:
-    branches:
-      - v7.9
+on: workflow_dispatch
+# on:
+#   push:
+#     branches:
+#       - v7.9
 
 env:
   OCP: 7.9.1.0
