@@ -82,8 +82,11 @@ runs:
         
         ls -lR
 
-        pip install *.whl
+        pip install cadquery_ocp-*.whl
         python -c "import OCP; print('Success: OCP', OCP.__version__)"
+
+        pip install ocp_addons-*.whl
+        python -c "import ocp_addons;print('ocp_addons imported successfully')"
 
         git clone https://github.com/snoyer/ocpsvg.git
         cd ocpsvg
@@ -98,9 +101,6 @@ runs:
         pip install .
         cd ..
 
-        pip install ocp-addons/wheelhouse/ocp_addons*.whl
-        python -c "import ocp_addons;print('ocp_addons imported successfully')"
-        
         micromamba list
         command -v python
         python -c "from build123d import *"
