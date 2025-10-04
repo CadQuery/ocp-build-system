@@ -178,11 +178,11 @@ runs:
         # Patch @rpath/libc++.1.dylib to /usr/lib/libc++.1.dylib
         cd dist
         python -m wheel unpack ocp_addons-${VERSION}*.whl
-        tree
+        tree "$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib"
         rm ocp_addons-${VERSION}*.whl
         # install_name_tool -change @rpath/libc++.1.dylib /usr/lib/libc++.1.dylib ocp_addons*/*.so
         install_name_tool -add_rpath /usr/lib ocp_addons-${VERSION}/*.so
-        for lib in ocp_addons-${VERSION}/ocp_addons.dylibs/libTK*.dylib; do
+        for lib in "$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib"/libTK*.dylib; do
           install_name_tool -add_rpath /usr/lib  $lib
         done
         python -m wheel pack ocp_addons-${VERSION}
@@ -249,7 +249,7 @@ runs:
         if [[ "$RUNNER_OS" == "Linux" ]]; then
           DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
             mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
-            libfreeimage-dev libfreetype-dev libfontconfig-dev libxrender1  > /dev/null 2>&1
+            libfreeimage-dev libfreetype-dev libfontconfig-dev libxrender1 libexpat1 > /dev/null 2>&1
         fi
 
         pip install *.whl
