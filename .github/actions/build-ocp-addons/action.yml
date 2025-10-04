@@ -240,8 +240,8 @@ runs:
         # micromamba activate ocpaddonstest
         # micromamba info --envs
 
-        ls wheelhouse/*
-        pip install wheelhouse/ocp_addons*.whl
+        ls ocp-addons/wheelhouse/*
+        pip install ocp-addons/wheelhouse/ocp_addons*.whl
 
         python -c "import ocp_addons;print('ocp_addons imported successfully')"
         python test.py
