@@ -90,10 +90,8 @@ runs:
       run: |
         rem Install Windows Dependencies (x86_64)
         
-        call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
-
-        micromamba install -y -c conda-forge vs2019_win-64
-        micromamba list
+        micromamba install -n build-ocp -y -c conda-forge vs2019_win-64
+        micromamba list  -n build-ocp 
 
     # - - -
     
@@ -131,7 +129,6 @@ runs:
       run: |
         rem Clone ocp-addons and build wheel 
         
-        call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
         call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
         git clone https://github.com/jdegenstein/ocp-addons.git
@@ -141,7 +138,7 @@ runs:
         
         set OCCT_SDK=%GITHUB_WORKSPACE%\occt-${{ env.OCCT }}-novtk
         echo "START"
-        python -m build -n -w
+        micromamba run -n build-ocp python -m build -n -w
         
         dir dist
 
@@ -214,10 +211,8 @@ runs:
         # Repair Windows Wheel (x86_64)
         set -e
         set -o pipefail
-        
-        call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
 
-        micromamba install -y delvewheel wheel        
+        micromamba install -y delvewheel        
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
 

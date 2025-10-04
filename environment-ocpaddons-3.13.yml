@@ -9,4 +9,5 @@ dependencies:
   - pip
   - pip: 
     - build
+    - wheel
   
