@@ -129,8 +129,6 @@ runs:
         #   export CXX=/usr/bin/g++
         #   g++ --version
         # fi
-        
-        $CXX --version
 
         export OCCT_SDK="$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk"
         python -m build -n -w
