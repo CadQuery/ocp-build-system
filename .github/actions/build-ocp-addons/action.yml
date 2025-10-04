@@ -90,7 +90,7 @@ runs:
       run: |
         rem Install Windows Dependencies (x86_64)
         
-        micromamba activate build-ocp
+        call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
 
         micromamba install -y -c conda-forge vs2019_win-64
         pip install delvewheel wheel
@@ -219,8 +219,8 @@ runs:
         set -e
         set -o pipefail
         
-        micromamba activate build-ocp
-        
+        call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
+
         micromamba install -y delvewheel wheel        
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
