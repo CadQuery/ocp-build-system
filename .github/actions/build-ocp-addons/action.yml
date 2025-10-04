@@ -136,7 +136,7 @@ runs:
         cd ocp-addons
         git switch ocp-build-system
         
-        set OCCT_SDK=$GITHUB_WORKSPACE\occt-${{ env.OCCT }}-novtk
+        set OCCT_SDK=%GITHUB_WORKSPACE%\occt-${{ env.OCCT }}-novtk
         dir %OCCT_SDK%
         python -m build -n -w
         
