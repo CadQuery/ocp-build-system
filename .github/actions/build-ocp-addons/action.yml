@@ -245,6 +245,12 @@ runs:
         set -e
         set -o pipefail
         
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
+            mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
+            libfreeimage-dev libfreetype-dev libfontconfig-dev libxrender1  > /dev/null 2>&1
+        fi
+
         pip install *.whl
         python -c "import OCP; print('Success: OCP', OCP.__version__)"
 
