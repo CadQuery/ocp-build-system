@@ -89,9 +89,12 @@ runs:
       shell: cmd
       run: |
         rem Install Windows Dependencies (x86_64)
+        
+        micromamba activate build-ocp
 
         micromamba install -y -c conda-forge vs2019_win-64
-        pip install delvewheel
+        pip install delvewheel wheel
+
         micromamba list
 
     # - - -
@@ -139,8 +142,10 @@ runs:
         
         set OCCT_SDK=%GITHUB_WORKSPACE%\occt-${{ env.OCCT }}-novtk
 
+        micromamba activate build-ocp
+
         echo "CONDA_PREFIX: %CONDA_PREFIX%"
-        %CONDA_PREFIX%\python -m build -n -w
+        python -m build -n -w
         
         dir dist
 
@@ -213,7 +218,9 @@ runs:
         # Repair Windows Wheel (x86_64)
         set -e
         set -o pipefail
-
+        
+        micromamba activate build-ocp
+        
         micromamba install -y delvewheel wheel        
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
