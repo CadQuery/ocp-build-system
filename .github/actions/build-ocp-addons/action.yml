@@ -84,15 +84,15 @@ runs:
 
     # - - -
 
-    # - name: Install Windows Dependencies (x86_64)
-    #   if: runner.os == 'Windows'
-    #   shell: cmd
-    #   run: |
-    #     rem Install Windows Dependencies (x86_64)
+    - name: Install Windows Dependencies (x86_64)
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        rem Install Windows Dependencies (x86_64)
 
-    #     micromamba install -y build vs2019_win-64 -c conda-forge
-    #     micromamba info
-    #     micromamba list
+        micromamba install -y build  -c conda-forge vs2019_win-64
+        micromamba info
+        micromamba list
 
     # - - -
     
