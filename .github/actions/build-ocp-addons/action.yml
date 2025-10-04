@@ -90,8 +90,8 @@ runs:
       run: |
         rem Install Windows Dependencies (x86_64)
 
-        micromamba install -y build  -c conda-forge vs2019_win-64
-        micromamba info
+        micromamba install -y -c conda-forge vs2019_win-64
+        pip install delvewheel
         micromamba list
 
     # - - -
