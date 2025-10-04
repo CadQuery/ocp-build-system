@@ -113,9 +113,10 @@ runs:
         set -o pipefail
 
         git clone https://github.com/jdegenstein/ocp-addons.git
-        git switch ocp-build-system
         
         cd ocp-addons
+        git switch ocp-build-system
+        
         # if [[ "$RUNNER_OS" == "macOS" ]]; then
         #   export CC=clang
         #   export CXX=clang++
