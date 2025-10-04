@@ -10,7 +10,10 @@ inputs:
   sed-i:
     description: "Sed in-place command for the OS"
     required: true
-
+  github-token:
+    required: true
+    description: 'GitHub Token'
+    
 runs:
   using: "composite"
   steps:
@@ -52,7 +55,7 @@ runs:
         set -e
         set -o pipefail
         
-        brew install gsed tree
+        brew install gsed
 
     # - - -
 
@@ -80,8 +83,6 @@ runs:
         set -e
         set -o pipefail
         
-        ls -lR
-
         pip install cadquery_ocp-*.whl
         python -c "import OCP; print('Success: OCP', OCP.__version__)"
 
