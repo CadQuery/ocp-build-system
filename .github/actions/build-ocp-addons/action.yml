@@ -34,7 +34,7 @@ runs:
 
         apt-get update -qq
         apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx  git \
-                               a-certificates patch gcc g++ build-essential  > /dev/null 2>&1
+                               ca-certificates patch gcc g++ build-essential  > /dev/null 2>&1
 
     # - - -
 
@@ -69,6 +69,8 @@ runs:
           ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/auditwheel/' environment-ocpaddons.yml
 
         fi
+
+        cat environment-ocpaddons.yml
 
     # - - -
     
