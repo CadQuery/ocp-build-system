@@ -24,17 +24,29 @@ runs:
     
     # - - -
 
-    - name: (Linux) Install ca-certificates
+    - name: Install Linux Dependencies (x86_64)
       if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
-        # (Linux) Install ca-certificates
+        # Install Linux Dependencies (x86_64)
         set -e
-        set -u
         set -o pipefail
 
-        apt-get update -qq  
-        DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates > /dev/null 2>&1
+        apt-get update -qq
+        apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx  git \
+                               a-certificates patch gcc g++ build-essential  > /dev/null 2>&1
+
+    # - - -
+
+    - name: Install MacOS Dependencies (x86_64 / arm64)
+      if: runner.os == 'macOS'
+      shell: bash -l {0}
+      run: |
+        # Install MacOS Dependencies (x86_64 / arm64)
+        set -e
+        set -o pipefail
+        
+        brew install automake gsed tree
 
     # - - -
     
@@ -48,13 +60,13 @@ runs:
         ${{ inputs.sed-i }} 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
 
         if [[ "$RUNNER_OS" == "Windows" ]]; then
-          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/delvewheel' environment-ocpaddons.yml
+          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/delvewheel/' environment-ocpaddons.yml
 
         elif [[ "$RUNNER_OS" == "macOS" ]]; then      
-          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/delocate' environment-ocpaddons.yml
+          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/delocate/' environment-ocpaddons.yml
 
         elif [[ "$RUNNER_OS" == "Linux" ]]; then      
-          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/auditwheel' environment-ocpaddons.yml
+          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/auditwheel/' environment-ocpaddons.yml
 
         fi
 
@@ -68,32 +80,6 @@ runs:
         init-shell: ${{ inputs.shells }}
         cache-environment: true
         cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
-
-    # - - -
-
-    - name: Install Linux Dependencies (x86_64)
-      if: runner.os == 'Linux'
-      shell: bash -l {0}
-      run: |
-        # Install Linux Dependencies (x86_64)
-        set -e
-        set -o pipefail
-
-        apt-get update -qq
-        apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx  git \
-                               patch gcc g++ build-essential  > /dev/null 2>&1
-
-    # - - -
-
-    - name: Install MacOS Dependencies (x86_64 / arm64)
-      if: runner.os == 'macOS'
-      shell: bash -l {0}
-      run: |
-        # Install MacOS Dependencies (x86_64 / arm64)
-        set -e
-        set -o pipefail
-        
-        brew install automake gsed tree
 
     # - - -
     
