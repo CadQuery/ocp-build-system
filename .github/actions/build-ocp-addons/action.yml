@@ -62,8 +62,6 @@ runs:
                                patch gcc g++ build-essential  > /dev/null 2>&1
 
         pip install auditwheel patchelf
-        micromamba info
-        micromamba list
 
     # - - -
 
@@ -79,20 +77,6 @@ runs:
 
         pip install delocate
 
-        # curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
-        # sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
-
-    # - - -
-
-    # - name: Install Windows Dependencies (x86_64)
-    #   if: runner.os == 'Windows'
-    #   shell: cmd
-    #   run: |
-    #     rem Install Windows Dependencies (x86_64)
-        
-    #     micromamba install -n build-ocp -y -c conda-forge vs2019_win-64
-    #     micromamba list -n build-ocp 
-
     # - - -
     
     - name: Download OCCT SDK
@@ -107,17 +91,17 @@ runs:
     - name: Clone ocp-addons and build wheel 
       if: runner.os != 'Windows'
       shell: bash -l {0}
+      env:
+        OCCT_SDK: ${{ github.workspace }}\occt-${{ env.OCCT }}-novtk  
       run: |
         # Clone ocp-addons and build wheel 
         set -e
         set -o pipefail
 
         git clone https://github.com/jdegenstein/ocp-addons.git
-        
         cd ocp-addons
         git switch ocp-build-system
         
-        export OCCT_SDK="$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk"
         python -m build -n -w
         ls -l dist
 
@@ -139,9 +123,7 @@ runs:
         cd ocp-addons
         git switch ocp-build-system
 
-        echo START: %OCCT_SDK%
         micromamba run -n build-ocp python -m build -n -w
-        
         dir dist
 
     # - - -
@@ -166,7 +148,7 @@ runs:
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
 
-        env LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib auditwheel repair \
+        LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib auditwheel repair \
             --plat manylinux_2_31_x86_64 dist/ocp_addons-${VERSION}*.whl
 
     # - - -
@@ -198,7 +180,6 @@ runs:
         python -m wheel pack ocp_addons-${VERSION}
         cd ..
                
-        # @rpath/libc++.1.dylib confuses delocate but can safely be ignored
         DYLD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib:/usr/lib python \
             -m delocate.cmd.delocate_wheel \
             --ignore-missing-dependencies \
