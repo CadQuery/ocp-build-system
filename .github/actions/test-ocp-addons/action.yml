@@ -44,7 +44,7 @@ runs:
         set -o pipefail
         
         brew install gsed
-        
+
     # - - -
     
     - name: Prepare environment.yml
@@ -63,12 +63,12 @@ runs:
     - name: Set up Python ${{ inputs.python-version }} via micromamba
       uses: mamba-org/setup-micromamba@v2
       with:
-        environment-file: environment-ocpaddons-${{ inputs.python-version }}.yml
+        environment-file: environment-ocpaddons.yml
         log-level: warning
         init-shell: bash
         cache-downloads: true
         cache-environment: true
-        cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
+        cache-environment-key: environment-ocpaddons-${{ inputs.os }}-novtk
 
     # - - -
 
