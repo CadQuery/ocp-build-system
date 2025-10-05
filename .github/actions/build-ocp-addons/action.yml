@@ -92,7 +92,7 @@ runs:
       if: runner.os != 'Windows'
       shell: bash -l {0}
       env:
-        OCCT_SDK: ${{ github.workspace }}\occt-${{ env.OCCT }}-novtk  
+        OCCT_SDK: ${{ github.workspace }}/occt-${{ env.OCCT }}-novtk  
       run: |
         # Clone ocp-addons and build wheel 
         set -e
