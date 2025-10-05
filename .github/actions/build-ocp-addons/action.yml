@@ -41,10 +41,8 @@ runs:
 
         brew install gsed
         # ensure gnu sed is in PATH before system (BSD) sed
-        cat <<EOF > $GITHUB_PATH
-        $GITHUB_PATH
-        $(brew --prefix gnu-sed)/libexec/gnubin
-        EOF
+        echo "$(brew --prefix gnu-sed)/libexec/gnubin" >> $GITHUB_PATH
+        echo "/schnaddel" >> $GITHUB_PATH
 
     # - - -
     
@@ -54,12 +52,8 @@ runs:
         # Install Linux Dependencies (x86_64)
 
         echo "1 ======"
-        cat $GITHUB_PATH
-        echo "2 ======"
         echo $PATH
         echo "3 ======"
-        ls "$(brew --prefix gnu-sed)/libexec/gnubin"
-        echo "4 ======"
         command -v sed
 
         sed -i 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
