@@ -41,7 +41,10 @@ runs:
 
         brew install gsed
         # ensure gnu sed is in PATH before system (BSD) sed
-        echo "$(brew --prefix gnu-sed)/libexec/gnubin" >> $GITHUB_PATH
+        cat <<EOF > $GITHUB_PATH
+        $GITHUB_PATH
+        $(brew --prefix gnu-sed)/libexec/gnubin"
+        EOF
 
     # - - -
     
@@ -51,7 +54,7 @@ runs:
         # Install Linux Dependencies (x86_64)
 
         echo "1 ======"
-        echo $GITHUB_PATH
+        cat $GITHUB_PATH
         echo "2 ======"
         echo $PATH
         echo "3 ======"
