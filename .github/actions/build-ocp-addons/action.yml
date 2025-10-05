@@ -41,7 +41,7 @@ runs:
 
         brew install gsed
         # ensure gnu sed is in PATH before system (BSD) sed
-        echo "PATH=$(brew --prefix gnu-sed)/libexec/gnubin:$PATH" >> $GITHUB_ENV
+        sudo ln -s "$(brew --prefix gnu-sed)/libexec/gnubin/sed" /usr/local/bin/sed
 
     # - - -
     
