@@ -139,7 +139,6 @@ runs:
         cd ocp-addons
         git switch ocp-build-system
 
-        cat setup.py
         echo START: %OCCT_SDK%
         micromamba run -n build-ocp python -m build -n -w
         
