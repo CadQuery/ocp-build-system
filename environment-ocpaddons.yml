@@ -11,4 +11,5 @@ dependencies:
     - build
     - wheel
     - __WHEEL_REPAIR__
+    __OTHER_PKGS__
   

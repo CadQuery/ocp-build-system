@@ -61,12 +61,15 @@ runs:
 
         if [[ "$RUNNER_OS" == "Windows" ]]; then
           ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/delvewheel/' environment-ocpaddons.yml
+          ${{ inputs.sed-i }} 's/__OTHER_PKGS__//' environment-ocpaddons.yml
 
         elif [[ "$RUNNER_OS" == "macOS" ]]; then      
           ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/delocate/' environment-ocpaddons.yml
+          ${{ inputs.sed-i }} 's/__OTHER_PKGS__//' environment-ocpaddons.yml
 
         elif [[ "$RUNNER_OS" == "Linux" ]]; then      
           ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/auditwheel/' environment-ocpaddons.yml
+          ${{ inputs.sed-i }} 's/__OTHER_PKGS__/- patchelf/' environment-ocpaddons.yml
 
         fi
 
