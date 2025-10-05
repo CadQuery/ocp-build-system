@@ -38,10 +38,32 @@ runs:
 
     # - - -
     
+    - name: Prepare environment.yml
+      shell: bash -l {0}
+      run: |
+        # Install Linux Dependencies (x86_64)
+        set -e
+        set -o pipefail
+
+        ${{ inputs.sed-i }} 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
+
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/delvewheel' environment-ocpaddons.yml
+
+        elif [[ "$RUNNER_OS" == "macOS" ]]; then      
+          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/delocate' environment-ocpaddons.yml
+
+        elif [[ "$RUNNER_OS" == "Linux" ]]; then      
+          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/auditwheel' environment-ocpaddons.yml
+
+        fi
+
+    # - - -
+    
     - name: Set up Python ${{ inputs.python-version }} via micromamba
       uses: mamba-org/setup-micromamba@v2
       with:
-        environment-file: environment-ocpaddons-${{ inputs.python-version }}.yml
+        environment-file: environment-ocpaddons.yml
         log-level: warning
         init-shell: ${{ inputs.shells }}
         cache-environment: true
@@ -61,8 +83,6 @@ runs:
         apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx  git \
                                patch gcc g++ build-essential  > /dev/null 2>&1
 
-        pip install auditwheel patchelf
-
     # - - -
 
     - name: Install MacOS Dependencies (x86_64 / arm64)
@@ -74,8 +94,6 @@ runs:
         set -o pipefail
         
         brew install automake gsed tree
-
-        pip install delocate
 
     # - - -
     
@@ -195,7 +213,6 @@ runs:
         set -e
         set -o pipefail
 
-        micromamba install -y delvewheel        
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
 
