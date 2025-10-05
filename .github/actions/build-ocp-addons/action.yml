@@ -50,11 +50,6 @@ runs:
       run: |
         # Install Linux Dependencies (x86_64)
 
-        echo "1 ======"
-        echo $PATH
-        echo "2 ======"
-        command -v sed
-
         sed -i 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
 
         cat environment-ocpaddons.yml

@@ -23,7 +23,7 @@ runs:
       shell: bash -leo pipefail {0}
       run: |
         # (Linux) Install ca-certificates
-        
+
         sudo apt-get update -qq  
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates > /dev/null 2>&1
     
@@ -37,7 +37,7 @@ runs:
         
         brew install gsed
         # ensure gnu sed is in PATH before system (BSD) sed
-        echo "$(brew --prefix gnu-sed)/libexec/gnubin" >> $GITHUB_PATH
+        sudo ln -s "$(brew --prefix gnu-sed)/libexec/gnubin/sed" /usr/local/bin/sed
         
     # - - -
     
