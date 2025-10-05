@@ -140,7 +140,7 @@ runs:
         set -e
         set -o pipefail
         
-        pip install auditwheel
+        pip install auditwheel patchelf
 
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
