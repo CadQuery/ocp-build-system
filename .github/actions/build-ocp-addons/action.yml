@@ -219,9 +219,9 @@ runs:
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
 
-        ls -l ${{ github.workspace }}/occt-${{ env.OCCT }}-novtk/bin
-        
-        PATH=${{ github.workspace }}/occt-${{ env.OCCT }}-novtk/bin:$PATH python -m delvewheel repair --wheel-dir=wheelhouse dist/ocp_addons-${VERSION}*.whl
+        ls -l $GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/win64/vc14/bin
+
+        PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/win64/vc14/bin:$PATH python -m delvewheel repair --wheel-dir=wheelhouse dist/ocp_addons-${VERSION}*.whl
 
     # - - -
 
