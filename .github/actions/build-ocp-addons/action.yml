@@ -7,9 +7,6 @@ inputs:
   python-version:
     description: "Python version to use for the build"
     required: true
-  sed-i:
-    description: "Sed in-place command for the OS"
-    required: true
   shells:
     description: "Shell configuration for the OS"
     required: true
@@ -26,38 +23,34 @@ runs:
 
     - name: Install Linux Dependencies (x86_64)
       if: runner.os == 'Linux'
-      shell: bash -l {0}
+      shell: bash -leo pipefail {0}
       run: |
         # Install Linux Dependencies (x86_64)
-        set -e
-        set -o pipefail
 
         apt-get update -qq
-        apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx  git \
+        apt-get install -qq -y freetype* libfreetype6-dev libgl1-mesa-glx git \
                                ca-certificates patch gcc g++ build-essential  > /dev/null 2>&1
 
     # - - -
 
     - name: Install MacOS Dependencies (x86_64 / arm64)
       if: runner.os == 'macOS'
-      shell: bash -l {0}
+      shell: bash -leo pipefail {0}
       run: |
         # Install MacOS Dependencies (x86_64 / arm64)
-        set -e
-        set -o pipefail
-        
-        brew install automake gsed tree
+
+        brew install gsed
+        # ensure gnu sed is in PATH before system (BSD) sed
+        echo "$(brew --prefix gnu-sed)/libexec/gnubin" >> $GITHUB_PATH
 
     # - - -
     
     - name: Prepare environment.yml
-      shell: bash -l {0}
+      shell: bash -leo pipefail {0}
       run: |
         # Install Linux Dependencies (x86_64)
-        set -e
-        set -o pipefail
 
-        ${{ inputs.sed-i }} 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
+        sed -i 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
 
         cat environment-ocpaddons.yml
 
@@ -85,13 +78,11 @@ runs:
 
     - name: Clone ocp-addons and build wheel 
       if: runner.os != 'Windows'
-      shell: bash -l {0}
+      shell: bash -leo pipefail {0}
       env:
         OCCT_SDK: ${{ github.workspace }}/occt-${{ env.OCCT }}-novtk  
       run: |
         # Clone ocp-addons and build wheel 
-        set -e
-        set -o pipefail
 
         git clone https://github.com/jdegenstein/ocp-addons.git
         cd ocp-addons
@@ -133,17 +124,14 @@ runs:
 
     - name: Repair Linux Wheel (x86_64)
       if: runner.os == 'Linux'
-      shell: bash -l {0}
+      shell: bash -leo pipefail {0}
       run: |
         # Repair Linux Wheel (x86_64)
-
-        set -e
-        set -o pipefail
         
         pip install auditwheel patchelf
 
         cd ocp-addons
-        VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
+        VERSION=$(python setup.py --version)
 
         LD_LIBRARY_PATH=$GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/lib auditwheel repair \
             --plat manylinux_2_31_x86_64 dist/ocp_addons-${VERSION}*.whl
@@ -152,19 +140,16 @@ runs:
 
     - name: Repair MacOS Wheel (x86_64 / arm64)
       if: runner.os == 'macOS'
-      shell: bash -l {0}
+      shell: bash -leo pipefail {0}
       run: |
         # Repair MacOS Wheel (x86_64 / arm64)
-
-        set -e
-        set -o pipefail
         
         pip install delocate
 
         cd ocp-addons
-        VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
+        VERSION=$(python setup.py --version)
 
-        # Patch @rpath/libc++.1.dylib to /usr/lib/libc++.1.dylib
+        # Patch @rpath/libc++.1.dylib to /usr/lib/libc++.1.dylib to ensure delocate works successfully
         cd dist
         python -m wheel unpack ocp_addons-${VERSION}*.whl
         
@@ -188,16 +173,14 @@ runs:
 
     - name: Repair Windows Wheel (x86_64) 
       if: runner.os == 'Windows'
-      shell: bash -l {0}
+      shell: bash -leo pipefail {0}
       run: |
         # Repair Windows Wheel (x86_64)
-        set -e
-        set -o pipefail
 
         pip install delvewheel
 
         cd ocp-addons
-        VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
+        VERSION=$(python setup.py --version)
 
         ls -l $GITHUB_WORKSPACE/occt-${{ env.OCCT }}-novtk/win64/vc14/bin
 

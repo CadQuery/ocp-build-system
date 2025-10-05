@@ -35,7 +35,6 @@ jobs:
               with:
                   os: ${{ matrix.os }}
                   python-version: ${{ matrix.python-version }}
-                  sed-i: "sed -i"
                   shells: "bash"
                   github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -50,13 +49,10 @@ jobs:
                 python-version: ["3.13"]
                 include:
                     - os: "macos-15"
-                      sed-i: "gsed -i"
                       shells: "bash"
                     - os: "macos-13"
-                      sed-i: "gsed -i"
                       shells: "bash"
                     - os: "windows-2022"
-                      sed-i: "sed -i"
                       shells: "bash cmd.exe"
         steps:
             - uses: actions/checkout@v4
@@ -67,7 +63,6 @@ jobs:
               with:
                   os: ${{ matrix.os }}
                   python-version: ${{ matrix.python-version }}
-                  sed-i: ${{ matrix.sed-i }}
                   shells: ${{ matrix.shells }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}
 
@@ -83,16 +78,6 @@ jobs:
                 # python-version: ["3.10", "3.11", "3.12", "3.13"]
                 python-version: ["3.13"]
 
-                include:
-                    - os: "ubuntu-22.04"
-                      sed-i: "sed -i"
-                    - os: "macos-15"
-                      sed-i: "gsed -i"
-                    - os: "macos-13"
-                      sed-i: "gsed -i"
-                    - os: "windows-2022"
-                      sed-i: "sed -i"
-
         steps:
             - uses: actions/checkout@v4
             - name: Test OCP
@@ -101,5 +86,4 @@ jobs:
               with:
                   os: ${{ matrix.os }}
                   python-version: ${{ matrix.python-version }}
-                  sed-i: ${{ matrix.sed-i }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}
