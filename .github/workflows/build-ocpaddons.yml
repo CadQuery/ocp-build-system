@@ -36,6 +36,7 @@ jobs:
                   os: ${{ matrix.os }}
                   python-version: ${{ matrix.python-version }}
                   sed-i: "sed -i"
+                  shells: "bash"
                   github-token: ${{ secrets.GITHUB_TOKEN }}
 
     addons-win-mac:
@@ -45,7 +46,6 @@ jobs:
             fail-fast: false
             matrix:
                 os: ["macos-13", "macos-15", "windows-2022"]
-                # os: [ "windows-2022"]
                 # python-version: ["3.10", "3.11", "3.12", "3.13"]
                 python-version: ["3.13"]
                 include:

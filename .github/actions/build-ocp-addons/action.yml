@@ -59,20 +59,6 @@ runs:
 
         ${{ inputs.sed-i }} 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
 
-        if [[ "$RUNNER_OS" == "Windows" ]]; then
-          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/delvewheel/' environment-ocpaddons.yml
-          ${{ inputs.sed-i }} 's/__OTHER_PKGS__//' environment-ocpaddons.yml
-
-        elif [[ "$RUNNER_OS" == "macOS" ]]; then      
-          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/delocate/' environment-ocpaddons.yml
-          ${{ inputs.sed-i }} 's/__OTHER_PKGS__//' environment-ocpaddons.yml
-
-        elif [[ "$RUNNER_OS" == "Linux" ]]; then      
-          ${{ inputs.sed-i }} 's/__WHEEL_REPAIR__/auditwheel/' environment-ocpaddons.yml
-          ${{ inputs.sed-i }} 's/__OTHER_PKGS__/- patchelf/' environment-ocpaddons.yml
-
-        fi
-
         cat environment-ocpaddons.yml
 
     # - - -
@@ -154,6 +140,8 @@ runs:
         set -e
         set -o pipefail
         
+        pip install auditwheel
+
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
 
@@ -171,6 +159,8 @@ runs:
         set -e
         set -o pipefail
         
+        pip install delocate
+
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)
 
@@ -203,6 +193,8 @@ runs:
         # Repair Windows Wheel (x86_64)
         set -e
         set -o pipefail
+
+        pip install delvewheel
 
         cd ocp-addons
         VERSION=$(awk -F'"' '/^__version__/ {print $2}' setup.py)

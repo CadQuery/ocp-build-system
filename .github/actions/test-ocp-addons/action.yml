@@ -32,18 +32,6 @@ runs:
 
         sudo apt-get update -qq  
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates > /dev/null 2>&1
-
-    # - - -
-    
-    - name: Set up Python ${{ inputs.python-version }} via micromamba
-      uses: mamba-org/setup-micromamba@v2
-      with:
-        environment-file: environment-ocpaddons-${{ inputs.python-version }}.yml
-        log-level: warning
-        init-shell: bash
-        cache-downloads: true
-        cache-environment: true
-        cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
     
     # - - -
 
@@ -56,6 +44,31 @@ runs:
         set -o pipefail
         
         brew install gsed
+        
+    # - - -
+    
+    - name: Prepare environment.yml
+      shell: bash -l {0}
+      run: |
+        # Install Linux Dependencies (x86_64)
+        set -e
+        set -o pipefail
+
+        ${{ inputs.sed-i }} 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
+
+        cat environment-ocpaddons.yml
+
+    # - - -
+    
+    - name: Set up Python ${{ inputs.python-version }} via micromamba
+      uses: mamba-org/setup-micromamba@v2
+      with:
+        environment-file: environment-ocpaddons-${{ inputs.python-version }}.yml
+        log-level: warning
+        init-shell: bash
+        cache-downloads: true
+        cache-environment: true
+        cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
 
     # - - -
 
