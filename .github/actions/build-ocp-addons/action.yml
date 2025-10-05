@@ -43,6 +43,10 @@ runs:
         # ensure gnu sed is in PATH before system (BSD) sed
         echo "$(brew --prefix gnu-sed)/libexec/gnubin" >> $GITHUB_PATH
 
+        echo $PATH
+        ls "$(brew --prefix gnu-sed)/libexec/gnubin"
+        command -v sed
+
     # - - -
     
     - name: Prepare environment.yml
@@ -50,6 +54,7 @@ runs:
       run: |
         # Install Linux Dependencies (x86_64)
 
+        echo $PATH
         sed -i 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
 
         cat environment-ocpaddons.yml
