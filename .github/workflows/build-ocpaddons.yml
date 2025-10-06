@@ -39,7 +39,7 @@ jobs:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
 
     addons-win-mac:
-        name: Build OCP addons for ${{ matrix.python-version }} on ${{ matrix.os }} X
+        name: Build OCP addons for ${{ matrix.python-version }} on ${{ matrix.os }}
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
