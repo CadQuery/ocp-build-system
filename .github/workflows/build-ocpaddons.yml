@@ -1,16 +1,16 @@
 name: Build OCP Addons
 
-on: workflow_dispatch
-# on:
-#     push:
-#         branches:
-#             - v7.9
+# on: workflow_dispatch
+on:
+    push:
+        branches:
+            - v7.9
 
 env:
     OCP: 7.9.1.0
     OCCT: 7.9.1
     WHEEL: 7.9.1.0
-    SDK_RUNID: 18226165092
+    SDK_RUNID: 18244066471
 
 jobs:
     addons-ubuntu:
@@ -35,7 +35,7 @@ jobs:
               with:
                   os: ${{ matrix.os }}
                   python-version: ${{ matrix.python-version }}
-                  sed-i: "sed -i"
+                  shells: "bash"
                   github-token: ${{ secrets.GITHUB_TOKEN }}
 
     addons-win-mac:
@@ -44,17 +44,16 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                # os: ["macos-13", "macos-15", "windows-2022"]
-                os: ["macos-15"]
+                os: ["macos-13", "macos-15", "windows-2022"]
                 # python-version: ["3.10", "3.11", "3.12", "3.13"]
                 python-version: ["3.13"]
                 include:
                     - os: "macos-15"
-                      sed-i: "gsed -i"
-                    # - os: "macos-13"
-                    #   sed-i: "gsed -i"
-                    # - os: "windows-2022"
-                    #   sed-i: "sed -i"
+                      shells: "bash"
+                    - os: "macos-13"
+                      shells: "bash"
+                    - os: "windows-2022"
+                      shells: "bash cmd.exe"
         steps:
             - uses: actions/checkout@v4
 
@@ -64,7 +63,7 @@ jobs:
               with:
                   os: ${{ matrix.os }}
                   python-version: ${{ matrix.python-version }}
-                  sed-i: ${{ matrix.sed-i }}
+                  shells: ${{ matrix.shells }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}
 
     tests:
@@ -75,20 +74,9 @@ jobs:
         strategy:
             fail-fast: false
             matrix:
-                # os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
-                os: ["macos-15", "ubuntu-22.04"]
+                os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
                 # python-version: ["3.10", "3.11", "3.12", "3.13"]
                 python-version: ["3.13"]
-
-                include:
-                    - os: "ubuntu-22.04"
-                      sed-i: "sed -i"
-                    - os: "macos-15"
-                      sed-i: "gsed -i"
-                    # - os: "macos-13"
-                    #   sed-i: "gsed -i"
-                    # - os: "windows-2022"
-                    #   sed-i: "sed -i"
 
         steps:
             - uses: actions/checkout@v4
@@ -98,5 +86,4 @@ jobs:
               with:
                   os: ${{ matrix.os }}
                   python-version: ${{ matrix.python-version }}
-                  sed-i: ${{ matrix.sed-i }}
                   github-token: ${{ secrets.GITHUB_TOKEN }}

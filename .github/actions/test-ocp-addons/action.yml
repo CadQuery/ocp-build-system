@@ -7,9 +7,6 @@ inputs:
   python-version:
     description: "Python version to use for the build"
     required: true
-  sed-i:
-    description: "Sed in-place command for the OS"
-    required: true
   github-token:
     required: true
     description: 'GitHub Token'
@@ -23,39 +20,47 @@ runs:
 
     - name: (Linux) Install ca-certificates
       if: runner.os == 'Linux'
-      shell: bash -l {0}
+      shell: bash -leo pipefail {0}
       run: |
         # (Linux) Install ca-certificates
-        set -e
-        set -u
-        set -o pipefail
 
         sudo apt-get update -qq  
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates > /dev/null 2>&1
+    
+    # - - -
+
+    - name: Install MacOS Dependencies (x86_64 / arm64)
+      if: runner.os == 'macOS'
+      shell: bash -leo pipefail {0}
+      run: |
+        # Install MacOS Dependencies (x86_64 / arm64)
+        
+        brew install gsed
+        # ensure gnu sed is in PATH before system (BSD) sed
+        sudo ln -s "$(brew --prefix gnu-sed)/libexec/gnubin/sed" /usr/local/bin/sed
+        
+    # - - -
+    
+    - name: Prepare environment.yml
+      shell: bash -leo pipefail {0}
+      run: |
+        # Install Linux Dependencies (x86_64)
+        
+        sed -i 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
+
+        cat environment-ocpaddons.yml
 
     # - - -
     
     - name: Set up Python ${{ inputs.python-version }} via micromamba
       uses: mamba-org/setup-micromamba@v2
       with:
-        environment-file: environment-ocpaddons-${{ inputs.python-version }}.yml
+        environment-file: environment-ocpaddons.yml
         log-level: warning
         init-shell: bash
         cache-downloads: true
         cache-environment: true
-        cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
-    
-    # - - -
-
-    - name: Install MacOS Dependencies (x86_64 / arm64)
-      if: runner.os == 'macOS'
-      shell: bash -l {0}
-      run: |
-        # Install MacOS Dependencies (x86_64 / arm64)
-        set -e
-        set -o pipefail
-        
-        brew install gsed
+        cache-environment-key: environment-ocpaddons-${{ inputs.os }}-novtk
 
     # - - -
 
@@ -77,11 +82,9 @@ runs:
     # - - -
 
     - name: Test Repaired Wheel and Run Package Tests
-      shell: bash -l {0}
+      shell: bash -leo pipefail {0}
       run: |
         # Test Repaired Wheel and Run Package Tests
-        set -e
-        set -o pipefail
         
         pip install cadquery_ocp-*.whl
         python -c "import OCP; print('Success: OCP', OCP.__version__)"
@@ -91,14 +94,14 @@ runs:
 
         git clone https://github.com/snoyer/ocpsvg.git
         cd ocpsvg
-        ${{ inputs.sed-i }} 's/cadquery-ocp >= 7\.8\.1, < 7\.9\.0/cadquery-ocp >= 7.8, < 8.0/g' pyproject.toml
+        sed -i 's/cadquery-ocp >= 7\.8\.1, < 7\.9\.0/cadquery-ocp >= 7.8, < 8.0/g' pyproject.toml
         pip install .
         cd ..
 
         git clone https://github.com/gumyr/build123d.git
         cd build123d 
         git checkout 1af4b0c3129dd152a1c9cb01400c1e648a5de8e2  # pre Gordon face to avoid 7.9. issues
-        ${{ inputs.sed-i }} 's/cadquery-ocp >= 7\.8, < 7\.9/cadquery-ocp >= 7.8, < 8.0/g' pyproject.toml
+        sed -i 's/cadquery-ocp >= 7\.8, < 7\.9/cadquery-ocp >= 7.8, < 8.0/g' pyproject.toml
         pip install .
         cd ..
 

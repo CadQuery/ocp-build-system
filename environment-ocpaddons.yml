@@ -2,8 +2,13 @@ name: build-ocp
 channels:
   - conda-forge
 dependencies:
-  - python=3.13
+  - python=__PY_VERSION__
   - setuptools>=75
   - pybind11=2.13.*
   - pybind11-stubgen
+  - pip
+  - pip: 
+    - build
+    - wheel
+    
   
