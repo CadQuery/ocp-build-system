@@ -14,7 +14,7 @@ env:
 
 jobs:
     addons-ubuntu:
-        name: Build OCP addons for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
+        name: Build OCP addons for ${{ matrix.python-version }} on ${{ matrix.os }}
         runs-on: ubuntu-latest
         container:
             image: ubuntu:20.04
@@ -39,7 +39,7 @@ jobs:
                   github-token: ${{ secrets.GITHUB_TOKEN }}
 
     addons-win-mac:
-        name: Build OCP addons for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
+        name: Build OCP addons for ${{ matrix.python-version }} on ${{ matrix.os }}
         runs-on: ${{ matrix.os }}
         strategy:
             fail-fast: false
