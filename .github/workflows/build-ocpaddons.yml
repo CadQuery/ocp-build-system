@@ -1,7 +1,7 @@
 name: Build OCP Addons
 
-# on: workflow_dispatch
 on:
+    workflow_dispatch:
     push:
         branches:
             - v7.9
