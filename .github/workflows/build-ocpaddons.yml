@@ -11,7 +11,7 @@ env:
     OCCT: 7.9.1
     WHEEL: 7.9.1.0
     SDK_RUNID: 18244066471
-    DUMMY: 2
+    DUMMY: 3
 
 jobs:
     addons-ubuntu:
