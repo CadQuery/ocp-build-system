@@ -318,6 +318,7 @@ jobs:
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
 
             env ${{ matrix.env }} cmake -S . -B build  -G Ninja \
+              -D CMAKE_POLICY_VERSION_MINIMUM=3.5 \
               -D CMAKE_INSTALL_PREFIX=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }} \
               \
               -D USE_VTK=ON \
@@ -346,6 +347,7 @@ jobs:
 
           else
             env ${{ matrix.env }} cmake -S . -B build  -G Ninja \
+              -D CMAKE_POLICY_VERSION_MINIMUM=3.5 \
               -D CMAKE_INSTALL_PREFIX=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }} \
               \
               -D USE_VTK=OFF \
@@ -380,6 +382,7 @@ jobs:
 
           if "${{ matrix.use-vtk }}"=="vtk" (
             cmake -S . -B build -G Ninja ^
+              -D CMAKE_POLICY_VERSION_MINIMUM=3.5 ^
               -D USE_VTK=ON ^
               -D USE_TBB=OFF ^
               -D USE_FREEIMAGE=ON ^
@@ -406,6 +409,7 @@ jobs:
 
           ) else (
             cmake -S . -B build -G Ninja ^
+              -D CMAKE_POLICY_VERSION_MINIMUM=3.5 ^
               -D USE_VTK=OFF ^
               -D USE_TBB=OFF ^
               -D USE_FREEIMAGE=ON ^
