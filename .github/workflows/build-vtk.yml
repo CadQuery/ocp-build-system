@@ -15,8 +15,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-20.04", "macos-13", "macos-14", "windows-2019"]
-        python-version: ["3.13"]
+        os: ["ubuntu-20.04", "ubuntu-22.04-arm", "macos-13", "macos-14", "windows-2019"]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
         include:
           - os: "macos-13"
             sed_i: "sed -i '.bak'"
@@ -25,6 +25,9 @@ jobs:
             sed_i: "sed -i '.bak'"
             shells: "bash"
           - os: "ubuntu-20.04"
+            sed_i: "sed -i"
+            shells: "bash"
+          - os: "ubuntu-22.04-arm"
             sed_i: "sed -i"
             shells: "bash"
           - os: "windows-2019"
@@ -153,10 +156,10 @@ jobs:
         shell: cmd
         if: runner.os == 'Windows' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
         run: |
-          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-vtk 
+          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-vtk
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 
-          cd VTK-${{ env.VTK }}\build          
+          cd VTK-${{ env.VTK }}\build
           cmake -G Ninja ^
                 -D VTK_VERSIONED_INSTALL=ON ^
                 -D VTK_CUSTOM_LIBRARY_SUFFIX="9.3" -DVTK_VERSION_SUFFIX="" ^
@@ -194,7 +197,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          micromamba activate build-vtk          
+          micromamba activate build-vtk
           pip install delvewheel
 
           cd VTK-${{ env.VTK }}/build

@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
+        os: ["macos-13", "macos-14", "ubuntu-20.04", "ubuntu-22.04-arm", "windows-2019"]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
         use-vtk: ["vtk", "novtk"]
 
@@ -44,6 +44,13 @@ jobs:
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
           - os: "ubuntu-20.04"
+            vtk_libs: "libvtk*.so"
+            vtk_suffix: "/vtk-9.3/"
+            vtk_prefix: ""
+            sed_i: "sed -i"
+            env: "DUMMY=0"
+            shells: "bash"
+          - os: "ubuntu-22.04-arm"
             vtk_libs: "libvtk*.so"
             vtk_suffix: "/vtk-9.3/"
             vtk_prefix: ""
@@ -127,24 +134,31 @@ jobs:
       # - - - - - - - - - - - - - - - - - - - - -
 
       - name: Download wheel artifact
-        if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
+        if: (matrix.python-version == '3.13' || matrix.os == 'ubuntu-22.04-arm') && matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          if [[ "${{ matrix.os }}" == "macos-14" ]]; then
-            echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
+          PY_VER=${{ matrix.python-version }}
+          PY_TAG="cp${PY_VER/./}"
+
+          if [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_aarch64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_aarch64.whl
+
+          elif [[ "${{ matrix.os }}" == "macos-14" ]]; then
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_arm64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_arm64.whl
 
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_x86_64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_x86_64.whl
 
           elif [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_x86_64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_x86_64.whl
 
-          else 
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl
+          else
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-win_amd64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-win_amd64.whl
 
           fi
           ls -l
@@ -183,8 +197,8 @@ jobs:
           micromamba create -y -n vtk-$PY_VER python=$PY_VER
           micromamba activate vtk-$PY_VER
 
-          if [[ $PY_VER == 3.13 ]]; then
-            pip install cadquery_vtk-9.3.1*.whl
+          if [[ $PY_VER == 3.13 || "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
+            pip install cadquery_vtk-*.whl
           else
             pip install vtk==${{ env.VTK }}
           fi
@@ -194,7 +208,8 @@ jobs:
           cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtkmodules/${{ matrix.vtk_libs }} $DEST/lib/
           cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtk.py $DEST
 
-          if [[ "$RUNNER_OS" == "Linux" && "$PY_VER" != "3.13" ]]; then
+          # vtk.libs only exists in official PyPI VTK wheels, not in custom cadquery_vtk wheels
+          if [[ "$RUNNER_OS" == "Linux" && "$PY_VER" != "3.13" && "${{ matrix.os }}" != "ubuntu-22.04-arm" ]]; then
             cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtk.libs/* $DEST/lib/
           fi
 
@@ -278,7 +293,7 @@ jobs:
           patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0017-ChFi3d_Builder-Fix-blend-across-seam.-See-following.patch
           # see https://tracker.dev.opencascade.org/view.php?id=33576 and https://github.com/FreeCAD/FreeCAD/issues/9760
           patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0018-Fix-0033576-BRepTools_NurbsConvertModification-NewPo.patch
-                  
+
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             echo vtkCommonTransforms >> src/TKIVtk/EXTERNLIB
             echo vtkCommonMath >> src/TKIVtk/EXTERNLIB
@@ -305,8 +320,9 @@ jobs:
           fi
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-            
+
             env ${{ matrix.env }} cmake -S . -B build  -G Ninja \
+              -D CMAKE_POLICY_VERSION_MINIMUM=3.5 \
               -D CMAKE_INSTALL_PREFIX=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }} \
               \
               -D USE_VTK=ON \
@@ -335,6 +351,7 @@ jobs:
 
           else
             env ${{ matrix.env }} cmake -S . -B build  -G Ninja \
+              -D CMAKE_POLICY_VERSION_MINIMUM=3.5 \
               -D CMAKE_INSTALL_PREFIX=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }} \
               \
               -D USE_VTK=OFF \
@@ -360,7 +377,7 @@ jobs:
         if: runner.os  == 'Windows' && steps.cache-occt-restore.outputs.cache-hit != 'true'
         shell: cmd
         run: |
-          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp 
+          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
           cd OCCT
 
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
@@ -369,6 +386,7 @@ jobs:
 
           if "${{ matrix.use-vtk }}"=="vtk" (
             cmake -S . -B build -G Ninja ^
+              -D CMAKE_POLICY_VERSION_MINIMUM=3.5 ^
               -D USE_VTK=ON ^
               -D USE_TBB=OFF ^
               -D USE_FREEIMAGE=ON ^
@@ -395,6 +413,7 @@ jobs:
 
           ) else (
             cmake -S . -B build -G Ninja ^
+              -D CMAKE_POLICY_VERSION_MINIMUM=3.5 ^
               -D USE_VTK=OFF ^
               -D USE_TBB=OFF ^
               -D USE_FREEIMAGE=ON ^
@@ -447,7 +466,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
+        os: ["macos-13", "macos-14", "ubuntu-20.04", "ubuntu-22.04-arm", "windows-2019"]
         python-version: ["3.11"]
 
         include:
@@ -460,6 +479,10 @@ jobs:
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
           - os: "ubuntu-20.04"
+            sed_i: "sed -i"
+            env: "DUMMY=0"
+            shells: "bash"
+          - os: "ubuntu-22.04-arm"
             sed_i: "sed -i"
             env: "DUMMY=0"
             shells: "bash"
@@ -494,7 +517,7 @@ jobs:
         run: |
           micromamba activate build-ocp
 
-          cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
+          cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())")
           echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
           echo "=> Using $cpu_count CPUs"
 
@@ -640,6 +663,9 @@ jobs:
 
           if [[ ${{ matrix.os }} == "macos-13" || ${{ matrix.os }} == "macos-14" ]]; then
             curl -L -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_macOS-latest.zip
+          elif [[ ${{ matrix.os }} == "ubuntu-22.04-arm" ]]; then
+            # Use ubuntu-20.04 sources for ARM build (sources are architecture-independent)
+            curl -L -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_ubuntu-20.04.zip
           else
             curl -L -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_${{ matrix.os }}.zip
           fi
@@ -674,7 +700,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
+        os: ["macos-13", "macos-14", "ubuntu-20.04", "ubuntu-22.04-arm", "windows-2019"]
+
         python-version: ["3.10", "3.11", "3.12", "3.13"]
         use-vtk: ["vtk", "novtk"]
 
@@ -701,6 +728,14 @@ jobs:
             module: "OCP.*.so"
             env: "DUMMY=0"
             shells: "bash"
+          - os: "ubuntu-22.04-arm"
+            delocate: auditwheel patchelf
+            plat: manylinux_2_35_aarch64
+            sed_i: "sed -i"
+            compilers: ""
+            module: "OCP.*.so"
+            env: "DUMMY=0"
+            shells: "bash"
           - os: "windows-2019"
             delocate: delvewheel
             plat: win_amd64
@@ -717,7 +752,7 @@ jobs:
         run: |
           micromamba activate build-ocp
 
-          cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
+          cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())")
           echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
           echo "=> Using $cpu_count CPUs"
 
@@ -983,7 +1018,7 @@ jobs:
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
             PKG_NAME="cadquery_ocp"
-            if [[ ${{ matrix.python-version }} == 3.13 ]]; then
+            if [[ ${{ matrix.python-version }} == 3.13 || "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
               ${{ matrix.sed_i }} '/requires-python/a\dependencies = [ "cadquery_vtk==${{ env.VTK }}" ]' pyproject.toml
             else
               ${{ matrix.sed_i }} '/requires-python/a\dependencies = [ "vtk==${{ env.VTK }}" ]' pyproject.toml
@@ -1006,9 +1041,9 @@ jobs:
 
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-              python ocp-tree.py occt-${{ env.OCCT }}-vtk vtk-${{ env.VTK }} 
+              python ocp-tree.py occt-${{ env.OCCT }}-vtk vtk-${{ env.VTK }}
             else
-              python ocp-tree.py occt-${{ env.OCCT }}-novtk 
+              python ocp-tree.py occt-${{ env.OCCT }}-novtk
             fi
             mv *.pyd OCP
 
@@ -1019,7 +1054,7 @@ jobs:
             ls -l OCP/*.so
             strip -x OCP/*.so
             ls -l OCP/*.so
-            
+
           else
             LD_LIBRARY_PATH=$HOME/opt/local/vtk-${{ env.VTK }}/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib \
             python ocp-tree.py
@@ -1172,24 +1207,31 @@ jobs:
           pip install pytest docutils ipython
 
       - name: Download wheel artifact
-        if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk'
+        if: (matrix.python-version == '3.13' || matrix.os == 'ubuntu-22.04-arm') && matrix.use-vtk == 'vtk'
         shell: bash -l {0}
         run: |
+          PY_TAG="cp${{ matrix.python-version }}"
+          PY_TAG="${PY_TAG/./}"  # Remove dot: cp3.13 -> cp313
+
           if [[ "${{ matrix.os }}" == "macos-14" ]]; then
-            echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_arm64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_arm64.whl
 
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_x86_64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_x86_64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_x86_64.whl
 
           elif [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-linux_x86_64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_x86_64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_x86_64.whl
 
-          else 
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-win_amd64.whl
+          elif [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_aarch64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_aarch64.whl
+
+          else
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-win_amd64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-win_amd64.whl
 
           fi
           ls -l
@@ -1201,7 +1243,7 @@ jobs:
 
           micromamba activate test
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-            if [[ ${{ matrix.python-version }} == 3.13 ]]; then
+            if [[ ${{ matrix.python-version }} == 3.13 || "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
               pip install ./cadquery_vtk*.whl
             else
               pip install vtk==${{ env.VTK }}
@@ -1253,7 +1295,7 @@ jobs:
             micromamba install -y nlopt=2.9
           fi
 
-          # workaround for pypi opt and casadi throwing a seg fault on exit 
+          # workaround for pypi opt and casadi throwing a seg fault on exit
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             micromamba install -y nlopt casadi
           fi
