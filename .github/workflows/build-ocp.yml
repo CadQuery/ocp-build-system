@@ -24,7 +24,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
+        os: ["macos-13", "macos-14", "ubuntu-20.04", "ubuntu-22.04-arm", "windows-2019"]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
         use-vtk: ["vtk", "novtk"]
 
@@ -44,6 +44,13 @@ jobs:
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
           - os: "ubuntu-20.04"
+            vtk_libs: "libvtk*.so"
+            vtk_suffix: "/vtk-9.3/"
+            vtk_prefix: ""
+            sed_i: "sed -i"
+            env: "DUMMY=0"
+            shells: "bash"
+          - os: "ubuntu-22.04-arm"
             vtk_libs: "libvtk*.so"
             vtk_suffix: "/vtk-9.3/"
             vtk_prefix: ""
@@ -142,7 +149,11 @@ jobs:
             echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
             curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl
 
-          else 
+          elif [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
+            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_aarch64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-linux_aarch64.whl
+
+          else
             echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
             curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl
 
@@ -278,7 +289,7 @@ jobs:
           patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0017-ChFi3d_Builder-Fix-blend-across-seam.-See-following.patch
           # see https://tracker.dev.opencascade.org/view.php?id=33576 and https://github.com/FreeCAD/FreeCAD/issues/9760
           patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/0018-Fix-0033576-BRepTools_NurbsConvertModification-NewPo.patch
-                  
+
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             echo vtkCommonTransforms >> src/TKIVtk/EXTERNLIB
             echo vtkCommonMath >> src/TKIVtk/EXTERNLIB
@@ -305,7 +316,7 @@ jobs:
           fi
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-            
+
             env ${{ matrix.env }} cmake -S . -B build  -G Ninja \
               -D CMAKE_INSTALL_PREFIX=$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }} \
               \
@@ -360,7 +371,7 @@ jobs:
         if: runner.os  == 'Windows' && steps.cache-occt-restore.outputs.cache-hit != 'true'
         shell: cmd
         run: |
-          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp 
+          call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
           cd OCCT
 
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
@@ -447,7 +458,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
+        os: ["macos-13", "macos-14", "ubuntu-20.04", "ubuntu-22.04-arm", "windows-2019"]
         python-version: ["3.11"]
 
         include:
@@ -460,6 +471,10 @@ jobs:
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
           - os: "ubuntu-20.04"
+            sed_i: "sed -i"
+            env: "DUMMY=0"
+            shells: "bash"
+          - os: "ubuntu-22.04-arm"
             sed_i: "sed -i"
             env: "DUMMY=0"
             shells: "bash"
@@ -494,7 +509,7 @@ jobs:
         run: |
           micromamba activate build-ocp
 
-          cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
+          cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())")
           echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
           echo "=> Using $cpu_count CPUs"
 
@@ -640,6 +655,9 @@ jobs:
 
           if [[ ${{ matrix.os }} == "macos-13" || ${{ matrix.os }} == "macos-14" ]]; then
             curl -L -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_macOS-latest.zip
+          elif [[ ${{ matrix.os }} == "ubuntu-22.04-arm" ]]; then
+            # Use ubuntu-20.04 sources for ARM build (sources are architecture-independent)
+            curl -L -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_ubuntu-20.04.zip
           else
             curl -L -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_${{ matrix.os }}.zip
           fi
@@ -674,7 +692,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "windows-2019"]
+        os: ["macos-13", "macos-14", "ubuntu-20.04", "ubuntu-22.04-arm", "windows-2019"]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
         use-vtk: ["vtk", "novtk"]
 
@@ -701,6 +719,14 @@ jobs:
             module: "OCP.*.so"
             env: "DUMMY=0"
             shells: "bash"
+          - os: "ubuntu-22.04-arm"
+            delocate: auditwheel patchelf
+            plat: manylinux_2_39_aarch64
+            sed_i: "sed -i"
+            compilers: ""
+            module: "OCP.*.so"
+            env: "DUMMY=0"
+            shells: "bash"
           - os: "windows-2019"
             delocate: delvewheel
             plat: win_amd64
@@ -717,7 +743,7 @@ jobs:
         run: |
           micromamba activate build-ocp
 
-          cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
+          cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())")
           echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
           echo "=> Using $cpu_count CPUs"
 
@@ -1006,9 +1032,9 @@ jobs:
 
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-              python ocp-tree.py occt-${{ env.OCCT }}-vtk vtk-${{ env.VTK }} 
+              python ocp-tree.py occt-${{ env.OCCT }}-vtk vtk-${{ env.VTK }}
             else
-              python ocp-tree.py occt-${{ env.OCCT }}-novtk 
+              python ocp-tree.py occt-${{ env.OCCT }}-novtk
             fi
             mv *.pyd OCP
 
@@ -1019,7 +1045,7 @@ jobs:
             ls -l OCP/*.so
             strip -x OCP/*.so
             ls -l OCP/*.so
-            
+
           else
             LD_LIBRARY_PATH=$HOME/opt/local/vtk-${{ env.VTK }}/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ matrix.use-vtk }}/lib \
             python ocp-tree.py
@@ -1187,7 +1213,11 @@ jobs:
             echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
             curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-linux_x86_64.whl
 
-          else 
+          elif [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
+            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_aarch64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-linux_aarch64.whl
+
+          else
             echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
             curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-win_amd64.whl
 
@@ -1253,7 +1283,7 @@ jobs:
             micromamba install -y nlopt=2.9
           fi
 
-          # workaround for pypi opt and casadi throwing a seg fault on exit 
+          # workaround for pypi opt and casadi throwing a seg fault on exit
           if [[ "$RUNNER_OS" == "Windows" ]]; then
             micromamba install -y nlopt casadi
           fi
