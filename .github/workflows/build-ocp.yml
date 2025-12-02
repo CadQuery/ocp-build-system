@@ -134,28 +134,31 @@ jobs:
       # - - - - - - - - - - - - - - - - - - - - -
 
       - name: Download wheel artifact
-        if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
+        if: (matrix.python-version == '3.13' || matrix.os == 'ubuntu-22.04-arm') && matrix.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
         shell: bash -l {0}
         run: |
-          if [[ "${{ matrix.os }}" == "macos-14" ]]; then
-            echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
+          PY_VER=${{ matrix.python-version }}
+          PY_TAG="cp${PY_VER/./}"
+
+          if [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_aarch64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_aarch64.whl
+
+          elif [[ "${{ matrix.os }}" == "macos-14" ]]; then
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_arm64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_arm64.whl
 
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_x86_64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_x86_64.whl
 
           elif [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl
-
-          elif [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_aarch64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-linux_aarch64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_x86_64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_x86_64.whl
 
           else
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-win_amd64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-win_amd64.whl
 
           fi
           ls -l
@@ -194,8 +197,8 @@ jobs:
           micromamba create -y -n vtk-$PY_VER python=$PY_VER
           micromamba activate vtk-$PY_VER
 
-          if [[ $PY_VER == 3.13 ]]; then
-            pip install cadquery_vtk-9.3.1*.whl
+          if [[ $PY_VER == 3.13 || "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
+            pip install cadquery_vtk-*.whl
           else
             pip install vtk==${{ env.VTK }}
           fi
@@ -205,7 +208,8 @@ jobs:
           cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtkmodules/${{ matrix.vtk_libs }} $DEST/lib/
           cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtk.py $DEST
 
-          if [[ "$RUNNER_OS" == "Linux" && "$PY_VER" != "3.13" ]]; then
+          # vtk.libs only exists in official PyPI VTK wheels, not in custom cadquery_vtk wheels
+          if [[ "$RUNNER_OS" == "Linux" && "$PY_VER" != "3.13" && "${{ matrix.os }}" != "ubuntu-22.04-arm" ]]; then
             cp $CONDA_PREFIX/lib/python$PY_VER/site-packages/vtk.libs/* $DEST/lib/
           fi
 
@@ -462,29 +466,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "ubuntu-22.04-arm", "windows-2019"]
+        os: ["ubuntu-22.04-arm"]
         python-version: ["3.11"]
 
         include:
-          - os: "macos-13"
-            sed_i: "gsed -i"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-          - os: "macos-14"
-            sed_i: "gsed -i"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-          - os: "ubuntu-20.04"
-            sed_i: "sed -i"
-            env: "DUMMY=0"
-            shells: "bash"
           - os: "ubuntu-22.04-arm"
             sed_i: "sed -i"
             env: "DUMMY=0"
             shells: "bash"
-          - os: "windows-2019"
-            sed_i: "sed -i"
-            shells: "bash cmd.exe"
 
     steps:
       - uses: actions/checkout@v4
@@ -696,47 +685,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-14", "ubuntu-20.04", "ubuntu-22.04-arm", "windows-2019"]
+        os: ["ubuntu-22.04-arm"]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
-        use-vtk: ["vtk", "novtk"]
+        use-vtk: ["vtk"]
 
         include:
-          - os: "macos-13"
-            delocate: delocate
-            plat: macosx_11_1_x86_64
-            sed_i: "gsed -i"
-            module: "OCP.*.so"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-          - os: "macos-14"
-            delocate: delocate
-            plat: macosx_11_1_arm64
-            sed_i: "gsed -i"
-            module: "OCP.*.so"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-          - os: "ubuntu-20.04"
-            delocate: auditwheel patchelf
-            plat: manylinux_2_31_x86_64
-            sed_i: "sed -i"
-            compilers: ""
-            module: "OCP.*.so"
-            env: "DUMMY=0"
-            shells: "bash"
           - os: "ubuntu-22.04-arm"
             delocate: auditwheel patchelf
-            plat: manylinux_2_39_aarch64
+            plat: manylinux_2_35_aarch64
             sed_i: "sed -i"
             compilers: ""
             module: "OCP.*.so"
             env: "DUMMY=0"
             shells: "bash"
-          - os: "windows-2019"
-            delocate: delvewheel
-            plat: win_amd64
-            sed_i: "sed -i"
-            shells: "bash cmd.exe"
-            module: "OCP.*.pyd"
 
     steps:
       - uses: actions/checkout@v4
@@ -1013,7 +974,7 @@ jobs:
 
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
             PKG_NAME="cadquery_ocp"
-            if [[ ${{ matrix.python-version }} == 3.13 ]]; then
+            if [[ ${{ matrix.python-version }} == 3.13 || "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
               ${{ matrix.sed_i }} '/requires-python/a\dependencies = [ "cadquery_vtk==${{ env.VTK }}" ]' pyproject.toml
             else
               ${{ matrix.sed_i }} '/requires-python/a\dependencies = [ "vtk==${{ env.VTK }}" ]' pyproject.toml
@@ -1202,28 +1163,31 @@ jobs:
           pip install pytest docutils ipython
 
       - name: Download wheel artifact
-        if: matrix.python-version == '3.13' && matrix.use-vtk == 'vtk'
+        if: (matrix.python-version == '3.13' || matrix.os == 'ubuntu-22.04-arm') && matrix.use-vtk == 'vtk'
         shell: bash -l {0}
         run: |
+          PY_TAG="cp${{ matrix.python-version }}"
+          PY_TAG="${PY_TAG/./}"  # Remove dot: cp3.13 -> cp313
+
           if [[ "${{ matrix.os }}" == "macos-14" ]]; then
-            echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_arm64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_arm64.whl
 
           elif [[ "${{ matrix.os }}" == "macos-13" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_x86_64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_x86_64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-macosx_11_0_x86_64.whl
 
           elif [[ "${{ matrix.os }}" == "ubuntu-20.04" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-linux_x86_64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_x86_64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_x86_64.whl
 
           elif [[ "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_aarch64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-linux_aarch64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_aarch64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-linux_aarch64.whl
 
           else
-            echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
-            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-win_amd64.whl
+            echo "Downloading cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-win_amd64.whl"
+            curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-${PY_TAG}-${PY_TAG}-win_amd64.whl
 
           fi
           ls -l
@@ -1235,7 +1199,7 @@ jobs:
 
           micromamba activate test
           if [[ "${{ matrix.use-vtk }}" == "vtk" ]]; then
-            if [[ ${{ matrix.python-version }} == 3.13 ]]; then
+            if [[ ${{ matrix.python-version }} == 3.13 || "${{ matrix.os }}" == "ubuntu-22.04-arm" ]]; then
               pip install ./cadquery_vtk*.whl
             else
               pip install vtk==${{ env.VTK }}
