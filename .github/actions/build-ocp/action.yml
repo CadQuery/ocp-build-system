@@ -139,7 +139,9 @@ runs:
         set -u
         set -o pipefail
 
-        cd OCP/new
+        cd OCP
+        if [ -d new ]; then cd new; fi  # PYWRAP==true
+
         rm OCP/IVtk*
         for module in IVtk IVtkOCC IVtkTools IVtkVTK; do
           ${{ inputs.sed-i }} '/register_IVtk/d' OCP/OCP.cpp
@@ -188,8 +190,11 @@ runs:
         micromamba info
 
         cd OCP
+        ls -lR
         
-        mv new/OCP .
+        if [ -f new ]; then
+          mv new/OCP .
+        fi
 
         echo "Handling VTK for flag ${{ inputs.use-vtk }}"
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
@@ -243,8 +248,11 @@ runs:
         micromamba info
 
         cd OCP
+        ls -lR
 
-        mv new/OCP .
+        if [ -f new ]; then
+          mv new/OCP .
+        fi
 
         echo "Handling VTK for flag ${{ inputs.use-vtk }}"
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
@@ -294,7 +302,11 @@ runs:
       run: |
         # (Windows) Patch CMakeLists.txt
         cd OCP
-        mv new/OCP .
+        ls -lR
+
+        if [ -f new ]; then
+          mv new/OCP .
+        fi
 
         if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
           echo "Patch VTK out of CMakeLists.txt"
