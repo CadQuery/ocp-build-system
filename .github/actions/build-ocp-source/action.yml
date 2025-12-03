@@ -41,6 +41,20 @@ runs:
           ca-certificates mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev \
           git patch clang build-essential curl > /dev/null 2>&1
 
+    # - - -
+
+    - name: (Linux) Install gl headers [PYWRAP=true]
+      if: env.PYWRAP == 'false' && runner.os == 'Linux' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        # (Linux) Install curl [PYWRAP=true]
+        set -e
+        set -u
+        set -o pipefail
+
+        apt-get update -qq 
+        DEBIAN_FRONTEND=noninteractive apt-get install -qq curl > /dev/null 2>&1
+
     # - - - (micromamba needs ca-certificates for ubuntu)
 
     - name: Set up Python ${{ inputs.python-version }} via micromamba [PYWRAP=true]
@@ -182,7 +196,6 @@ runs:
           curl -L -O https://github.com/bernhard-42/__temp_artefacts__/releases/download/v7.9/OCP_src_stubs_macOS-latest.zip
                      
         elif [[ ${{ inputs.os }} == "ubuntu-22.04" || ${{ inputs.os }} == "ubuntu-22.04-arm" ]]; then
-          DEBIAN_FRONTEND=noninteractive apt-get install -qq curl > /dev/null 2>&1
 
           # curl -L -O https://github.com/CadQuery/OCP/releases/download/${{ env.OCP }}/OCP_src_stubs_ubuntu-latest.zip
 
