@@ -51,6 +51,18 @@ runs:
           mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
           libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential \
           ca-certificates curl unzip  > /dev/null 2>&1
+    
+    # - - -
+
+    - name: (Mac) Install dependencies
+      if: runner.os == 'macOS'
+      shell: bash -l {0}
+      run: |
+        # (Mac, Windows) Install dependencies
+        set -e
+        set -o pipefail
+
+        brew install gsed
 
     # - - -
 
@@ -59,6 +71,7 @@ runs:
       shell: bash -l {0}
       run: |
         ${{ inputs.sed-i }} 's/python=3.13/python=${{ inputs.python-version }}/' environment.yml
+        cat environment.yml
 
     # - - -  (micromamba needs ca-certificates for ubuntu)
 
