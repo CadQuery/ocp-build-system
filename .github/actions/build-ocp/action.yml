@@ -270,11 +270,10 @@ runs:
         echo "Building OCP with VTK=$VTK_DIR"
 
         env ${{ inputs.env }} cmake -B build -S OCP -G Ninja \
-            -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ \
+            -D CMAKE_C_COMPILER=$CONDA_PREFIX/bin/clang -D CMAKE_CXX_COMPILER=$CONDA_PREFIX/bin/clang++ \
             -D CMAKE_BUILD_TYPE=Release \
             -D CMAKE_OSX_DEPLOYMENT_TARGET="11.1" \
-            -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=OFF \
-            -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include  -isystem $CONDA_PREFIX/include/python${{ inputs.python-version }} -fvisibility=hidden -w" \
+            -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -isystem $CONDA_PREFIX/include/python${{ inputs.python-version }} -fvisibility=hidden -w" \
             $VTK_DIR \
             -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib/cmake/opencascade \
             -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
@@ -341,6 +340,7 @@ runs:
 
         cmake -B build -S OCP -G Ninja ^
           -D CMAKE_BUILD_TYPE=Release ^
+          -D CMAKE_CXX_FLAGS="/I%CONDA_PREFIX%\include /I%CONDA_PREFIX%\Lib\site-packages\pybind11\include" ^
           -D Python3_FIND_STRATEGY=LOCATION ^
           -D Python3_ROOT_DIR=%CONDA_PREFIX% ^
           %VTK_DIR% ^
