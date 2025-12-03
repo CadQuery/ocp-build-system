@@ -127,7 +127,7 @@ runs:
       with:
         path: ${{ github.workspace }}/OCP
         key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.ocp-tag }}-
-   
+
     # - - -
 
     - name: Patch vtk out of OCP
@@ -139,7 +139,11 @@ runs:
         set -u
         set -o pipefail
 
-        cd OCP/new
+        if [ -d OCP/new ]; then
+          cd OCP/new
+        else
+          cd OCP
+        fi
         rm OCP/IVtk*
         for module in IVtk IVtkOCC IVtkTools IVtkVTK; do
           ${{ inputs.sed-i }} '/register_IVtk/d' OCP/OCP.cpp
@@ -188,7 +192,9 @@ runs:
 
         cd OCP
         
-        mv new/OCP .
+        if [ -d new/OCP ]; then
+          mv new/OCP .
+        fi
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
@@ -238,7 +244,9 @@ runs:
 
         cd OCP
 
-        mv new/OCP .
+        if [ -d new/OCP ]; then
+          mv new/OCP .
+        fi
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           export LDFLAGS="-L$HOME/opt/local/vtk-${{ env.VTK }}/lib"
@@ -284,7 +292,10 @@ runs:
       run: |
         # (Windows) Patch CMakeLists.txt
         cd OCP
-        mv new/OCP .
+        
+        if [ -d new/OCP ]; then
+          mv new/OCP .
+        fi
 
         if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
           echo "Patch VTK out of CMakeLists.txt"
