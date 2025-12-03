@@ -52,12 +52,20 @@ runs:
           libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential \
           ca-certificates curl unzip  > /dev/null 2>&1
 
+    # - - -
+
+    - name: (All) Patch environment.yml for Python
+      if: steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        ${{ inputs.sed-i }} 's/python=3.13/python=${{ inputs.python-version }}/' environment.yml
+
     # - - -  (micromamba needs ca-certificates for ubuntu)
 
     - name: Set up Python ${{ inputs.python-version }} via micromamba
       uses: mamba-org/setup-micromamba@v2
       with:
-        environment-file: environment-${{ inputs.python-version }}.yml
+        environment-file: environment.yml
         log-level: warning
         init-shell: ${{ inputs.shells }}
         cache-downloads: true
