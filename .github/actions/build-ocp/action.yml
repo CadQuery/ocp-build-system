@@ -166,17 +166,23 @@ runs:
         set -o pipefail
 
         cd OCP
+        
+        echo "=========="
+        ls -lR
+        echo "=========="
 
+        if [ -f new ]; then
+          mv new/OCP .  # in case of PYWRAP==true
+        fi
+
+        cd OCP
         echo "Patch VTK out of CMakeLists.txt"
         ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
         ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
         ${{ inputs.sed-i }} '/message(STATUS "VTK .* found")/d' CMakeLists.txt
 
         cat CMakeLists.txt
-
-        if [ -f new ]; then
-          mv new/OCP .  # in case of PYWRAP==true
-        fi
+        cd ..
 
         echo "Patch VTK out of OCP/OCP.cpp"
         if [ -d new ]; then cd new; fi  # PYWRAP==true
