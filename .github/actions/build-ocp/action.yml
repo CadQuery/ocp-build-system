@@ -38,8 +38,11 @@ runs:
   steps:
     - uses: actions/checkout@v4
 
-    # - - -
+    # - - - - - - - - - - - - - - - - - - - - -
+    # Install dependencies
+    # - - - - - - - - - - - - - - - - - - - - -
 
+    
     - name: (Ubuntu) Install dependencies
       if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
@@ -51,21 +54,26 @@ runs:
           mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
           libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential \
           ca-certificates curl unzip  > /dev/null 2>&1
+        
     
-    # - - -
-
     - name: (Mac) Install dependencies
       if: runner.os == 'macOS'
       shell: bash -l {0}
       run: |
-        # (Mac, Windows) Install dependencies
+        # (Mac) Install dependencies
         set -e
         set -o pipefail
 
+        curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
+        sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
+        sudo mkdir -p /opt/usr/local/
+        sudo mkdir -p /usr/local/include
+        sudo ln -s /opt/MacOSX11.3.sdk/usr/include /opt/usr/local/include
+        sudo ln -s /opt/MacOSX11.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers /usr/local/include/OpenGL
+
         brew install gsed
 
-    # - - -
-
+    
     - name: (All) Patch environment.yml for Python
       if: steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
@@ -73,8 +81,11 @@ runs:
         ${{ inputs.sed-i }} 's/python=3.13/python=${{ inputs.python-version }}/' environment.yml
         cat environment.yml
 
-    # - - -  (micromamba needs ca-certificates for ubuntu)
+    # - - - - - - - - - - - - - - - - - - - - -
+    # Install Python (micromamba)
+    # - - - - - - - - - - - - - - - - - - - - -
 
+    
     - name: Set up Python ${{ inputs.python-version }} via micromamba
       uses: mamba-org/setup-micromamba@v2
       with:
@@ -85,8 +96,7 @@ runs:
         cache-environment: true
         cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-${{ inputs.use-vtk }}
 
-    # - - -
-
+    
     - name: Get number of CPUs
       shell: bash -l {0}
       id: cpu-count
@@ -98,8 +108,7 @@ runs:
         echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
         echo "=> Using $cpu_count CPUs"
 
-    # - - -
-
+    
     - name: (Mac, Windows) Install dependencies
       if: runner.os != 'Linux'
       shell: bash -l {0}
@@ -111,14 +120,11 @@ runs:
         micromamba activate build-ocp
         micromamba install -y fontconfig=2.13.* freetype=2.12.* freeimage=3.18.*
 
-        if [[ "$RUNNER_OS" == "macOS" ]]; then
-          brew install gsed
-        fi
-
     # - - - - - - - - - - - - - - - - - - - - -
     # Restore SDKs
     # - - - - - - - - - - - - - - - - - - - - -
 
+    
     - name: Restore VTK SDK cache
       if: inputs.use-vtk == 'vtk'
       id: cache-vtk-restore
@@ -128,8 +134,7 @@ runs:
           ~/opt/local/vtk-${{ env.VTK }}
         key: VTK-${{ env.VTK }}-py-${{ inputs.python-version }}-${{ inputs.os }}-
 
-    # - - -
-
+    
     - name: Restore OCCT SDK cache with VTK support
       id: cache-occt-restore
       uses: actions/cache/restore@v4
@@ -142,6 +147,7 @@ runs:
     # Restore sources (supporting vtk - will be patched later for novtk)
     # - - - 
 
+    
     - name: Restore OCP source cache
       id: cache-ocp-source-restore
       uses: actions/cache/restore@v4
@@ -149,8 +155,7 @@ runs:
         path: ${{ github.workspace }}/OCP
         key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.ocp-tag }}-
    
-    # - - -
-
+    
     - name: Patch vtk out of OCP
       if: inputs.use-vtk == 'novtk'
       shell: bash -l {0}
@@ -172,6 +177,7 @@ runs:
     #  Build OCP
     # - - - - - - - - - - - - - - - - - - - - -
 
+    
     - name: Restore OCP module cache
       id: cache-ocp-restore
       uses: actions/cache/restore@v4
@@ -179,26 +185,7 @@ runs:
         path: ${{ github.workspace }}/OCP/build/${{ inputs.module }}
         key: OCP-${{ env.OCP }}-VTK-${{ inputs.use-vtk }}-py${{ inputs.python-version }}-${{ inputs.os }}-
 
-    # - - -
-
-    - name: (Mac) Install MacOS SDK
-      if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
-      shell: bash -l {0}
-      run: |
-        # (Mac) Install MacOS SDK
-        set -e
-        set -u
-        set -o pipefail
-
-        curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
-        sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
-        sudo mkdir -p /opt/usr/local/
-        sudo mkdir -p /usr/local/include
-        sudo ln -s /opt/MacOSX11.3.sdk/usr/include /opt/usr/local/include
-        sudo ln -s /opt/MacOSX11.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers /usr/local/include/OpenGL
-
-    # - - -
-
+    
     - name: (Linux) Generate OCP build files and build OCP
       if: runner.os == 'Linux' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
@@ -254,8 +241,7 @@ runs:
 
         ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
-    # - - -
-
+    
     - name: (Mac) Generate OCP build files and build OCP
       if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
@@ -312,8 +298,9 @@ runs:
 
         ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
-    # - - - Prepare under bash ...
+    # Prepare Windows compilation under bash ...
 
+    
     - name: (Windows) Patch CMakeLists.txt
       if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
@@ -336,8 +323,9 @@ runs:
         micromamba activate build-ocp
         cp -a "${CONDA_PREFIX}/Library/include/rapidjson" "${HOME}/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/inc/rapidjson"
 
-    # - - - ... but compile under cmd.exe due to vcvars64.bat
+    # ... but compile under cmd.exe due to vcvars64.bat
 
+    
     - name: (Windows) Generate OCP build files and build OCP
       if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: cmd
@@ -370,8 +358,7 @@ runs:
 
         ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
-    # - - -
-
+    
     - name: Cache OCP module
       id: cache-ocp-save
       uses: actions/cache/save@v4
@@ -379,9 +366,8 @@ runs:
         path: ${{ github.workspace }}/OCP/build/${{ inputs.module }}
         key: ${{ steps.cache-ocp-restore.outputs.cache-primary-key }}
 
-    # - - -
-
-    # - name: Debug Upload module
+    # 
+    - name: Debug Upload module
     #   uses: actions/upload-artifact@v4
     #   with:
     #     name: debug_module_${{ inputs.os }}-py_${{ inputs.python-version }}
@@ -391,8 +377,7 @@ runs:
     #               OCP wheel
     # ================================================================================
 
-    # - - -
-
+    
     - name: Create the cadquery_ocp wheel
       shell: bash -l {0}
       run: |
@@ -481,8 +466,7 @@ runs:
 
         unzip -l dist/${PKG_NAME}*.whl
 
-    # - - -
-
+    
     - name: (Linux) Delocate the cadquery_ocp wheel
       if: runner.os == 'Linux'
       shell: bash -l {0}
@@ -524,8 +508,7 @@ runs:
         python -m wheel pack ${PKG_NAME}-${{ env.WHEEL }}
         cd ..
 
-    # - - -
-
+    
     - name: (Mac) Delocate the cadquery_ocp wheel
       if: runner.os == 'macOS'
       shell: bash -l {0}
@@ -561,8 +544,7 @@ runs:
             --wheel-dir=wheel \
             dist/*.whl
 
-    # - - -
-
+    
     - name: (Windows) Delocate the cadquery_ocp wheel
       if: runner.os == 'Windows'
       shell: bash -l {0}
@@ -584,8 +566,7 @@ runs:
 
         PATH=~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/win64/vc14/bin/:$PATH delvewheel repair $EXCLUDE --wheel-dir wheel --namespace-pkg ${PKG_NAME} dist/*.whl
 
-    # - - -
-
+    
     - name: Upload vtk cadquery_ocp wheel
       if: inputs.use-vtk == 'vtk'
       uses: actions/upload-artifact@v4
@@ -593,8 +574,7 @@ runs:
         name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
         path: pypi/wheel/*.whl
 
-    # - - -
-
+    
     - name: Upload novtk cadquery_ocp wheel
       if: inputs.use-vtk == 'novtk'
       uses: actions/upload-artifact@v4
