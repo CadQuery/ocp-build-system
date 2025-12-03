@@ -185,11 +185,13 @@ runs:
         set -o pipefail
 
         micromamba activate build-ocp
+        micromamba info
 
         cd OCP
         
         mv new/OCP .
 
+        echo "Handling VTK for flag ${{ inputs.use-vtk }}"
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
         else
@@ -198,10 +200,13 @@ runs:
           echo "Patch VTK out of CMakeLists.txt"
           ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
           ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
+          cat CMakeLists.txt
 
           cd ..
           VTK_DIR=""
         fi
+
+        echo "Building OCP with VTK=$VTK"
 
         cmake -B build -S OCP -G Ninja \
         -D CMAKE_BUILD_TYPE=Release \
@@ -235,11 +240,13 @@ runs:
         set -o pipefail
 
         micromamba activate build-ocp
+        micromamba info
 
         cd OCP
 
         mv new/OCP .
 
+        echo "Handling VTK for flag ${{ inputs.use-vtk }}"
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           export LDFLAGS="-L$HOME/opt/local/vtk-${{ env.VTK }}/lib"
           VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
@@ -249,10 +256,13 @@ runs:
           echo "Patch VTK out of CMakeLists.txt"
           ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
           ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
+          cat CMakeLists.txt
 
           cd ..
           VTK_DIR=""
         fi
+        
+        echo "Building OCP with VTK=$VTK"
 
         env ${{ inputs.env }} cmake -B build -S OCP -G Ninja \
             -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ \
