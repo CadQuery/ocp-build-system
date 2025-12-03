@@ -7,14 +7,13 @@ on: workflow_dispatch
 #       - v7.9
 
 env:
-  OCP: 7.9.1.0
-  WHEEL: 7.9.1.0
-  VTK: 9.5.1
+  OCP: 7.9.2.0
+  WHEEL: 7.9.2.0
+  VTK: 9.5.2
   VTK_MAJOR: 9.5
-  OCCT: 7.9.1
+  OCCT: 7.9.2
   PYBIND11: 2.13
-  PYWRAP: true
-#  VTK313_URL: https://github.com/CadQuery/ocp-build-system/releases/download/v7.8.1.0-dev
+  PYWRAP: false
 
 jobs:
   # ================================================================================
@@ -30,7 +29,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04"]
+        os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
@@ -168,7 +167,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04"]
+        os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]

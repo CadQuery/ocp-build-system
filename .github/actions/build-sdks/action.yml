@@ -303,6 +303,7 @@ runs:
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           
           env ${{ inputs.env }} cmake -S . -B build  -G Ninja \
+            -D CMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -D CMAKE_INSTALL_PREFIX=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }} \
             \
             -D USE_VTK=ON \
@@ -333,6 +334,7 @@ runs:
         else
           env ${{ inputs.env }} cmake -S . -B build  -G Ninja \
             -D CMAKE_INSTALL_PREFIX=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }} \
+            -D CMAKE_POLICY_VERSION_MINIMUM=3.5 \
             \
             -D USE_VTK=OFF \
             -D USE_TBB=OFF \
@@ -369,6 +371,7 @@ runs:
 
         if "${{ inputs.use-vtk }}"=="vtk" (
           cmake -S . -B build -G Ninja ^
+            -D CMAKE_POLICY_VERSION_MINIMUM=3.5 ^
             -D USE_VTK=ON ^
             -D USE_TBB=OFF ^
             -D USE_FREEIMAGE=ON ^
@@ -395,6 +398,7 @@ runs:
 
         ) else (
           cmake -S . -B build -G Ninja ^
+            -D CMAKE_POLICY_VERSION_MINIMUM=3.5 ^
             -D USE_VTK=OFF ^
             -D USE_TBB=OFF ^
             -D USE_FREEIMAGE=ON ^
