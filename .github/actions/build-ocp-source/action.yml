@@ -44,7 +44,7 @@ runs:
     # - - -
 
     - name: (Linux) Install gl headers [PYWRAP=true]
-      if: env.PYWRAP == 'false' && runner.os == 'Linux' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
+      if: env.PYWRAP == 'false' && runner.os == 'Linux'
       shell: bash -l {0}
       run: |
         # (Linux) Install curl [PYWRAP=true]
