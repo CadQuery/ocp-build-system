@@ -203,6 +203,8 @@ runs:
           echo "Patch VTK out of CMakeLists.txt"
           ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
           ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
+          ${{ inputs.sed-i }} '/message(STATUS "VTK .* found")/d' CMakeLists.txt
+
           cat CMakeLists.txt
           cd ..
           VTK_DIR=""
@@ -259,6 +261,7 @@ runs:
           echo "Patch VTK out of CMakeLists.txt"
           ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
           ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
+          ${{ inputs.sed-i }} '/message(STATUS "VTK .* found")/d' CMakeLists.txt
           cat CMakeLists.txt
           cd ..
           VTK_DIR=""
