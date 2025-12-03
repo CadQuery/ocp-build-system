@@ -320,7 +320,7 @@ runs:
 
         cmake -B build -S OCP -G Ninja ^
           -D CMAKE_BUILD_TYPE=Release ^
-          -D CMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /GR /EHsc /external:I%CONDA_PREFIX%\Include /external:I%CONDA_PREFIX%\Lib\site-packages\pybind11\include" ^
+          -D CMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /GR /EHsc /wd4834 /wd4996 /external:I%CONDA_PREFIX%\Include /external:I%CONDA_PREFIX%\Lib\site-packages\pybind11\include" ^
           -D Python3_FIND_STRATEGY=LOCATION ^
           -D Python3_ROOT_DIR=%CONDA_PREFIX% ^
           %VTK_DIR% ^
