@@ -139,9 +139,7 @@ runs:
         set -o pipefail
 
         echo "pwd: $(pwd)"
-        if [ -f ./OCP ]; then echo "OCP"; ls -l OCP; fi
-        if [ -f ./OCP/OCP ]; then echo "OCP/OCP"; ls -l OCP/OCP; fi
-        if [ -f ./OCP/new ]; then echo "OCP/new"; ls -l OCP/new; fi
+        ls -lR
 
         false
     
