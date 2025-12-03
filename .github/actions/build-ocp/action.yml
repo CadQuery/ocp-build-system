@@ -141,7 +141,8 @@ runs:
 
         cd OCP
         if [ -d new ]; then cd new; fi  # PYWRAP==true
-
+        ls -lR
+        
         rm OCP/IVtk*
         for module in IVtk IVtkOCC IVtkTools IVtkVTK; do
           ${{ inputs.sed-i }} '/register_IVtk/d' OCP/OCP.cpp
