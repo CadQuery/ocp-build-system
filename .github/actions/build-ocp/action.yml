@@ -157,7 +157,7 @@ runs:
    
     
     - name: Patch vtk out of OCP
-      if: inputs.use-vtk == 'novtk'
+      if: inputs.use-vtk == 'novtk' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
         # Patch vtk out of OCP
@@ -166,12 +166,26 @@ runs:
         set -o pipefail
 
         cd OCP
+
+        echo "Patch VTK out of CMakeLists.txt"
+        ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
+        ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
+        ${{ inputs.sed-i }} '/message(STATUS "VTK .* found")/d' CMakeLists.txt
+
+        cat CMakeLists.txt
+
+        if [ -f new ]; then
+          mv new/OCP .  # in case of PYWRAP==true
+        fi
+
+        echo "Patch VTK out of OCP/OCP.cpp"
         if [ -d new ]; then cd new; fi  # PYWRAP==true
 
         rm OCP/IVtk*
         for module in IVtk IVtkOCC IVtkTools IVtkVTK; do
           ${{ inputs.sed-i }} '/register_IVtk/d' OCP/OCP.cpp
         done
+
 
     # - - - - - - - - - - - - - - - - - - - - -
     #  Build OCP
@@ -199,26 +213,13 @@ runs:
 
         cd OCP
 
-        if [ -f new ]; then
-          mv new/OCP .
-        fi
-
-        echo "Handling VTK for flag ${{ inputs.use-vtk }}"
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
         else
-          cd OCP
-          echo "Patch VTK out of CMakeLists.txt"
-          ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
-          ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
-          ${{ inputs.sed-i }} '/message(STATUS "VTK .* found")/d' CMakeLists.txt
-
-          cat CMakeLists.txt
-          cd ..
           VTK_DIR=""
         fi
 
-        echo "Building OCP with VTK=$VTK"
+        echo "Building OCP with VTK_DIR=$VTK_DIR"
 
         cmake -B build -S OCP -G Ninja \
         -D CMAKE_BUILD_TYPE=Release \
@@ -241,7 +242,6 @@ runs:
 
         ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
-    
     - name: (Mac) Generate OCP build files and build OCP
       if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
@@ -255,26 +255,14 @@ runs:
 
         cd OCP
 
-        if [ -f new ]; then
-          mv new/OCP .
-        fi
-
-        echo "Handling VTK for flag ${{ inputs.use-vtk }}"
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           export LDFLAGS="-L$HOME/opt/local/vtk-${{ env.VTK }}/lib"
           VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
         else
-          cd OCP
-          echo "Patch VTK out of CMakeLists.txt"
-          ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
-          ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
-          ${{ inputs.sed-i }} '/message(STATUS "VTK .* found")/d' CMakeLists.txt
-          cat CMakeLists.txt
-          cd ..
           VTK_DIR=""
         fi
         
-        echo "Building OCP with VTK=$VTK_DIR"
+        echo "Building OCP with VTK_DIR=$VTK_DIR"
 
         env ${{ inputs.env }} cmake -B build -S OCP -G Ninja \
             -D CMAKE_C_COMPILER=$CONDA_PREFIX/bin/clang -D CMAKE_CXX_COMPILER=$CONDA_PREFIX/bin/clang++ \
@@ -299,33 +287,16 @@ runs:
         ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
     # Prepare Windows compilation under bash ...
-
-    
-    - name: (Windows) Patch CMakeLists.txt
+    - name: (Windows) Copy rapidjson
       if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
-        # (Windows) Patch CMakeLists.txt
-        cd OCP
-        ls -lR
-
-        if [ -f new ]; then
-          mv new/OCP .
-        fi
-
-        if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
-          echo "Patch VTK out of CMakeLists.txt"
-          cd OCP
-          ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
-          ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
-        fi
+        # (Windows) Copy rapidjson
 
         micromamba activate build-ocp
         cp -a "${CONDA_PREFIX}/Library/include/rapidjson" "${HOME}/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/inc/rapidjson"
 
     # ... but compile under cmd.exe due to vcvars64.bat
-
-    
     - name: (Windows) Generate OCP build files and build OCP
       if: runner.os == 'Windows' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: cmd
@@ -366,8 +337,7 @@ runs:
         path: ${{ github.workspace }}/OCP/build/${{ inputs.module }}
         key: ${{ steps.cache-ocp-restore.outputs.cache-primary-key }}
 
-    # 
-    - name: Debug Upload module
+    # - name: Debug Upload module
     #   uses: actions/upload-artifact@v4
     #   with:
     #     name: debug_module_${{ inputs.os }}-py_${{ inputs.python-version }}
