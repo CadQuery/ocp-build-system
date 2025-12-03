@@ -127,22 +127,7 @@ runs:
       with:
         path: ${{ github.workspace }}/OCP
         key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.ocp-tag }}-
-
-    # - - -
-
-    - name: Check paths
-      shell: bash -l {0}
-      run: |
-        # check paths
-        set -e
-        set -u
-        set -o pipefail
-
-        echo "pwd: $(pwd)"
-        ls -lR
-
-        false
-    
+   
     # - - -
 
     - name: Patch vtk out of OCP
