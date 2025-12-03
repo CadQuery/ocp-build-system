@@ -167,10 +167,6 @@ runs:
 
         cd OCP
         
-        echo "=========="
-        ls -lR
-        echo "=========="
-
         if [ -f new ]; then
           mv new/OCP .  # in case of PYWRAP==true
         fi
@@ -180,8 +176,6 @@ runs:
         ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
         ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
         ${{ inputs.sed-i }} '/message(STATUS "VTK .* found")/d' CMakeLists.txt
-
-        cat CMakeLists.txt
         cd ..
 
         echo "Patch VTK out of OCP/OCP.cpp"
