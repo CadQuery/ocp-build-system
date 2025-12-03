@@ -109,32 +109,6 @@ runs:
     #                VTK SDK
     # - - - - - - - - - - - - - - - - - - - - -
 
-    # - - -
-    # - name: Download wheel artifact
-    #   if: inputs.python-version == '3.13' && inputs.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
-    #   shell: bash -l {0}
-    #   run: |
-    #     if [[ "${{ inputs.os }}" == "macos-15" ]]; then
-    #       echo "Downloading cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl"
-    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-${{ env.VTK }}-cp313-cp313-macosx_11_0_arm64.whl
-
-    #     elif [[ "${{ inputs.os }}" == "macos-13" ]]; then
-    #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl"
-    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-macosx_11_0_x86_64.whl
-
-    #     elif [[ "${{ inputs.os }}" == "ubuntu-22.04" ]]; then
-    #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl"
-    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-linux_x86_64.whl
-
-    #     else 
-    #       echo "Downloading cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl"
-    #       curl -L -O ${{ env.VTK313_URL }}/cadquery_vtk-9.3.1-cp313-cp313-win_amd64.whl
-
-    #     fi
-    #     ls -l
-
-    # - - -
-
     - name: Install VTK SDK include files
       if: inputs.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
@@ -175,12 +149,6 @@ runs:
         micromamba create -y -n vtk-$PY_VER python=$PY_VER
         micromamba activate vtk-$PY_VER
 
-        # if [[ $PY_VER == 3.13 ]]; then
-        #   pip install cadquery_vtk-9.3.1*.whl
-        # else
-        #   pip install vtk==${{ env.VTK }}
-        # fi
-
         pip install vtk==${{ env.VTK }}
 
         DEST=~/opt/local/vtk-${{ env.VTK }}
@@ -209,14 +177,6 @@ runs:
 
         micromamba create -y -n vtk-$PY_VER python=$PY_VER
         micromamba activate vtk-$PY_VER
-
-        # if [[ $PY_VER == 3.13 ]]; then
-        #   pip install cadquery_vtk-9.3.1*.whl
-        #   PKG=cadquery_vtk
-        # else
-        #   pip install vtk==${{ env.VTK }}
-        #   PKG=vtk
-        # fi
 
         pip install vtk==${{ env.VTK }}
         PKG=vtk
