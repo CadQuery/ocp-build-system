@@ -2,9 +2,9 @@ name: Build OCP Addons
 
 on:
     workflow_dispatch:
-    push:
-        branches:
-            - v7.9
+    # push:
+    #     branches:
+    #         - v7.9
 
 env:
     OCP: 7.9.1.0
