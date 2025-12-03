@@ -39,7 +39,7 @@ runs:
         apt-get update -qq 
         DEBIAN_FRONTEND=noninteractive apt-get install -qq \
           ca-certificates mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev \
-          git patch clang build-essential  > /dev/null 2>&1
+          git patch clang build-essential curl > /dev/null 2>&1
 
     # - - - (micromamba needs ca-certificates for ubuntu)
 
