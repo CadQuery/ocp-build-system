@@ -141,8 +141,7 @@ runs:
 
         cd OCP
         if [ -d new ]; then cd new; fi  # PYWRAP==true
-        ls -lR
-        
+
         rm OCP/IVtk*
         for module in IVtk IVtkOCC IVtkTools IVtkVTK; do
           ${{ inputs.sed-i }} '/register_IVtk/d' OCP/OCP.cpp
@@ -191,8 +190,7 @@ runs:
         micromamba info
 
         cd OCP
-        ls -lR
-        
+
         if [ -f new ]; then
           mv new/OCP .
         fi
@@ -202,12 +200,10 @@ runs:
           VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
         else
           cd OCP
-          # patch -p1 < ../../patches/no-vtk.patch
           echo "Patch VTK out of CMakeLists.txt"
           ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
           ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
           cat CMakeLists.txt
-
           cd ..
           VTK_DIR=""
         fi
@@ -249,7 +245,6 @@ runs:
         micromamba info
 
         cd OCP
-        ls -lR
 
         if [ -f new ]; then
           mv new/OCP .
@@ -261,17 +256,15 @@ runs:
           VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
         else
           cd OCP
-          # patch -p1 < ../../patches/no-vtk.patch
           echo "Patch VTK out of CMakeLists.txt"
           ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
           ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
           cat CMakeLists.txt
-
           cd ..
           VTK_DIR=""
         fi
         
-        echo "Building OCP with VTK=$VTK"
+        echo "Building OCP with VTK=$VTK_DIR"
 
         env ${{ inputs.env }} cmake -B build -S OCP -G Ninja \
             -D CMAKE_C_COMPILER=clang -D CMAKE_CXX_COMPILER=clang++ \
