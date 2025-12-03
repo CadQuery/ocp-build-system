@@ -53,7 +53,7 @@ runs:
         set -o pipefail
 
         apt-get update -qq 
-        DEBIAN_FRONTEND=noninteractive apt-get install -qq curl > /dev/null 2>&1
+        DEBIAN_FRONTEND=noninteractive apt-get install -qq curl unzip > /dev/null 2>&1
 
     # - - - (micromamba needs ca-certificates for ubuntu)
 
