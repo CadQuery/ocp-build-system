@@ -130,6 +130,23 @@ runs:
 
     # - - -
 
+    - name: Check paths
+      shell: bash -l {0}
+      run: |
+        # check paths
+        set -e
+        set -u
+        set -o pipefail
+
+        echo "pwd: $(pwd)"
+        if [ -f ./OCP ]; then echo "OCP"; ls -l OCP; fi
+        if [ -f ./OCP/OCP ]; then echo "OCP/OCP"; ls -l OCP/OCP; fi
+        if [ -f ./OCP/new ]; then echo "OCP/new"; ls -l OCP/new; fi
+
+        false
+    
+    # - - -
+
     - name: Patch vtk out of OCP
       if: inputs.use-vtk == 'novtk'
       shell: bash -l {0}
