@@ -64,13 +64,6 @@ runs:
         set -e
         set -o pipefail
 
-        curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
-        sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
-        sudo mkdir -p /opt/usr/local/
-        sudo mkdir -p /usr/local/include
-        sudo ln -s /opt/MacOSX11.3.sdk/usr/include /opt/usr/local/include
-        sudo ln -s /opt/MacOSX11.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers /usr/local/include/OpenGL
-
         brew install gsed
 
     
@@ -223,6 +216,7 @@ runs:
 
         cmake -B build -S OCP -G Ninja \
         -D CMAKE_BUILD_TYPE=Release \
+            -D CMAKE_C_COMPILER=/usr/bin/gcc \
             -D CMAKE_CXX_COMPILER=/usr/bin/g++ \
             $VTK_DIR \
             -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib/cmake/opencascade \
@@ -266,15 +260,14 @@ runs:
         echo "Building OCP with VTK_DIR=$VTK_DIR"
 
         env ${{ inputs.env }} cmake -B build -S OCP -G Ninja \
-            -D CMAKE_C_COMPILER=$CONDA_PREFIX/bin/clang -D CMAKE_CXX_COMPILER=$CONDA_PREFIX/bin/clang++ \
+            -D CMAKE_C_COMPILER=/usr/bin/clang -D CMAKE_CXX_COMPILER=/usr/bin/clang++ \
             -D CMAKE_BUILD_TYPE=Release \
             -D CMAKE_OSX_DEPLOYMENT_TARGET="11.1" \
             -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -isystem $CONDA_PREFIX/include/python${{ inputs.python-version }} -fvisibility=hidden -w" \
             $VTK_DIR \
             -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib/cmake/opencascade \
             -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
-            -D CMAKE_CXX_STANDARD=17 \
-            -D CMAKE_OSX_SYSROOT=/opt/MacOSX11.3.sdk
+            -D CMAKE_CXX_STANDARD=17
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           for l in libvtkCommonCore  libvtkCommonDataModel libvtkCommonExecutionModel \

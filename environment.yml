@@ -7,7 +7,6 @@ dependencies:
   - pybind11=2.13.*
   - cmake >3.24
   - ninja
-  - cxx-compiler
   - tbb-devel
   - pybind11-stubgen
   - rapidjson
