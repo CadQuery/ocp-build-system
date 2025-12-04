@@ -109,17 +109,6 @@ runs:
         echo "=> Using $cpu_count CPUs"
 
     
-    - name: (Linux) Install conda dependencies
-      if: runner.os == 'Linux'
-      shell: bash -l {0}
-      run: |
-        # (Linux) Install conda dependencies - mesa headers for cross-compiler
-        set -e
-        set -o pipefail
-
-        micromamba activate build-ocp
-        micromamba install -y mesalib
-
     - name: (Mac, Windows) Install dependencies
       if: runner.os != 'Linux'
       shell: bash -l {0}
@@ -234,6 +223,7 @@ runs:
 
         cmake -B build -S OCP -G Ninja \
         -D CMAKE_BUILD_TYPE=Release \
+            -D CMAKE_CXX_COMPILER=/usr/bin/g++ \
             $VTK_DIR \
             -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib/cmake/opencascade \
             -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
