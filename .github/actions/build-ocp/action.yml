@@ -341,7 +341,7 @@ runs:
     - name: Debug Upload module
       uses: actions/upload-artifact@v4
       with:
-        name: debug_module_${{ inputs.os }}-py_${{ inputs.python-version }}
+        name: debug_module_${{ inputs.os }}-$${{ inputs.use-vtk }}-py_${{ inputs.python-version }}
         path: ./OCP/build/${{ inputs.module }}
 
     # ================================================================================
