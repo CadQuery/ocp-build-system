@@ -253,15 +253,18 @@ runs:
 
         if [[ "$RUNNER_OS" == "Linux" ]]; then
           export CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0" # Disables the C++11 ABI features for VTK compatibility
+          COMPILER_FLAGS="-D CMAKE_C_COMPILER=/usr/bin/gcc -D CMAKE_CXX_COMPILER=/usr/bin/g++"
         elif  [[ "$RUNNER_OS" == "macOS" ]]; then
           export CFLAGS="-mmacosx-version-min=11.1"
           export CXXFLAGS="-mmacosx-version-min=11.1"
           export LDFLAGS="-mmacosx-version-min=11.1"
+          COMPILER_FLAGS="-D CMAKE_C_COMPILER=/usr/bin/clang -D CMAKE_CXX_COMPILER=/usr/bin/clang++"
         fi
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           
           env ${{ inputs.env }} cmake -S . -B build  -G Ninja \
+            $COMPILER_FLAGS \
             -D CMAKE_POLICY_VERSION_MINIMUM=3.5 \
             -D CMAKE_INSTALL_PREFIX=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }} \
             \
@@ -292,6 +295,7 @@ runs:
 
         else
           env ${{ inputs.env }} cmake -S . -B build  -G Ninja \
+            $COMPILER_FLAGS \
             -D CMAKE_INSTALL_PREFIX=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }} \
             -D CMAKE_POLICY_VERSION_MINIMUM=3.5 \
             \
