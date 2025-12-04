@@ -64,8 +64,10 @@ runs:
         fi
         ls -l
         uv pip install *.whl
+        
+        uv pip list
 
-        python -c "import OCP; print('Success: OCP', OCP.__version__)"
+        uv run python -c "import OCP; print('Success: OCP', OCP.__version__)"
 
     # - - -
 
@@ -114,7 +116,7 @@ runs:
         uv pip install .
         cd ..
 
-        uv pip install list
+        uv pip list
 
         # 7.9.1. COMPATIBILITY ISSUE
         sed -i.bak '/def test_export_step_timestamp_datetime/i\    @pytest.mark.skip()' tests/test_exporters3d.py
@@ -122,12 +124,12 @@ runs:
         # sed -i.bak '/^class ImportSVG(unittest\.TestCase):/a\    __test__ = False' tests/test_importers.py
 
         if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
-          pytest tests -v -W ignore \
+          uv run pytest tests -v -W ignore \
                  --ignore tests/test_direct_api/test_vtk_poly_data.py \
                  --ignore tests/test_direct_api/test_jupyter.py \
                  --ignore tests/test_examples.py  # 7.9.1. COMPATIBILITY ISSUE
         else
-          pytest tests -v -W ignore \
+          uv run pytest tests -v -W ignore \
                  --ignore tests/test_examples.py  # 7.9.1. COMPATIBILITY ISSUE
         fi
 
