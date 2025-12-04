@@ -18,47 +18,21 @@ runs:
     
     # - - -
 
-    - name: (Linux) Install ca-certificates
-      if: env.PYWRAP == 'true' && runner.os == 'Linux'
-      shell: bash -l {0}
-      run: |
-        # (Linux) Install ca-certificates
-        set -e
-        set -u
-        set -o pipefail
-
-        sudo apt-get update -qq  
-        sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates > /dev/null 2>&1
-
-    # - - -
-
-    - name: (All) Patch environment.yml for Python
-      shell: bash -l {0}
-      run: |
-        sed -i.bak 's/python=3.13/python=${{ inputs.python-version }}/' environment.yml
-
-    - name: Set up Python ${{ inputs.python-version }} via micromamba
-      uses: mamba-org/setup-micromamba@v2
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
       with:
-        environment-file: environment.yml
-        log-level: warning
-        init-shell: ${{ inputs.shells }}
-        cache-downloads: true
-        cache-environment: true
-        cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-${{ inputs.use-vtk }}
+        version: "0.5.10"
+        python-version: ${{ matrix.python-version }}
+        enable-cache: true
+        # Create & activate a venv for you
+        activate-environment: true
 
     # - - -
 
-    - name: Create the test environment
+    - name: Install tomli on Python 3.10
       shell: bash -l {0}
-      run: |
-        # Create the test environment
-        set -e
-        set -o pipefail
-
-        micromamba create -y -n test python=${{ inputs.python-version }}
-        micromamba activate test
-        pip install pytest docutils ipython
+      if: ${{ matrix.python-version == '3.10' }}
+      run: uv pip install "tomli>=1.1.0" packaging
 
     # - - -
     
@@ -85,17 +59,11 @@ runs:
         set -e
         set -o pipefail
         
-        micromamba activate test
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
-          # if [[ ${{ inputs.python-version }} == 3.13 ]]; then
-          #   pip install ./cadquery_vtk*.whl
-          # else
-          #   pip install vtk==${{ env.VTK }}
-          # fi
           pip install vtk==${{ env.VTK }}
         fi
         ls -l
-        pip install *.whl
+        uv pip install *.whl
 
         python -c "import OCP; print('Success: OCP', OCP.__version__)"
 
@@ -108,28 +76,45 @@ runs:
         set -e
         set -o pipefail
 
-        micromamba activate test
-
         git clone https://github.com/gumyr/build123d.git
+        ocpsvg_min=$(uv run python get-min-version.py build123d/pyproject.toml ocpsvg)
+        ocp_gordon_min=$(uv run python get-min-version.py build123d/pyproject.toml ocp_gordon)
 
-        cd build123d
-        git checkout 1af4b0c3129dd152a1c9cb01400c1e648a5de8e2  # pre Gordon face to avoid 7.9. issues
-        
-        # install ocp_svg and svgelements (a ocp_svg dependency) without cadquery_ocp dependency
-        pip install --no-deps ocpsvg svgelements
-        
-        # Patch to remove dependency ocp_svg, since it relies on cadquery_ocp 7.8
-        sed -i.bak '/ocpsvg/d' pyproject.toml
-        
+        git clone https://github.com/snoyer/ocpsvg.git
+        cd ocpsvg
+        git checkout -b $ocpsvg_min
         # Patch to allow cadquery_ocp v7.9
         if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
-          sed -i.bak 's/"cadquery-ocp >= 7\.8, < 7\.9",/"cadquery-ocp-novtk >= 7.9, < 8.0",/' pyproject.toml
+          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp-novtk >= 7.9, < 8.0\",/' pyproject.toml
         else
-          sed -i.bak 's/"cadquery-ocp >= 7\.8, < 7\.9",/"cadquery-ocp >= 7.9, < 8.0",/' pyproject.toml
+          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp >= 7.9, < 8.0\",/' pyproject.toml
         fi
+        uv pip install .
+        cd ..
 
-        # install build123d without ocp_svg dependency (since it is already installed)
-        pip install .
+        git clone https://github.com/gongfan99/ocp_gordon.git
+        cd ocp_gordon
+        git checkout -b v$ocp_gordon_min
+        # Patch to allow cadquery_ocp v7.9
+        if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
+          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp-novtk >= 7.9, < 8.0\",/' pyproject.toml
+        else
+          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp >= 7.9, < 8.0\",/' pyproject.toml
+        fi
+        uv pip install .
+        cd ..
+
+        cd build123d
+        # Patch to allow cadquery_ocp v7.9
+        if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
+          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp-novtk >= 7.9, < 8.0\",/' pyproject.toml
+        else
+          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp >= 7.9, < 8.0\",/' pyproject.toml
+        fi
+        uv pip install .
+        cd ..
+
+        uv pip install list
 
         # 7.9.1. COMPATIBILITY ISSUE
         sed -i.bak '/def test_export_step_timestamp_datetime/i\    @pytest.mark.skip()' tests/test_exporters3d.py
@@ -162,11 +147,7 @@ runs:
         # Patch to allow cadquery_ocp v7.9
         sed -i.bak 's/"cadquery-ocp>=7\.8\.1,<7\.9",/"cadquery-ocp>=7.9,< 8.0",/' setup.py
 
-        # if [[ "${{ inputs.python-version }}" == "3.13" ]]; then
-        #   patch -p1 < ../patches/cadquery.patch
-        # fi
-
-        micromamba activate test
+        uv pip install .
 
         # 7.9.1. COMPATIBILITY ISSUE
         sed -i.bak '/^from pytest import /s/$/, mark/' tests/test_free_functions.py
@@ -177,14 +158,9 @@ runs:
         # fi
 
         # workaround for pypi opt and casadi throwing a seg fault on exit 
-        if [[ "$RUNNER_OS" == "Windows" ]]; then
-          micromamba install -y nlopt casadi
-        fi
-
-        CONDA_PREFIX_BAK=$CONDA_PREFIX
-        unset CONDA_PREFIX
-        pip install .
-        CONDA_PREFIX=$CONDA_PREFIX_BAK
+        # if [[ "$RUNNER_OS" == "Windows" ]]; then
+        #   micromamba install -y nlopt casadi
+        # fi
 
         pytest tests -v -W ignore
 
