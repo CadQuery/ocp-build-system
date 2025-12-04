@@ -33,6 +33,16 @@ runs:
         sudo apt-get update -qq  
         sudo DEBIAN_FRONTEND=noninteractive apt-get install -qq ca-certificates > /dev/null 2>&1
 
+    - name: (Mac) Install dependencies
+      if: runner.os == 'macOS'
+      shell: bash -l {0}
+      run: |
+        # (Mac) Install dependencies
+        set -e
+        set -o pipefail
+
+        brew install gsed
+
     # - - -
 
     - name: (All) Patch environment.yml for Python
