@@ -346,18 +346,14 @@ runs:
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           PKG_NAME="cadquery_ocp"
-          sed -i.bak '' '/requires-python/a\
-          dependencies = [ "vtk==${{ env.VTK }}" ]\
-          ' pyproject.toml
-                  else
-                    PKG_NAME="cadquery_ocp_novtk"
-                    sed -i.bak '' 's/cadquery-ocp/cadquery-ocp-novtk/g' pyproject.toml
-                    sed -i.bak '' 's/cadquery_ocp/cadquery_ocp_novtk/g' pyproject.toml
-                    sed -i.bak '' 's/sources\"/sources (no VTK support)"/g' pyproject.toml
-                    sed -i.bak '' 's/cadquery-ocp /cadquery-ocp-novtk /g' README.md # keep spaces
-                    sed -i.bak '' '/Python wrapper for OCCT/a\
-          Note: VTK is not supported with cadquery-ocp-novtk.\
-          ' README.md
+          awk '/requires-python/{print; print "dependencies = [ \"vtk==${{ env.VTK }}\" ]"; next}1' pyproject.toml > pyproject.toml.tmp && mv pyproject.toml.tmp pyproject.toml
+        else
+          PKG_NAME="cadquery_ocp_novtk"
+          sed -i.bak 's/cadquery-ocp/cadquery-ocp-novtk/g' pyproject.toml
+          sed -i.bak 's/cadquery_ocp/cadquery_ocp_novtk/g' pyproject.toml
+          sed -i.bak 's/sources\"/sources (no VTK support)"/g' pyproject.toml
+          sed -i.bak 's/cadquery-ocp /cadquery-ocp-novtk /g' README.md # keep spaces
+          awk '/Python wrapper for OCCT/{print; print "Note: VTK is not supported with cadquery-ocp-novtk."; next}1' README.md > README.md.tmp && mv README.md.tmp README.md
         fi
 
         # PKG_NAME="cadquery_ocp"
