@@ -116,13 +116,12 @@ runs:
           sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp >= 7.9, < 8.0\",/' pyproject.toml
         fi
         uv pip install .
-        cd ..
 
         uv pip list
 
         # 7.9.1. COMPATIBILITY ISSUE
-        sed -i.bak '/def test_export_step_timestamp_datetime/i\    @pytest.mark.skip()' tests/test_exporters3d.py
-        sed -i.bak '/def test_export_step_timestamp_str/i\    @pytest.mark.skip()' tests/test_exporters3d.py
+        awk '/def test_export_step_timestamp_datetime/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/test_exporters3d.py.tmp && mv tests/test_exporters3d.py.tmp tests/test_exporters3d.py
+        awk '/def test_export_step_timestamp_str/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/test_exporters3d.py.tmp && mv tests/test_exporters3d.py.tmp tests/test_exporters3d.py
         # sed -i.bak '/^class ImportSVG(unittest\.TestCase):/a\    __test__ = False' tests/test_importers.py
 
         if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
