@@ -19,9 +19,6 @@ inputs:
   vtk-prefix:
     description: "VTK prefix for library paths"
     required: true
-  sed-i:
-    description: "Sed in-place command for the OS"
-    required: true
   shells:
     description: "Shell configuration for the OS"
     required: true
@@ -71,7 +68,7 @@ runs:
       if: steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
-        ${{ inputs.sed-i }} 's/python=3.13/python=${{ inputs.python-version }}/' environment.yml
+        sed -i.bak 's/python=3.13/python=${{ inputs.python-version }}/' environment.yml
 
     - name: Set up Python ${{ inputs.python-version }} via micromamba
       if: steps.cache-occt-restore.outputs.cache-hit != 'true'
@@ -106,10 +103,6 @@ runs:
         # (Mac, Windows) Install dependencies
         micromamba activate build-ocp
         micromamba install -y fontconfig=2.13.* freetype=2.12.* freeimage=3.18.*
-
-        if [[ "$RUNNER_OS" == "macOS" ]]; then
-          brew install gsed
-        fi
 
     # - - - - - - - - - - - - - - - - - - - - -
     #                VTK SDK
@@ -294,7 +287,7 @@ runs:
 
             # Patch build file to use VTK libraries with "${{ env.VTK_MAJOR }}" suffix
             # for l in vtkCommonCore  vtkRenderingCore  vtkRenderingFreeType  vtkFiltersGeneral  vtkInteractionStyle  vtkRenderingOpenGL2; do
-            #     ${{ inputs.sed-i }} "s/-l$l/-l$l-${{ env.VTK_MAJOR }}/" build/build.ninja
+            #     sed -i.bak "s/-l$l/-l$l-${{ env.VTK_MAJOR }}/" build/build.ninja
             # done
 
         else
@@ -328,10 +321,11 @@ runs:
       shell: cmd
       run: |
         rem (Windows) Compile and install OCCT SDK
-        call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp 
+        call "%MAMBA_ROOT_PREFIX%\condabin\micromamba.bat" activate build-ocp
         cd OCCT
 
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        for /f "usebackq delims=" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do set "VS_PATH=%%i"
+        call "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         set CC=cl.exe
         set CXX=cl.exe
 

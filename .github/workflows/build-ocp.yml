@@ -46,7 +46,6 @@ jobs:
           vtk-libs: "libvtk*.so"
           vtk-suffix: "/vtk-9.5/"
           vtk-prefix: ""
-          sed-i: "sed -i"
           shells: "bash"
 
   sdks-win-mac:
@@ -64,19 +63,16 @@ jobs:
             vtk-libs: ".dylibs/libvtk*.dylib"
             vtk-suffix: "/"
             vtk-prefix: ""
-            sed-i: "gsed -i"
             shells: "bash"
           - os: "macos-13"
             vtk-libs: ".dylibs/libvtk*.dylib"
             vtk-suffix: "/"
             vtk-prefix: ""
-            sed-i: "gsed -i"
             shells: "bash"
           - os: "windows-2022"
             vtk-libs: "vtk*.dll"
             vtk-suffix: "/"
             vtk-prefix: "Library/"
-            sed-i: "sed -i"
             shells: "bash cmd.exe"
     steps:
       - uses: actions/checkout@v4
@@ -91,7 +87,6 @@ jobs:
           vtk-libs: ${{ matrix.vtk-libs }}
           vtk-suffix: ${{ matrix.vtk-suffix }}
           vtk-prefix: ${{ matrix.vtk-prefix }}
-          sed-i: ${{ matrix.sed-i }}
           shells: ${{ matrix.shells }}
 
   # ================================================================================
@@ -113,9 +108,6 @@ jobs:
       matrix:
         os: ["ubuntu-22.04"]
         python-version: ["3.13"]
-        include:
-          - os: "ubuntu-22.04"
-            sed-i: "sed -i"
 
     steps:
       - uses: actions/checkout@v4
@@ -125,7 +117,6 @@ jobs:
         with:
           os: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
-          sed-i: ${{ matrix.sed-i }}
 
   sources-win-mac:
     name: Build OCP source on ${{ matrix.os }}
@@ -136,11 +127,6 @@ jobs:
       matrix:
         os: ["macos-15", "windows-2022"]
         python-version: ["3.13"]
-        include:
-          - os: "macos-15"
-            sed-i: "gsed -i"
-          - os: "windows-2022"
-            sed-i: "sed -i"
 
     steps:
       - uses: actions/checkout@v4
@@ -150,7 +136,6 @@ jobs:
         with:
           os: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
-          sed-i: ${{ matrix.sed-i }}
 
   # ================================================================================
   # Build OCP
@@ -180,13 +165,12 @@ jobs:
           os: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
           use-vtk: ${{ matrix.use-vtk }}
-          sed-i: "sed -i"
           shells: "bash"
           delocate: auditwheel patchelf
           plat: manylinux_2_31_x86_64
           module: "OCP.*.so"
           env: "DUMMY=0"
-          ocp-tag: "ubuntu-22.04"
+          ocp-source-tag: "ubuntu-22.04"
 
   ocp-win-mac:
     name: Build OCP for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
@@ -203,26 +187,23 @@ jobs:
           - os: "macos-15"
             delocate: delocate
             plat: macosx_11_1_arm64
-            sed-i: "gsed -i"
             module: "OCP.*.so"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-            ocp-tag: "macos-15"
+            ocp-source-tag: "macos-15"
           - os: "macos-13"
             delocate: delocate
             plat: macosx_11_1_x86_64
-            sed-i: "gsed -i"
             module: "OCP.*.so"
             env: "MACOSX_DEPLOYMENT_TARGET=11.1"
             shells: "bash"
-            ocp-tag: "macos-15"
+            ocp-source-tag: "macos-15"
           - os: "windows-2022"
             delocate: delvewheel
             plat: win_amd64
-            sed-i: "sed -i"
             shells: "bash cmd.exe"
             module: "OCP.*.pyd"
-            ocp-tag: "windows-2022"
+            ocp-source-tag: "windows-2022"
     steps:
       - uses: actions/checkout@v4
       - name: Build OCP
@@ -232,13 +213,12 @@ jobs:
           os: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
           use-vtk: ${{ matrix.use-vtk }}
-          sed-i: ${{ matrix.sed-i }}
           shells: ${{ matrix.shells }}
           delocate: ${{ matrix.delocate }}
           plat: ${{ matrix.plat }}
           module: ${{ matrix.module }}
           env: ${{ matrix.env }}
-          ocp-tag: ${{ matrix.ocp-tag }}
+          ocp-source-tag: ${{ matrix.ocp-source-tag }}
 
   # ================================================================================
   # Tests
@@ -252,20 +232,10 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-15", "ubuntu-22.04", "windows-2022"]
+        os: ["macos-13", "macos-15", "ubuntu-22.04", "ubuntu-22.04-arm", "windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
-
-        include:
-          - os: "macos-13"
-            sed-i: "gsed -i"
-          - os: "macos-15"
-            sed-i: "gsed -i"
-          - os: "windows-2022"
-            sed-i: "sed -i"
-          - os: "ubuntu-22.04"
-            sed-i: "sed -i"
 
     steps:
       - uses: actions/checkout@v4
@@ -275,5 +245,4 @@ jobs:
         with:
           os: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
-          sed-i: ${{ matrix.sed-i }}
           use-vtk: ${{ matrix.use-vtk }}

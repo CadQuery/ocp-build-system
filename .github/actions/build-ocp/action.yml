@@ -10,9 +10,6 @@ inputs:
   use-vtk:
     description: "Whether to use VTK in the build"
     required: true
-  sed-i:
-    description: "Sed in-place command for the OS"
-    required: true
   shells:
     description: "Shell configuration for the OS"
     required: true
@@ -28,7 +25,7 @@ inputs:
   env:
     description: "compile en variables"
     required: true
-  ocp-tag:
+  ocp-source-tag:
     description: "tag for the ocp cache naming"
     required: true
 
@@ -54,24 +51,14 @@ runs:
           mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
           libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential \
           ca-certificates curl unzip  > /dev/null 2>&1
-        
-    
-    - name: (Mac) Install dependencies
-      if: runner.os == 'macOS'
-      shell: bash -l {0}
-      run: |
-        # (Mac) Install dependencies
-        set -e
-        set -o pipefail
 
-        brew install gsed
+    # - - -
 
-    
     - name: (All) Patch environment.yml for Python
       if: steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
-        ${{ inputs.sed-i }} 's/python=3.13/python=${{ inputs.python-version }}/' environment.yml
+        sed -i.bak 's/python=3.13/python=${{ inputs.python-version }}/' environment.yml
         cat environment.yml
 
     # - - - - - - - - - - - - - - - - - - - - -
@@ -146,7 +133,7 @@ runs:
       uses: actions/cache/restore@v4
       with:
         path: ${{ github.workspace }}/OCP
-        key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.ocp-tag }}-
+        key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.ocp-source-tag }}
    
     
     - name: Patch vtk out of OCP
@@ -166,9 +153,9 @@ runs:
 
         cd OCP
         echo "Patch VTK out of CMakeLists.txt"
-        ${{ inputs.sed-i }} '/find_package( VTK/,/)/d' CMakeLists.txt
-        ${{ inputs.sed-i }} '/VTK::/d' CMakeLists.txt
-        ${{ inputs.sed-i }} '/message(STATUS "VTK .* found")/d' CMakeLists.txt
+        sed -i.bak '/find_package( VTK/,/)/d' CMakeLists.txt
+        sed -i.bak '/VTK::/d' CMakeLists.txt
+        sed -i.bak '/message(STATUS "VTK .* found")/d' CMakeLists.txt
         cd ..
 
         echo "Patch VTK out of OCP/OCP.cpp"
@@ -176,7 +163,7 @@ runs:
 
         rm OCP/IVtk*
         for module in IVtk IVtkOCC IVtkTools IVtkVTK; do
-          ${{ inputs.sed-i }} '/register_IVtk/d' OCP/OCP.cpp
+          sed -i.bak '/register_IVtk/d' OCP/OCP.cpp
         done
 
 
@@ -231,7 +218,7 @@ runs:
                    libvtkRenderingCore  libvtkRenderingFreeType  libvtkFiltersGeneral \
                    libvtkInteractionStyle  libvtkRenderingOpenGL2 \
                    libvtkWrappingPythonCore${{ inputs.python-version }}; do
-              ${{ inputs.sed-i }} "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
+              sed -i.bak "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
           done
         fi
 
@@ -274,7 +261,7 @@ runs:
                    libvtkRenderingCore  libvtkRenderingFreeType  libvtkFiltersGeneral \
                    libvtkInteractionStyle  libvtkRenderingOpenGL2 \
                    libvtkWrappingPythonCore${{ inputs.python-version }}; do
-              ${{ inputs.sed-i }} "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
+              sed -i.bak "s/$l-${{ env.VTK_MAJOR }}/$l/" build/build.ninja
           done
         fi
 
@@ -296,8 +283,9 @@ runs:
       shell: cmd
       run: |
         rem (Windows) Generate OCP build files and build OCP
-        call C:\Users\runneradmin\micromamba\condabin\micromamba.bat activate build-ocp
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        call "%MAMBA_ROOT_PREFIX%\condabin\micromamba.bat" activate build-ocp
+        for /f "usebackq delims=" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do set "VS_PATH=%%i"
+        call "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
 
         PATH="C:\Program Files\Git\usr\bin";%PATH%
 
@@ -334,7 +322,7 @@ runs:
     - name: Debug Upload module
       uses: actions/upload-artifact@v4
       with:
-        name: debug_module_${{ inputs.os }}-$${{ inputs.use-vtk }}-py_${{ inputs.python-version }}
+        name: debug_module_${{ inputs.os }}-${{ inputs.use-vtk }}-py_${{ inputs.python-version }}
         path: ./OCP/build/${{ inputs.module }}
 
     # ================================================================================
@@ -353,25 +341,25 @@ runs:
         pip install build wheel ${{ inputs.delocate }}
 
         cd pypi
-        ${{ inputs.sed-i }} 's/X\.X\.X\.X/${{ env.WHEEL }}/g' pyproject.toml
+        sed -i.bak 's/X\.X\.X\.X/${{ env.WHEEL }}/g' pyproject.toml
         cp ../OCP/build/${{ inputs.module }} .
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           PKG_NAME="cadquery_ocp"
           # if [[ ${{ inputs.python-version }} == 3.13 ]]; then
-          #   ${{ inputs.sed-i }} '/requires-python/a\dependencies = [ "cadquery_vtk==${{ env.VTK }}" ]' pyproject.toml
+          #   sed -i.bak '/requires-python/a\dependencies = [ "cadquery_vtk==${{ env.VTK }}" ]' pyproject.toml
           # else
-          #   ${{ inputs.sed-i }} '/requires-python/a\dependencies = [ "vtk==${{ env.VTK }}" ]' pyproject.toml
+          #   sed -i.bak '/requires-python/a\dependencies = [ "vtk==${{ env.VTK }}" ]' pyproject.toml
           # fi
 
-          ${{ inputs.sed-i }} '/requires-python/a\dependencies = [ "vtk==${{ env.VTK }}" ]' pyproject.toml
+          sed -i.bak '/requires-python/a\dependencies = [ "vtk==${{ env.VTK }}" ]' pyproject.toml
         else
           PKG_NAME="cadquery_ocp_novtk"
-          ${{ inputs.sed-i }} 's/cadquery-ocp/cadquery-ocp-novtk/g' pyproject.toml
-          ${{ inputs.sed-i }} 's/cadquery_ocp/cadquery_ocp_novtk/g' pyproject.toml
-          ${{ inputs.sed-i }} 's/sources\"/sources (no VTK support)"/g' pyproject.toml
-          ${{ inputs.sed-i }} 's/cadquery-ocp /cadquery-ocp-novtk /g' README.md # keep spaces
-          ${{ inputs.sed-i }} '/Python wrapper for OCCT/a\Note: VTK is not supported with cadquery-ocp-novtk.' README.md
+          sed -i.bak 's/cadquery-ocp/cadquery-ocp-novtk/g' pyproject.toml
+          sed -i.bak 's/cadquery_ocp/cadquery_ocp_novtk/g' pyproject.toml
+          sed -i.bak 's/sources\"/sources (no VTK support)"/g' pyproject.toml
+          sed -i.bak 's/cadquery-ocp /cadquery-ocp-novtk /g' README.md # keep spaces
+          sed -i.bak '/Python wrapper for OCCT/a\Note: VTK is not supported with cadquery-ocp-novtk.' README.md
         fi
 
         # PKG_NAME="cadquery_ocp"
@@ -421,7 +409,7 @@ runs:
         cd work
         python -m wheel unpack ../dist/${PKG_NAME}*.whl
         cd ${PKG_NAME}*
-        ${{ inputs.sed-i }} "s/Root-Is-Purelib: true/Root-Is-Purelib: false/" ${PKG_NAME}*/WHEEL
+        sed -i.bak "s/Root-Is-Purelib: true/Root-Is-Purelib: false/" ${PKG_NAME}*/WHEEL
         cd ..
         python -m wheel pack ${PKG_NAME}*
         rm ../dist/${PKG_NAME}*.whl

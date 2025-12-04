@@ -7,10 +7,6 @@ inputs:
   python-version:
     description: "Python version to use for the build"
     required: true
-  sed-i:
-    description: "Sed in-place command for the OS"
-    required: true
-
 runs:
   using: "composite"
   steps:
@@ -23,7 +19,7 @@ runs:
       uses: actions/cache/restore@v4
       with:
         path: ${{ github.workspace }}/OCP
-        key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.os }}-
+        key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.os }}
 
     # - - -
 
@@ -43,11 +39,11 @@ runs:
 
     # - - -
 
-    - name: (Linux) Install gl headers [PYWRAP=true]
+    - name: (Linux) Install minimal dependencies [PYWRAP=false]
       if: env.PYWRAP == 'false' && runner.os == 'Linux'
       shell: bash -l {0}
       run: |
-        # (Linux) Install curl [PYWRAP=true]
+        # (Linux) Install minimal dependencies [PYWRAP=false]
         set -e
         set -u
         set -o pipefail
@@ -80,26 +76,6 @@ runs:
         echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
         echo "=> Using $cpu_count CPUs"
         
-    # - - -
-
-    - name: (Mac) Install MacOS SDK [PYWRAP=true]
-      if: env.PYWRAP == 'true' && runner.os == 'macOS' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
-      shell: bash -l {0}
-      run: |
-        # (Mac) Install MacOS SDK [PYWRAP=true]
-        set -e
-        set -u
-        set -o pipefail
-
-        curl -L -O https://github.com/phracker/MacOSX-SDKs/releases/download/11.3/MacOSX11.3.sdk.tar.xz
-        sudo tar -xf MacOSX11.3.sdk.tar.xz -C /opt
-        sudo mkdir -p /opt/usr/local/
-        sudo mkdir -p /usr/local/include
-        sudo ln -s /opt/MacOSX11.3.sdk/usr/include /opt/usr/local/include
-        sudo ln -s /opt/MacOSX11.3.sdk/System/Library/Frameworks/OpenGL.framework/Headers /usr/local/include/OpenGL
-        
-        brew install gsed
-
     # - - - - - - - - - - - - - - - - - - - - -
     # Option 1: Build OCP sources using pywrap
     # (env.PYWRAP=true)
@@ -123,7 +99,7 @@ runs:
         git submodule update --init
 
         # TODO: remove if fixed
-        ${{ inputs.sed-i }} 's/"7.9.0.0"/"${{ env.OCP }}"/' ocp.toml
+        sed -i.bak 's/"7.9.0.0"/"${{ env.OCP }}"/' ocp.toml
 
     # - - -
 

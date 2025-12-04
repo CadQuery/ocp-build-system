@@ -10,9 +10,6 @@ inputs:
   shells:
     description: "Shell configuration for the OS"
     required: true
-  github-token:
-    required: true
-    description: 'GitHub Token'
 
 runs:
   using: "composite"
@@ -33,24 +30,12 @@ runs:
 
     # - - -
 
-    - name: Install MacOS Dependencies (x86_64 / arm64)
-      if: runner.os == 'macOS'
-      shell: bash -leo pipefail {0}
-      run: |
-        # Install MacOS Dependencies (x86_64 / arm64)
-
-        brew install gsed
-        # ensure gnu sed is in PATH before system (BSD) sed
-        sudo ln -s "$(brew --prefix gnu-sed)/libexec/gnubin/sed" /usr/local/bin/sed
-
-    # - - -
-    
     - name: Prepare environment.yml
       shell: bash -leo pipefail {0}
       run: |
         # Install Linux Dependencies (x86_64)
 
-        sed -i 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
+        sed -i.bak 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
 
         cat environment-ocpaddons.yml
 
@@ -71,8 +56,6 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-novtk
-        run-id: ${{ env.SDK_RUNID }}
-        github-token: ${{ inputs.github-token }}
 
     # - - -
 
@@ -99,9 +82,10 @@ runs:
       env:
         OCCT_SDK: ${{ github.workspace }}\occt-${{ env.OCCT }}-novtk      
       run: |
-        rem Clone ocp-addons and build wheel 
-        
-        call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
+        rem Clone ocp-addons and build wheel
+
+        for /f "usebackq delims=" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath`) do set "VS_PATH=%%i"
+        call "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat"
         set CC=cl.exe
         set CXX=cl.exe
 

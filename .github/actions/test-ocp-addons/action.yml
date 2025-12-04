@@ -7,10 +7,7 @@ inputs:
   python-version:
     description: "Python version to use for the build"
     required: true
-  github-token:
-    required: true
-    description: 'GitHub Token'
-    
+
 runs:
   using: "composite"
   steps:
@@ -29,24 +26,12 @@ runs:
     
     # - - -
 
-    - name: Install MacOS Dependencies (x86_64 / arm64)
-      if: runner.os == 'macOS'
-      shell: bash -leo pipefail {0}
-      run: |
-        # Install MacOS Dependencies (x86_64 / arm64)
-        
-        brew install gsed
-        # ensure gnu sed is in PATH before system (BSD) sed
-        sudo ln -s "$(brew --prefix gnu-sed)/libexec/gnubin/sed" /usr/local/bin/sed
-        
-    # - - -
-    
     - name: Prepare environment.yml
       shell: bash -leo pipefail {0}
       run: |
         # Install Linux Dependencies (x86_64)
         
-        sed -i 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
+        sed -i.bak 's/__PY_VERSION__/${{ inputs.python-version }}/' environment-ocpaddons.yml
 
         cat environment-ocpaddons.yml
 
@@ -68,8 +53,6 @@ runs:
       uses: actions/download-artifact@v4
       with:
         name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
-        run-id: ${{ env.SDK_RUNID }}
-        github-token: ${{ inputs.github-token }}
 
 
     # - - -
@@ -94,14 +77,14 @@ runs:
 
         git clone https://github.com/snoyer/ocpsvg.git
         cd ocpsvg
-        sed -i 's/cadquery-ocp >= 7\.8\.1, < 7\.9\.0/cadquery-ocp >= 7.8, < 8.0/g' pyproject.toml
+        sed -i.bak 's/cadquery-ocp >= 7\.8\.1, < 7\.9\.0/cadquery-ocp >= 7.8, < 8.0/g' pyproject.toml
         pip install .
         cd ..
 
         git clone https://github.com/gumyr/build123d.git
         cd build123d 
         git checkout 1af4b0c3129dd152a1c9cb01400c1e648a5de8e2  # pre Gordon face to avoid 7.9. issues
-        sed -i 's/cadquery-ocp >= 7\.8, < 7\.9/cadquery-ocp >= 7.8, < 8.0/g' pyproject.toml
+        sed -i.bak 's/cadquery-ocp >= 7\.8, < 7\.9/cadquery-ocp >= 7.8, < 8.0/g' pyproject.toml
         pip install .
         cd ..
 
