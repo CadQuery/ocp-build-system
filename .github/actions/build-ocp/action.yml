@@ -348,11 +348,11 @@ runs:
         path: ${{ github.workspace }}/OCP/build/${{ inputs.module }}
         key: ${{ steps.cache-ocp-restore.outputs.cache-primary-key }}
 
-    # - name: Debug Upload module
-    #   uses: actions/upload-artifact@v4
-    #   with:
-    #     name: debug_module_${{ inputs.os }}-py_${{ inputs.python-version }}
-    #     path: ./OCP/build/${{ inputs.module }}
+    - name: Debug Upload module
+      uses: actions/upload-artifact@v4
+      with:
+        name: debug_module_${{ inputs.os }}-py_${{ inputs.python-version }}
+        path: ./OCP/build/${{ inputs.module }}
 
     # ================================================================================
     #               OCP wheel
