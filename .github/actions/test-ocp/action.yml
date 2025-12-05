@@ -22,7 +22,7 @@ runs:
       uses: astral-sh/setup-uv@v7
       with:
         python-version: ${{ matrix.python-version }}
-        enable-cache: true
+        enable-cache: false
         # Create & activate a venv for you
         activate-environment: true
 

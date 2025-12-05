@@ -47,7 +47,7 @@ runs:
         environment-file: environment-ocpaddons.yml
         log-level: warning
         init-shell: ${{ inputs.shells }}
-        cache-environment: true
+        cache-environment: false
         cache-environment-key: environment-ocpaddons-${{ inputs.python-version }}-${{ inputs.os }}-novtk
 
     # - - -

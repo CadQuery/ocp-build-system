@@ -72,8 +72,8 @@ runs:
         environment-file: environment.yml
         log-level: warning
         init-shell: ${{ inputs.shells }}
-        cache-downloads: true
-        cache-environment: true
+        cache-downloads: false
+        cache-environment: false
         cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-${{ inputs.use-vtk }}
 
     
