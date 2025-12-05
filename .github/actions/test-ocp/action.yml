@@ -21,7 +21,6 @@ runs:
     - name: Install uv
       uses: astral-sh/setup-uv@v7
       with:
-        version: "0.5.10"
         python-version: ${{ matrix.python-version }}
         enable-cache: true
         # Create & activate a venv for you
