@@ -54,21 +54,22 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-15", "windows-2022"]
+        # os: ["macos-13", "macos-15", "windows-2022"]
+        os: ["windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
         include:
-          - os: "macos-15"
-            vtk-libs: ".dylibs/libvtk*.dylib"
-            vtk-suffix: "/"
-            vtk-prefix: ""
-            shells: "bash"
-          - os: "macos-13"
-            vtk-libs: ".dylibs/libvtk*.dylib"
-            vtk-suffix: "/"
-            vtk-prefix: ""
-            shells: "bash"
+          # - os: "macos-15"
+          #   vtk-libs: ".dylibs/libvtk*.dylib"
+          #   vtk-suffix: "/"
+          #   vtk-prefix: ""
+          #   shells: "bash"
+          # - os: "macos-13"
+          #   vtk-libs: ".dylibs/libvtk*.dylib"
+          #   vtk-suffix: "/"
+          #   vtk-prefix: ""
+          #   shells: "bash"
           - os: "windows-2022"
             vtk-libs: "vtk*.dll"
             vtk-suffix: "/"
@@ -179,25 +180,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-15", "windows-2022"]
+        # os: ["macos-13", "macos-15", "windows-2022"]
+        os: ["windows-2022"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
         include:
-          - os: "macos-15"
-            delocate: delocate
-            plat: macosx_11_1_arm64
-            module: "OCP.*.so"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-            ocp-source-tag: "macos-15"
-          - os: "macos-13"
-            delocate: delocate
-            plat: macosx_11_1_x86_64
-            module: "OCP.*.so"
-            env: "MACOSX_DEPLOYMENT_TARGET=11.1"
-            shells: "bash"
-            ocp-source-tag: "macos-15"
+          # - os: "macos-15"
+          #   delocate: delocate
+          #   plat: macosx_11_1_arm64
+          #   module: "OCP.*.so"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          #   ocp-source-tag: "macos-15"
+          # - os: "macos-13"
+          #   delocate: delocate
+          #   plat: macosx_11_1_x86_64
+          #   module: "OCP.*.so"
+          #   env: "MACOSX_DEPLOYMENT_TARGET=11.1"
+          #   shells: "bash"
+          #   ocp-source-tag: "macos-15"
           - os: "windows-2022"
             delocate: delvewheel
             plat: win_amd64
@@ -232,7 +234,13 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["macos-13", "macos-15", "ubuntu-22.04", "ubuntu-22.04-arm", "windows-2022"]
+        os: [
+            # "macos-13",
+            # "macos-15",
+            "ubuntu-22.04",
+            "ubuntu-22.04-arm",
+            "windows-2022",
+          ]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
