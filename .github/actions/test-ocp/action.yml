@@ -171,14 +171,14 @@ runs:
         # 7.9. COMPATIBILITY ISSUE
         sed -i.bak '/^from pytest import /s/$/, mark/' tests/test_free_functions.py
         sed -i.bak '/def test_cap/i @mark.skip()' tests/test_free_functions.py
-        # workaround for nlopt 2.9.0 not available for Intel Mac
-        # if [[ "${{ inputs.os }}" == "macos-13" ]]; then
-        #   micromamba install -y nlopt=2.9
-        # fi
-
-        # workaround for pypi opt and casadi throwing a seg fault on exit 
-        # if [[ "$RUNNER_OS" == "Windows" ]]; then
-        #   micromamba install -y nlopt casadi
-        # fi
-
-        pytest tests -v -W ignore
+        
+        # Workaround for casadi/nlopt atexit segfault on Windows
+        # Capture output and check if tests passed (no failures), ignore crash on cleanup
+        pytest tests -v -W ignore 2>&1 | tee pytest_output.txt; exit_code=${PIPESTATUS[0]}
+        if [[ $exit_code -ne 0 ]]; then
+          if grep -qE "^=+ .* passed" pytest_output.txt && ! grep -qE " failed" pytest_output.txt; then
+            echo "Tests passed but pytest crashed on exit (code $exit_code) - ignoring"
+          else
+            exit $exit_code
+          fi
+        fi
