@@ -31,9 +31,12 @@ jobs:
       matrix:
         # os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
         os: ["ubuntu-22.04"]
-        # python-version: ["3.10", "3.11", "3.12", "3.13"]
-        python-version: ["3.13"]
+        # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
+        exclude:
+          - python-version: "3.14"
+            use-vtk: "vtk"
         include:
           - os: "ubuntu-22.04"
             runner: ubuntu-latest
@@ -61,9 +64,12 @@ jobs:
       fail-fast: false
       matrix:
         os: ["macos-13", "macos-15", "windows-2022"]
-        # python-version: ["3.10", "3.11", "3.12", "3.13"]
-        python-version: ["3.13"]
+        # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
+        exclude:
+          - python-version: "3.14"
+            use-vtk: "vtk"
         include:
           - os: "macos-15"
             vtk-libs: ".dylibs/libvtk*.dylib"
@@ -155,7 +161,7 @@ jobs:
       fail-fast: false
       matrix:
         # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-        python-version: ["3.13"]
+        python-version: ["3.13", "3.14"]
     steps:
       - uses: actions/checkout@v4
 
@@ -200,9 +206,12 @@ jobs:
       matrix:
         # os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
         os: ["ubuntu-22.04"]
-        # python-version: ["3.10", "3.11", "3.12", "3.13"]
-        python-version: ["3.13"]
+        # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
+        exclude:
+          - python-version: "3.14"
+            use-vtk: "vtk"
         include:
           - os: "ubuntu-22.04"
             runner: ubuntu-latest
@@ -235,9 +244,12 @@ jobs:
       fail-fast: false
       matrix:
         os: ["macos-13", "macos-15", "windows-2022"]
-        # python-version: ["3.10", "3.11", "3.12", "3.13"]
-        python-version: ["3.13"]
+        # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
+        exclude:
+          - python-version: "3.14"
+            use-vtk: "vtk"
         include:
           - os: "macos-15"
             delocate: delocate
@@ -294,9 +306,12 @@ jobs:
             # "ubuntu-22.04-arm",
             "windows-2022",
           ]
-        # python-version: ["3.10", "3.11", "3.12", "3.13"]
-        python-version: ["3.13"]
+        # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
+        exclude:
+          - python-version: "3.14"
+            use-vtk: "vtk"
         include:
           - os: "macos-13"
             runner: macos-13
