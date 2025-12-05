@@ -346,7 +346,8 @@ runs:
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           PKG_NAME="cadquery_ocp"
-          awk '/requires-python/{print; print "dependencies = [ \"vtk==${{ env.VTK }}\" ]"; next}1' pyproject.toml > pyproject.toml.tmp && mv pyproject.toml.tmp pyproject.toml
+          # Append vtk to existing dependencies array
+          sed -i.bak 's/\(dependencies = \[.*\)\]/\1, "vtk==${{ env.VTK }}"]/' pyproject.toml
         else
           PKG_NAME="cadquery_ocp_novtk"
           sed -i.bak 's/cadquery-ocp/cadquery-ocp-novtk/g' pyproject.toml
