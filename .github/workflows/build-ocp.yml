@@ -26,11 +26,11 @@ jobs:
     container:
       image: ubuntu:20.04
       options: --name ci-ubuntu-20 # needed for manylinux_2_31
+
     strategy:
       fail-fast: false
       matrix:
-        # os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
-        os: ["ubuntu-22.04"]
+        os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
         # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
         python-version: ["3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
@@ -40,8 +40,9 @@ jobs:
         include:
           - os: "ubuntu-22.04"
             runner: ubuntu-latest
-          # - os: "ubuntu-22.04-arm"
-          #   runner: ubuntu-24.04-arm
+          - os: "ubuntu-22.04-arm"
+            runner: ubuntu-24.04-arm
+
     steps:
       - uses: actions/checkout@v4
 
@@ -60,11 +61,18 @@ jobs:
   sdks-win-mac:
     name: Build OCCT SDK for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
         os: ["macos-13", "macos-15", "windows-2022"]
-        # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: [
+        #  "3.10", 
+        #  "3.11", 
+        #  "3.12", 
+          "3.13", 
+          "3.14"
+        ]
         python-version: ["3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
         exclude:
@@ -86,6 +94,7 @@ jobs:
             vtk-suffix: "/"
             vtk-prefix: "Library/"
             shells: "bash cmd.exe"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -160,8 +169,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-        python-version: ["3.13", "3.14"]
+        python-version: [
+        #  "3.10", 
+        #  "3.11", 
+        #  "3.12", 
+          "3.13", 
+          "3.14"
+        ]
+
     steps:
       - uses: actions/checkout@v4
 
@@ -203,10 +218,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
-        os: ["ubuntu-22.04"]
-        # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-        python-version: ["3.13", "3.14"]
+        os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
+        python-version: [
+        #  "3.10", 
+        #  "3.11", 
+        #  "3.12", 
+          "3.13", 
+          "3.14"
+        ]
         use-vtk: ["vtk", "novtk"]
         exclude:
           - python-version: "3.14"
@@ -215,9 +234,9 @@ jobs:
           - os: "ubuntu-22.04"
             runner: ubuntu-latest
             plat: manylinux_2_31_x86_64
-          # - os: "ubuntu-22.04-arm"
-          #   runner: ubuntu-24.04-arm
-          #   plat: manylinux_2_31_aarch64
+          - os: "ubuntu-22.04-arm"
+            runner: ubuntu-24.04-arm
+            plat: manylinux_2_31_aarch64
 
     steps:
       - uses: actions/checkout@v4
@@ -298,15 +317,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [
+        os:
+          [
             "macos-13",
             "macos-15",
             "ubuntu-22.04",
-            # "ubuntu-22.04-arm",
+            "ubuntu-22.04-arm",
             "windows-2022",
           ]
-        # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-        python-version: ["3.13", "3.14"]
+        python-version: [
+        #  "3.10", 
+        #  "3.11", 
+        #  "3.12", 
+          "3.13", 
+          "3.14"
+        ]
         use-vtk: ["vtk", "novtk"]
         exclude:
           - python-version: "3.14"
@@ -318,8 +343,8 @@ jobs:
             runner: macos-15
           - os: "ubuntu-22.04"
             runner: ubuntu-22.04
-          # - os: "ubuntu-22.04-arm"
-          #   runner: ubuntu-24.04-arm
+          - os: "ubuntu-22.04-arm"
+            runner: ubuntu-24.04-arm
           - os: "windows-2022"
             runner: windows-2022
 
