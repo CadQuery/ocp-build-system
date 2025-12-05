@@ -67,7 +67,7 @@ runs:
         set -o pipefail
         
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
-          pip install vtk==${{ env.VTK }}
+          uv pip install vtk==${{ env.VTK }}
         fi
         ls -l
         uv pip install *.whl
