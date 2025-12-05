@@ -173,12 +173,5 @@ runs:
         sed -i.bak '/def test_cap/i @mark.skip()' tests/test_free_functions.py
         
         # Workaround for casadi/nlopt atexit segfault on Windows
-        # Capture output and check if tests passed (no failures), ignore crash on cleanup
-        pytest tests -v -W ignore 2>&1 | tee pytest_output.txt; exit_code=${PIPESTATUS[0]}
-        if [[ $exit_code -ne 0 ]]; then
-          if grep -qE "^=+ .* passed" pytest_output.txt && ! grep -qE " failed" pytest_output.txt; then
-            echo "Tests passed but pytest crashed on exit (code $exit_code) - ignoring"
-          else
-            exit $exit_code
-          fi
-        fi
+        # Use os._exit() to skip cleanup handlers entirely
+        uv run python -c "import sys, os; import pytest; code = pytest.main(['tests', '-v', '-W', 'ignore']); os._exit(code)"
