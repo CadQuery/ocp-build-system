@@ -59,7 +59,7 @@ runs:
 
     # - - -
 
-    - name: Install VTK and OCP wheel
+    - name: Install VTK and OCP wheel (${{ inputs.use-vtk }})
       shell: bash -l {0}
       run: |
         # Install VTK and OCP wheel
@@ -78,7 +78,7 @@ runs:
 
     # - - -
 
-    - name: Run build123d tests
+    - name: Run build123d tests (${{ inputs.use-vtk }})
       shell: bash -l {0}
       run: |
         # Run build123d tests
@@ -150,7 +150,7 @@ runs:
 
     # - - -
 
-    - name: Run cadquery tests
+    - name: Run cadquery tests (${{ inputs.use-vtk }})
       if: inputs.use-vtk == 'vtk'
       shell: bash -l {0}
       run: |

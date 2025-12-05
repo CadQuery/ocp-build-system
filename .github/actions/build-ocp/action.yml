@@ -341,7 +341,7 @@ runs:
         pip install build wheel ${{ inputs.delocate }}
 
         cd pypi
-        sed -i.bak 's/X\.X\.X\.X/${{ env.WHEEL }}/g' pyproject.toml
+        sed -i.bak 's/0\.0\.0\.0/${{ env.WHEEL }}/g' pyproject.toml
         cp ../OCP/build/${{ inputs.module }} .
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
@@ -350,14 +350,14 @@ runs:
           sed -i.bak 's/\(dependencies = \[.*\)\]/\1, "vtk==${{ env.VTK }}"]/' pyproject.toml
         else
           PKG_NAME="cadquery_ocp_novtk"
-          sed -i.bak 's/cadquery-ocp/cadquery-ocp-novtk/g' pyproject.toml
-          sed -i.bak 's/cadquery_ocp/cadquery_ocp_novtk/g' pyproject.toml
-          sed -i.bak 's/sources\"/sources (no VTK support)"/g' pyproject.toml
+          # Use quotes to avoid matching cadquery-ocp-proxy in dependencies
+          sed -i.bak 's/"cadquery-ocp"/"cadquery-ocp-novtk"/g' pyproject.toml
+          sed -i.bak 's/sources"/sources (no VTK support)"/g' pyproject.toml
           sed -i.bak 's/cadquery-ocp /cadquery-ocp-novtk /g' README.md # keep spaces
           awk '/Python wrapper for OCCT/{print; print "Note: VTK is not supported with cadquery-ocp-novtk."; next}1' README.md > README.md.tmp && mv README.md.tmp README.md
         fi
 
-        # PKG_NAME="cadquery_ocp"
+        cat pyproject.toml
 
         mkdir $PKG_NAME
         cd $PKG_NAME
