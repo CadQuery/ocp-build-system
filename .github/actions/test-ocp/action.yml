@@ -52,6 +52,13 @@ runs:
 
     # - - -
 
+    - name: Download cadquery_ocp_proxy wheel
+      uses: actions/download-artifact@v4
+      with:
+        name: cadquery-ocp-proxy-${{ env.WHEEL }}-cp-${{ matrix.python-version }}
+
+    # - - -
+
     - name: Install VTK and OCP wheel
       shell: bash -l {0}
       run: |
@@ -124,7 +131,7 @@ runs:
         echo "=> Installed packages for test"
         uv pip list
 
-        # 7.9.1. COMPATIBILITY ISSUE
+        # 7.9. COMPATIBILITY ISSUE
         awk '/def test_export_step_timestamp_datetime/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/test_exporters3d.py.tmp && mv tests/test_exporters3d.py.tmp tests/test_exporters3d.py
         awk '/def test_export_step_timestamp_str/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/test_exporters3d.py.tmp && mv tests/test_exporters3d.py.tmp tests/test_exporters3d.py
         # sed -i.bak '/^class ImportSVG(unittest\.TestCase):/a\    __test__ = False' tests/test_importers.py
@@ -134,11 +141,11 @@ runs:
           uv run --no-sync pytest tests -v -W ignore \
                  --ignore tests/test_direct_api/test_vtk_poly_data.py \
                  --ignore tests/test_direct_api/test_jupyter.py \
-                 --ignore tests/test_examples.py  # 7.9.1. COMPATIBILITY ISSUE
+                 --ignore tests/test_examples.py  # 7.9. COMPATIBILITY ISSUE
         else
           echo "=> Running vtk tests"
           uv run --no-sync pytest tests -v -W ignore \
-                 --ignore tests/test_examples.py  # 7.9.1. COMPATIBILITY ISSUE
+                 --ignore tests/test_examples.py  # 7.9. COMPATIBILITY ISSUE
         fi
 
     # - - -
@@ -151,6 +158,8 @@ runs:
         set -e
         set -o pipefail
 
+        uv pip install pytest docutils ipython
+
         git clone https://github.com/cadquery/cadquery.git
         cd cadquery
 
@@ -159,7 +168,7 @@ runs:
 
         uv pip install .
 
-        # 7.9.1. COMPATIBILITY ISSUE
+        # 7.9. COMPATIBILITY ISSUE
         sed -i.bak '/^from pytest import /s/$/, mark/' tests/test_free_functions.py
         sed -i.bak '/def test_cap/i @mark.skip()' tests/test_free_functions.py
         # workaround for nlopt 2.9.0 not available for Intel Mac
@@ -173,20 +182,3 @@ runs:
         # fi
 
         pytest tests -v -W ignore
-
-    # - - -
-
-    - name: Uninstall test
-      # if: inputs.python-version != '3.13'
-      shell: bash -l {0}
-      run: |
-        # Uninstall test
-        set -e
-        set -o pipefail
-
-        micromamba activate test
-        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
-           pip uninstall -y cadquery_ocp
-        else
-          pip uninstall -y cadquery_ocp_novtk
-        fi

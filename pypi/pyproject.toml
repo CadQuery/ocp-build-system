@@ -9,6 +9,7 @@ description = "Python wrapper for Open CASCADE Technology 3D geometry library ba
 authors = [{ name = "Bernhard Walter" }]
 requires-python = ">=3.10,<3.15"
 readme = "README.md"
+dependencies = ["cadquery_ocp_proxy==7.9.2.0"]
 
 [tool.setuptools]
 include-package-data = true
