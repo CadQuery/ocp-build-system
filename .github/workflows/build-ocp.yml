@@ -73,7 +73,6 @@ jobs:
           "3.13", 
           "3.14"
         ]
-        python-version: ["3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
         exclude:
           - python-version: "3.14"
