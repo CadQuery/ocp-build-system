@@ -132,8 +132,8 @@ runs:
         uv pip list
 
         # 7.9. COMPATIBILITY ISSUE
-        awk '/def test_export_step_timestamp_datetime/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/test_exporters3d.py.tmp && mv tests/test_exporters3d.py.tmp tests/test_exporters3d.py
-        awk '/def test_export_step_timestamp_str/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/test_exporters3d.py.tmp && mv tests/test_exporters3d.py.tmp tests/test_exporters3d.py
+        awk '/def test_export_step_timestamp_datetime/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/_tmp && mv tests/_tmp tests/test_exporters3d.py
+        awk '/def test_export_step_timestamp_str/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/_tmp && mv tests/_tmp tests/test_exporters3d.py
         # sed -i.bak '/^class ImportSVG(unittest\.TestCase):/a\    __test__ = False' tests/test_importers.py
 
         if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
@@ -170,7 +170,7 @@ runs:
 
         # 7.9. COMPATIBILITY ISSUE
         sed -i.bak '/^from pytest import /s/$/, mark/' tests/test_free_functions.py
-        sed -i.bak '/def test_cap/i @mark.skip()' tests/test_free_functions.py
+        awk '/def test_cap/{print "@mark.skip()"} 1' tests/test_free_functions.py > tests/_tmp && mv tests/_tmp tests/test_free_functions.py
         
         # Workaround for casadi/nlopt atexit segfault on Windows
         # Use os._exit() to skip cleanup handlers entirely

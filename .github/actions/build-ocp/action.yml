@@ -354,7 +354,7 @@ runs:
           sed -i.bak 's/"cadquery-ocp"/"cadquery-ocp-novtk"/g' pyproject.toml
           sed -i.bak 's/sources"/sources (no VTK support)"/g' pyproject.toml
           sed -i.bak 's/cadquery-ocp /cadquery-ocp-novtk /g' README.md # keep spaces
-          awk '/Python wrapper for OCCT/{print; print "Note: VTK is not supported with cadquery-ocp-novtk."; next}1' README.md > README.md.tmp && mv README.md.tmp README.md
+          awk '/Python wrapper for OCCT/{print; print "Note: VTK is not supported with cadquery-ocp-novtk."; next}1' README.md > _tmp && mv _tmp README.md
         fi
 
         cat pyproject.toml
