@@ -127,3 +127,6 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+cadquery_ocp_proxy/proposal2.md
+cadquery_ocp_proxy/dist

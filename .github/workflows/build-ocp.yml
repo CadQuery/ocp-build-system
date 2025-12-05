@@ -22,17 +22,23 @@ jobs:
 
   sdks-ubuntu:
     name: Build OCCT SDK for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     container:
       image: ubuntu:20.04
-      options: --name ci-ubuntu-20 # needed for manylinux_3_31
+      options: --name ci-ubuntu-20 # needed for manylinux_2_31
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
+        # os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
+        os: ["ubuntu-22.04"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
+        include:
+          - os: "ubuntu-22.04"
+            runner: ubuntu-latest
+          # - os: "ubuntu-22.04-arm"
+          #   runner: ubuntu-24.04-arm
     steps:
       - uses: actions/checkout@v4
 
@@ -139,29 +145,72 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
   # ================================================================================
+  # Build OCP proxy
+  # ================================================================================
+
+  ocp-proxy:
+    name: Build OCP proxy for ${{ matrix.python-version }}
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.5.10"
+          python-version: ${{ matrix.python-version }}
+          enable-cache: true
+          # Create & activate a venv for you
+          activate-environment: true
+
+      - name: Build OCP proxy
+        shell: bash -l {0}
+        run: |
+          cd cadquery_ocp_proxy
+          VERSION=$(awk -F'"' '/^version = / {print $2}' pyproject.toml)
+          echo "# Don't edit, will be overwritten during build" > src/cadquery_ocp_proxy/_version.py
+          echo "__version__ = \"$$VERSION\"" >> src/cadquery_ocp_proxy/_version.py
+          uv build
+
+      - name: Upload cadquery_ocp_proxy wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: cadquery-ocp-proxy-${{ env.WHEEL }}-cp-${{ matrix.python-version }}
+          path: cadquery_ocp_proxy/dist/*.whl
+
+  # ================================================================================
   # Build OCP
   # ================================================================================
 
   ocp-ubuntu:
     name: Build OCP for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.runner }}
     container:
       image: ubuntu:20.04
       options: --name ci-ubuntu-20 # needed for manylinux_2_31
-    needs: [sdks-ubuntu, sources-ubuntu]
+    needs: [sdks-ubuntu, sources-ubuntu, ocp-proxy]
 
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
+        # os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
+        os: ["ubuntu-22.04"]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
         include:
           - os: "ubuntu-22.04"
+            runner: ubuntu-latest
             plat: manylinux_2_31_x86_64
-          - os: "ubuntu-22.04-arm"
-            plat: manylinux_2_31_aarch64
+          # - os: "ubuntu-22.04-arm"
+          #   runner: ubuntu-24.04-arm
+          #   plat: manylinux_2_31_aarch64
 
     steps:
       - uses: actions/checkout@v4
@@ -234,7 +283,7 @@ jobs:
 
   tests:
     name: Test OCP on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ${{ matrix.runner }}
     needs: [ocp-ubuntu, ocp-win-mac]
 
     strategy:
@@ -244,12 +293,23 @@ jobs:
             # "macos-13",
             # "macos-15",
             "ubuntu-22.04",
-            "ubuntu-22.04-arm",
+            # "ubuntu-22.04-arm",
             "windows-2022",
           ]
         # python-version: ["3.10", "3.11", "3.12", "3.13"]
         python-version: ["3.13"]
         use-vtk: ["vtk", "novtk"]
+        include:
+          # - os: "macos-13"
+          #   runner: macos-13
+          # - os: "macos-15"
+          #   runner: macos-15
+          - os: "ubuntu-22.04"
+            runner: ubuntu-22.04
+          # - os: "ubuntu-22.04-arm"
+          #   runner: ubuntu-24.04-arm
+          - os: "windows-2022"
+            runner: windows-2022
 
     steps:
       - uses: actions/checkout@v4

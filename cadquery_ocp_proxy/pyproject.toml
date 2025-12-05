@@ -1,0 +1,12 @@
+[project]
+name = "cadquery-ocp-proxy"
+version = "7.9.2.0"
+description = "Proxy package to track cadquery_ocp / cadquery_ocp_novtk version"
+readme = "README.md"
+authors = [{ name = "Bernhard", email = "b_walter@arcor.de" }]
+requires-python = ">=3.10"
+dependencies = []
+
+[build-system]
+requires = ["uv_build>=0.9.7,<0.10.0"]
+build-backend = "uv_build"
