@@ -78,7 +78,7 @@ runs:
         set -e
         set -o pipefail
 
-        uv pip install packaging
+        uv pip install packaging pytest
 
         git clone https://github.com/gumyr/build123d.git
         ocpsvg_min=$(uv run python get-min-version.py build123d/pyproject.toml ocpsvg)
