@@ -158,7 +158,7 @@ runs:
         set -e
         set -o pipefail
 
-        uv pip install pytest docutils ipython
+        uv pip install "pytest<8.3.4" docutils ipython  # pin pytest to avoid atexit segfault on Windows
 
         git clone https://github.com/cadquery/cadquery.git
         cd cadquery
