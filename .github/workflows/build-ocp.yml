@@ -266,8 +266,13 @@ jobs:
       fail-fast: false
       matrix:
         os: ["macos-13", "macos-15", "windows-2022"]
-        # python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
-        python-version: ["3.13", "3.14"]
+        python-version: [
+        #  "3.10", 
+        #  "3.11", 
+          "3.12", 
+          "3.13", 
+          "3.14"
+        ]
         use-vtk: ["vtk", "novtk"]
         exclude:
           - python-version: "3.14"
@@ -314,7 +319,7 @@ jobs:
   # ================================================================================
 
   tests:
-    name: Test OCP on ${{ matrix.os }}
+    name: Test OCP on ${{ matrix.os }} for Python ${{ matrix.python-version }} with ${{ matrix.use-vtk }}
     runs-on: ${{ matrix.runner }}
     needs: [ocp-ubuntu, ocp-win-mac]
 
