@@ -199,7 +199,13 @@ runs:
           VTK_DIR=""
         fi
 
-        echo "Building OCP with VTK_DIR=$VTK_DIR"
+        if [[ "$(uname -m)" == "aarch64" ]]; then
+          CXX11_ABI=1  # ARM VTK uses new C++11 ABI
+        else
+          CXX11_ABI=0  # x86_64 VTK uses old ABI
+        fi
+
+        echo "Building OCP with VTK_DIR=$VTK_DIR, CXX11_ABI=$CXX11_ABI"
 
         cmake -B build -S OCP -G Ninja \
         -D CMAKE_BUILD_TYPE=Release \
@@ -209,7 +215,7 @@ runs:
             -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib/cmake/opencascade \
             -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
             -D CMAKE_CXX_STANDARD=17 \
-            -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -isystem $CONDA_PREFIX/include/python${{ inputs.python-version }} -D_GLIBCXX_USE_CXX11_ABI=0 -fvisibility=hidden -w" \
+            -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -isystem $CONDA_PREFIX/include/python${{ inputs.python-version }} -D_GLIBCXX_USE_CXX11_ABI=$CXX11_ABI -fvisibility=hidden -w" \
             -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
             -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
 
