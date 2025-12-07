@@ -55,7 +55,6 @@ runs:
     # - - -
 
     - name: (All) Patch environment.yml for Python
-      if: steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
         sed -i.bak 's/python=3.13/python=${{ inputs.python-version }}/' environment.yml
@@ -123,19 +122,19 @@ runs:
           ~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}
         key: OCCT-${{ env.OCCT }}-py-${{ inputs.python-version }}-${{ inputs.use-vtk }}-${{ inputs.os }}-
 
-    # - - - 
-    # Restore sources (supporting vtk - will be patched later for novtk)
-    # - - - 
+    # - - - - - - - - - - - - - - - - - - - - -
+    #  Build OCP
+    # - - - - - - - - - - - - - - - - - - - - -
 
-    
-    - name: Restore OCP source cache
-      id: cache-ocp-source-restore
+
+    - name: Restore OCP module cache
+      id: cache-ocp-restore
       uses: actions/cache/restore@v4
       with:
-        path: ${{ github.workspace }}/OCP
-        key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.ocp-source-tag }}
-   
-    
+        path: ${{ github.workspace }}/OCP/build/${{ inputs.module }}
+        key: OCP-${{ env.OCP }}-VTK-${{ inputs.use-vtk }}-py${{ inputs.python-version }}-${{ inputs.os }}-
+
+
     - name: Patch vtk out of OCP
       if: inputs.use-vtk == 'novtk' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
@@ -146,7 +145,7 @@ runs:
         set -o pipefail
 
         cd OCP
-        
+
         if [ -f new ]; then
           mv new/OCP .  # in case of PYWRAP==true
         fi
@@ -165,19 +164,6 @@ runs:
         for module in IVtk IVtkOCC IVtkTools IVtkVTK; do
           sed -i.bak '/register_IVtk/d' OCP/OCP.cpp
         done
-
-
-    # - - - - - - - - - - - - - - - - - - - - -
-    #  Build OCP
-    # - - - - - - - - - - - - - - - - - - - - -
-
-    
-    - name: Restore OCP module cache
-      id: cache-ocp-restore
-      uses: actions/cache/restore@v4
-      with:
-        path: ${{ github.workspace }}/OCP/build/${{ inputs.module }}
-        key: OCP-${{ env.OCP }}-VTK-${{ inputs.use-vtk }}-py${{ inputs.python-version }}-${{ inputs.os }}-
 
     
     - name: (Linux) Generate OCP build files and build OCP
