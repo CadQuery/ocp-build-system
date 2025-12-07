@@ -422,8 +422,8 @@ runs:
 
     # - - -
 
-    - name: Upload SDK
-      uses: actions/upload-artifact@v4
-      with:
-        name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
-        path: ~/opt/local
+    # - name: Upload SDK
+    #   uses: actions/upload-artifact@v4
+    #   with:
+    #     name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
+    #     path: ~/opt/local
