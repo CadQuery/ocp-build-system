@@ -1,6 +1,6 @@
 # vtk-config.cmake
 
-# Set VTK version
+# Set VTK version (automatically patched by build-sdks action)
 set(VTK_MAJOR_VERSION 9)
 set(VTK_MINOR_VERSION 5)
 set(VTK_BUILD_VERSION 2)
@@ -15,15 +15,19 @@ else()
   set(HOME_DIR "$ENV{HOME}")
 endif()
 
-set(VTK_INCLUDE_DIRS "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/include")
+set(VTK_INCLUDE_DIRS "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/include/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
 set(VTK_LIBRARY_DIRS "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/lib")
+set(VTK_DLL_DIRS "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/bin")
+
+set(VTK_INCLUDE_DIR "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/include/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
+set(VTK_LIBRARY_DIR "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/lib")
+set(VTK_DLL_DIR "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/bin")
 
 # Find Python interpreter and get version
 find_package(Python3 REQUIRED COMPONENTS Interpreter)
 set(PYTHON_VERSION "${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}")
 
 set(SUFFIX "-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
-
 
 # Define the components
 set(VTK_MODULES_ENABLED
@@ -83,8 +87,8 @@ set(VTK_MODULES_ENABLED
     gl2ps
     glew
     h5part
-    hdf5
     hdf5_hl
+    hdf5
     ImagingColor
     ImagingCore
     ImagingFourier
@@ -160,9 +164,6 @@ set(VTK_MODULES_ENABLED
     lz4
     lzma
     m_cont
-    m_cont_testing
-    mdiympi_nompi.so
-    metaio
     m_filter_clean_grid
     m_filter_connected_components
     m_filter_contour
@@ -171,18 +172,13 @@ set(VTK_MODULES_ENABLED
     m_filter_entity_extraction
     m_filter_field_conversion
     m_filter_field_transform
-    m_filter_flow
     m_filter_geometry_refinement
-    m_filter_image_processing
     m_filter_mesh_info
-    m_filter_multi_block
     m_filter_resampling
-    m_filter_scalar_topology
     m_filter_vector_analysis
-    m_filter_zfp
-    m_io
-    m_source
     m_worklet
+    mdiympi_nompi
+    metaio
     netcdf
     ogg
     ParallelCore
@@ -216,13 +212,9 @@ set(VTK_MODULES_ENABLED
     RenderingVtkJS
     sqlite
     sys
-    TestingDataModel
-    TestingGenericBridge
-    TestingIOSQL
     TestingRendering
     theora
     tiff
-    UtilitiesBenchmarks
     verdict
     ViewsContext2D
     ViewsCore
@@ -231,9 +223,7 @@ set(VTK_MODULES_ENABLED
     WebCore
     WebGLExporter
     WrappingPythonCore
-    WrappingTools
     xdmf2
-    zfp
     zlib
 )
 
@@ -242,16 +232,18 @@ foreach(module ${VTK_MODULES_ENABLED})
     if(NOT TARGET VTK::${module})
         add_library(VTK::${module} SHARED IMPORTED)
         if(${module} STREQUAL "WrappingPythonCore")
-            set_target_properties(VTK::${module} PROPERTIES
-                IMPORTED_LOCATION "${VTK_LIBRARY_DIRS}/libvtkWrappingPythonCore${PYTHON_VERSION}${SUFFIX}.dylib"
-                INTERFACE_INCLUDE_DIRECTORIES "${VTK_INCLUDE_DIRS}"
-            )
+            file(GLOB VTK_DLL "${VTK_DLL_DIRS}/vtk${module}${PYTHON_VERSION}${SUFFIX}*.dll")
+            file(GLOB VTK_LIB "${VTK_LIBRARY_DIRS}/vtk${module}${PYTHON_VERSION}${SUFFIX}*.lib")        
         else()
-            set_target_properties(VTK::${module} PROPERTIES
-                IMPORTED_LOCATION "${VTK_LIBRARY_DIRS}/libvtk${module}${SUFFIX}.dylib"
-                INTERFACE_INCLUDE_DIRECTORIES "${VTK_INCLUDE_DIRS}"
-            )
+            file(GLOB VTK_DLL "${VTK_DLL_DIRS}/vtk${module}${SUFFIX}*.dll")
+            file(GLOB VTK_LIB "${VTK_LIBRARY_DIRS}/vtk${module}${SUFFIX}*.lib")        
         endif()
+        message(STATUS "VTK::${module} DLL: ${VTK_DLL}   LIB: ${VTK_LIB}")
+        set_target_properties(VTK::${module} PROPERTIES
+            IMPORTED_LOCATION "${VTK_DLL}"
+            IMPORTED_IMPLIB "${VTK_LIB}"
+            INTERFACE_INCLUDE_DIRECTORIES "${VTK_INCLUDE_DIRS}"
+        )
     endif()
 endforeach()
 
@@ -270,5 +262,7 @@ set(VTK_USE_FILE "${CMAKE_CURRENT_LIST_DIR}/UseVTK.cmake")
 # Print status
 message(STATUS "Found VTK ${VTK_VERSION}")
 message(STATUS "  Includes: ${VTK_INCLUDE_DIRS}")
-message(STATUS "  Libraries: ${VTK_LIBRARIES}")
+message(STATUS "  Libraries: ${VTK_LIBRARY_DIRS}")
+message(STATUS "  DLLs: ${VTK_DLL_DIRS}")
+message(STATUS "  DLLs: ${VTK_LIBRARIES}")
 message(STATUS "  Python Version: ${Python3_VERSION}")

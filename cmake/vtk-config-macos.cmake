@@ -1,6 +1,6 @@
 # vtk-config.cmake
 
-# Set VTK version
+# Set VTK version (automatically patched by build-sdks action)
 set(VTK_MAJOR_VERSION 9)
 set(VTK_MINOR_VERSION 5)
 set(VTK_BUILD_VERSION 2)
@@ -15,7 +15,7 @@ else()
   set(HOME_DIR "$ENV{HOME}")
 endif()
 
-set(VTK_INCLUDE_DIRS "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/include/vtk-${VTK_MAJOR_VERSION}.${VTK_MINOR_VERSION}")
+set(VTK_INCLUDE_DIRS "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/include")
 set(VTK_LIBRARY_DIRS "${HOME_DIR}/opt/local/vtk-${VTK_VERSION}/lib")
 
 # Find Python interpreter and get version
@@ -242,12 +242,12 @@ foreach(module ${VTK_MODULES_ENABLED})
         add_library(VTK::${module} SHARED IMPORTED)
         if(${module} STREQUAL "WrappingPythonCore")
             set_target_properties(VTK::${module} PROPERTIES
-                IMPORTED_LOCATION "${VTK_LIBRARY_DIRS}/libvtkWrappingPythonCore${PYTHON_VERSION}${SUFFIX}.so"
+                IMPORTED_LOCATION "${VTK_LIBRARY_DIRS}/libvtkWrappingPythonCore${PYTHON_VERSION}${SUFFIX}.dylib"
                 INTERFACE_INCLUDE_DIRECTORIES "${VTK_INCLUDE_DIRS}"
             )
         else()
             set_target_properties(VTK::${module} PROPERTIES
-                IMPORTED_LOCATION "${VTK_LIBRARY_DIRS}/libvtk${module}${SUFFIX}.so"
+                IMPORTED_LOCATION "${VTK_LIBRARY_DIRS}/libvtk${module}${SUFFIX}.dylib"
                 INTERFACE_INCLUDE_DIRECTORIES "${VTK_INCLUDE_DIRS}"
             )
         endif()

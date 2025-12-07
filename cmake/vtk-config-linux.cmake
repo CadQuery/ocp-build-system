@@ -1,6 +1,6 @@
 # vtk-config.cmake
 
-# Set VTK version
+# Set VTK version (automatically patched by build-sdks action)
 set(VTK_MAJOR_VERSION 9)
 set(VTK_MINOR_VERSION 5)
 set(VTK_BUILD_VERSION 2)

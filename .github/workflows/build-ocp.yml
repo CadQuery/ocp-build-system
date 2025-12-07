@@ -59,7 +59,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           use-vtk: ${{ matrix.use-vtk }}
           vtk-libs: "libvtk*.so"
-          vtk-suffix: "/vtk-9.5/"
+          vtk-suffix: "/vtk-${{ env.VTK_MAJOR }}/"
           vtk-prefix: ""
           shells: "bash"
 

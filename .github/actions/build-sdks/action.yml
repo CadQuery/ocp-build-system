@@ -129,7 +129,24 @@ runs:
         mkdir -p $DEST/lib/cmake
 
         cp -r $CONDA_PREFIX/${{ inputs.vtk-prefix }}include/vtk-${{ env.VTK_MAJOR }}/ $DEST/include/
-        cp cmake/vtk-config-${{ inputs.os }}.cmake $DEST/vtk-config.cmake
+
+        # Map OS to platform type
+        case "${{ inputs.os }}" in
+          ubuntu-*) PLATFORM="linux" ;;
+          macos-*)  PLATFORM="macos" ;;
+          windows-*) PLATFORM="windows" ;;
+        esac
+
+        # Parse VTK version and patch vtk-config.cmake
+        VTK_VERSION="${{ env.VTK }}"
+        VTK_MAJOR=$(echo $VTK_VERSION | cut -d. -f1)
+        VTK_MINOR=$(echo $VTK_VERSION | cut -d. -f2)
+        VTK_BUILD=$(echo $VTK_VERSION | cut -d. -f3)
+
+        sed -e "s/^set(VTK_MAJOR_VERSION .*)$/set(VTK_MAJOR_VERSION $VTK_MAJOR)/" \
+            -e "s/^set(VTK_MINOR_VERSION .*)$/set(VTK_MINOR_VERSION $VTK_MINOR)/" \
+            -e "s/^set(VTK_BUILD_VERSION .*)$/set(VTK_BUILD_VERSION $VTK_BUILD)/" \
+            cmake/vtk-config-$PLATFORM.cmake > $DEST/vtk-config.cmake
 
         micromamba deactivate
 
