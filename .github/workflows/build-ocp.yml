@@ -196,9 +196,10 @@ jobs:
         shell: bash -l {0}
         run: |
           cd cadquery_ocp_proxy
-          VERSION=$(awk -F'"' '/^version = / {print $2}' pyproject.toml)
+          # Patch version from env.WHEEL
+          sed -i.bak 's/^version = .*/version = "${{ env.WHEEL }}"/' pyproject.toml
           echo "# Don't edit, will be overwritten during build" > src/cadquery_ocp_proxy/_version.py
-          echo "__version__ = \"$$VERSION\"" >> src/cadquery_ocp_proxy/_version.py
+          echo "__version__ = \"${{ env.WHEEL }}\"" >> src/cadquery_ocp_proxy/_version.py
           uv build
 
       - name: Upload cadquery_ocp_proxy wheel
