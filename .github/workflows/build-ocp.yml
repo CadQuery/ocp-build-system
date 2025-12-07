@@ -14,6 +14,8 @@ env:
   OCCT: 7.9.2
   PYBIND11: 2.13
   PYWRAP: false
+  # OCP source download URL (default: https://github.com/CadQuery/OCP/releases/download)
+  SOURCE_URL: https://github.com/bernhard-42/__temp_artefacts__/releases/download
 
 jobs:
   # ================================================================================
