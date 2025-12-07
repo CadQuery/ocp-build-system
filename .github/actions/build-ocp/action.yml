@@ -125,6 +125,13 @@ runs:
     #  Build OCP
     # - - - - - - - - - - - - - - - - - - - - -
 
+    # OCP sources are cached by build-ocp-source action
+    - name: Restore OCP source cache
+      id: cache-ocp-source-restore
+      uses: actions/cache/restore@v4
+      with:
+        path: ${{ github.workspace }}/OCP
+        key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.ocp-source-tag }}
 
     - name: Restore OCP module cache
       id: cache-ocp-restore
