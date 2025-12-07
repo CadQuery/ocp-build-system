@@ -197,10 +197,11 @@ runs:
         path: ./OCP
 
     # - - - - - - - - - - - - - - - - - - - - -
-    # Build thy Python stubs
+    # Build the Python stubs (only for PYWRAP=false, stubs are downloaded)
     # - - - - - - - - - - - - - - - - - - - - -
 
     - name: Install uv
+      if: env.PYWRAP == 'false'
       uses: astral-sh/setup-uv@v7
       with:
         python-version: "3.12"
@@ -208,6 +209,7 @@ runs:
         activate-environment: true
 
     - name: Create OCP stubs wheel
+      if: env.PYWRAP == 'false'
       shell: bash -l {0}
       run: |
         set -euo pipefail
@@ -218,6 +220,7 @@ runs:
         uv run --no-sync python -m build -w -n
 
     - name: Upload cadquery_ocp stubs wheel
+      if: env.PYWRAP == 'false'
       uses: actions/upload-artifact@v4
       with:
         name: cadquery-ocp-${{ env.WHEEL }}-stubs-${{ inputs.os }}
