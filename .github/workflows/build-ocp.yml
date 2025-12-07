@@ -8,7 +8,7 @@ on: workflow_dispatch
 
 env:
   OCP: 7.9.2.0
-  WHEEL: 7.9.2.0
+  WHEEL: 7.9.2.0.dev0
   VTK: 9.5.2
   VTK_MAJOR: 9.5
   OCCT: 7.9.2
@@ -16,6 +16,7 @@ env:
   PYWRAP: false
   # OCP source download URL (default: https://github.com/CadQuery/OCP/releases/download)
   SOURCE_URL: https://github.com/bernhard-42/__temp_artefacts__/releases/download
+  RELEASE_TO_REPO: false
 
 jobs:
   # ================================================================================
@@ -369,3 +370,33 @@ jobs:
           os: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
           use-vtk: ${{ matrix.use-vtk }}
+
+  # ================================================================================
+  # Release wheels to repo
+  # ================================================================================
+
+  release:
+    name: Release wheels to repo
+    runs-on: ubuntu-latest
+    needs: [tests]
+
+    steps:
+      - uses: actions/checkout@v4
+        if: env.RELEASE_TO_REPO == 'true'
+
+      - name: Download all wheel artifacts
+        if: env.RELEASE_TO_REPO == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          path: wheels
+          pattern: cadquery-*
+          merge-multiple: true
+
+      - name: Create release
+        if: env.RELEASE_TO_REPO == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ env.WHEEL }}
+          name: Release ${{ env.WHEEL }}
+          files: wheels/*.whl
+          fail_on_unmatched_files: true
