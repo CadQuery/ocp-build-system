@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "cadquery-ocp-stubs"
-version = "7.8.1.2"
+version = "0.0.0.0"
 description = "Typing stubs for cadquery-ocp based on the official CadQuery/OCP sources"
 authors = [{ name = "Bernhard Walter" }]
 requires-python = ">=3.10,<3.14"

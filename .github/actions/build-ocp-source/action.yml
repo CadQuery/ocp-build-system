@@ -194,4 +194,31 @@ runs:
       uses: actions/upload-artifact@v4
       with:
         name: OCP-source_${{ env.OCP }}-${{ inputs.os }}
-        path: ./OCP  
+        path: ./OCP
+
+    # - - - - - - - - - - - - - - - - - - - - -
+    # Build thy Python stubs
+    # - - - - - - - - - - - - - - - - - - - - -
+
+    - name: Install uv
+      uses: astral-sh/setup-uv@v7
+      with:
+        python-version: "3.12"
+        enable-cache: true
+        activate-environment: true
+
+    - name: Create OCP stubs wheel
+      shell: bash -l {0}
+      run: |
+        set -euo pipefail
+
+        uv pip install build setuptools wheel
+        cd pypi-stubs
+        sed -i.bak 's/0\.0\.0\.0/${{ env.WHEEL }}/g' pyproject.toml
+        uv run --no-sync python -m build -w -n
+
+    - name: Upload cadquery_ocp stubs wheel
+      uses: actions/upload-artifact@v4
+      with:
+        name: cadquery-ocp-${{ env.WHEEL }}-stubs-${{ inputs.os }}
+        path: pypi-stubs/dist/*.whl  
