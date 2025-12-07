@@ -7,11 +7,11 @@ name = "cadquery-ocp-stubs"
 version = "0.0.0.0"
 description = "Typing stubs for cadquery-ocp based on the official CadQuery/OCP sources"
 authors = [{ name = "Bernhard Walter" }]
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.10,<3.15"
 readme = "README.md"
 
 [tool.setuptools]
-package-dir = {"cadquery_ocp_stubs" = "OCP-stubs"}
+package-dir = { "cadquery_ocp_stubs" = "OCP-stubs" }
 
 [tool.setuptools.package-data]
 "cadquery_ocp_stubs" = ["*.pyi"]

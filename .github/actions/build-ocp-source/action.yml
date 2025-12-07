@@ -214,10 +214,9 @@ runs:
       run: |
         set -euo pipefail
 
-        uv pip install build setuptools wheel
         cd pypi-stubs
         sed -i.bak 's/0\.0\.0\.0/${{ env.WHEEL }}/g' pyproject.toml
-        python -m build -w -n
+        uv build --wheel
 
     - name: Upload cadquery_ocp stubs wheel
       if: env.PYWRAP == 'false'
