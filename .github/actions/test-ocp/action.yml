@@ -141,7 +141,9 @@ runs:
         # 7.9. COMPATIBILITY ISSUE
         awk '/def test_export_step_timestamp_datetime/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/_tmp && mv tests/_tmp tests/test_exporters3d.py
         awk '/def test_export_step_timestamp_str/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/_tmp && mv tests/_tmp tests/test_exporters3d.py
-        # sed -i.bak '/^class ImportSVG(unittest\.TestCase):/a\    __test__ = False' tests/test_importers.py
+
+        # ubuntu aarch64 has a different rounding result
+        sed -i.bak 's/actual_topo_lines = actual_topo/actual_topo_lines = actual_topo.replace("-0.00,", "0.00,").replace("-0.00)", "0.00)")/' tests/test_direct_api/test_assembly.py
 
         if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
           echo "=> Running novtk tests"
