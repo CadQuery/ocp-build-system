@@ -166,7 +166,7 @@ runs:
 
         rm -fr OCP  # remove the cached sources again
 
-        if [[ ${{ inputs.os }} == "macos-13" || ${{ inputs.os }} == "macos-15" ]]; then
+        if [[ ${{ inputs.os }} == "macos-15-intel" || ${{ inputs.os }} == "macos-15" ]]; then
           curl -L -O ${{ env.SOURCE_URL }}/v${{ env.OCCT }}/OCP_src_stubs_macOS-latest.zip
         elif [[ ${{ inputs.os }} == "ubuntu-22.04" || ${{ inputs.os }} == "ubuntu-22.04-arm" ]]; then
           curl -L -O ${{ env.SOURCE_URL }}/v${{ env.OCCT }}/OCP_src_stubs_Ubuntu-latest.zip
