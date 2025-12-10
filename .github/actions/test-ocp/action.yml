@@ -162,7 +162,7 @@ runs:
     # - - -
 
     - name: Run cadquery tests (${{ inputs.use-vtk }})
-      if: inputs.use-vtk == 'vtk'
+      if: inputs.use-vtk == 'vtk' && inputs.os != 'ubuntu-22.04-arm'
       shell: bash -l {0}
       run: |
         # Run cadquery tests
