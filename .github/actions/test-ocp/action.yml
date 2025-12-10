@@ -144,7 +144,7 @@ runs:
 
         # ubuntu aarch64 has a different rounding result
         if [[ "$(uname -s)" == "Linux" && "$(uname -m)" == "aarch64" ]]; then
-          awk '/def test_show_topology_compound/{print "    @pytest.mark.skip(reason=\"ubuntu aarch64 rounding issue\")"} 1' tests/test_direct_api/test_assembly.py > tests/_tmp && mv tests/_tmp tests/test_direct_api/test_assembly.py
+          awk '/def test_show_topology_compound/{print "    @unittest.skip(\"ubuntu aarch64 rounding issue\")"} 1' tests/test_direct_api/test_assembly.py > tests/_tmp && mv tests/_tmp tests/test_direct_api/test_assembly.py
         fi
 
         if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
