@@ -13,10 +13,10 @@ env:
   VTK_MAJOR: 9.5
   OCCT: 7.9.2
   PYBIND11: 2.13
-  PYWRAP: false
+  PYWRAP: 'false'
   # OCP source download URL (default: https://github.com/CadQuery/OCP/releases/download)
   SOURCE_URL: https://github.com/bernhard-42/__temp_artefacts__/releases/download
-  RELEASE_TO_REPO: true
+  RELEASE_TO_REPO: 'true'
 
 jobs:
   # ================================================================================
@@ -379,6 +379,8 @@ jobs:
     name: Release wheels to repo
     runs-on: ubuntu-latest
     needs: [tests]
+    permissions:
+      contents: write    
 
     steps:
       - uses: actions/checkout@v4
