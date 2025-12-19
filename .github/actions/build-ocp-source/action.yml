@@ -167,11 +167,11 @@ runs:
         rm -fr OCP  # remove the cached sources again
 
         if [[ ${{ inputs.os }} == "macos-15-intel" || ${{ inputs.os }} == "macos-15" ]]; then
-          curl -L -O ${{ env.SOURCE_URL }}/v${{ env.OCCT }}/OCP_src_stubs_OSX.zip
+          curl -L -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_OSX.zip
         elif [[ ${{ inputs.os }} == "ubuntu-22.04" || ${{ inputs.os }} == "ubuntu-22.04-arm" ]]; then
-          curl -L -O ${{ env.SOURCE_URL }}/v${{ env.OCCT }}/OCP_src_stubs_Linux.zip
+          curl -L -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_Linux.zip
         else
-          curl -L -O ${{ env.SOURCE_URL }}/v${{ env.OCCT }}/OCP_src_stubs_Windows.zip
+          curl -L -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_Windows.zip
         fi
         unzip OCP_src_stubs_*
         rm *.zip
