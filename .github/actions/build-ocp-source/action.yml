@@ -98,9 +98,6 @@ runs:
         # git checkout -b V${{ env.OCP }} tags/${{ env.OCP }}
         git submodule update --init
 
-        # TODO: remove if fixed
-        sed -i.bak 's/"7.9.0.0"/"${{ env.OCP }}"/' ocp.toml
-
     # - - -
 
     - name: (Linux, Mac) Generate OCP source [PYWRAP=true]
