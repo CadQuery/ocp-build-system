@@ -1,6 +1,6 @@
 [project]
 name = "cadquery-ocp-proxy"
-version = "7.9.2.0"
+version = "7.9.3.0"
 description = "Proxy package to track cadquery_ocp / cadquery_ocp_novtk version"
 readme = "README.md"
 authors = [{ name = "Bernhard", email = "b_walter@arcor.de" }]

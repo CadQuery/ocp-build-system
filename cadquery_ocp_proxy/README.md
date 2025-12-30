@@ -1,11 +1,11 @@
 # TEST SETUP
 
-There is a proxy package `cadquery_ocp_proxy` with version `7.8.1` that does nothing, but have optional dependencies:
+There is a proxy package `cadquery_ocp_proxy` with version `7.9.3.0` that does nothing, but have optional dependencies:
 
     ```toml
     [project.optional-dependencies]
-    vtk = ["cadquery_ocp>=7.8.1,<7.9"]
-    novtk = ["cadquery_ocp_novtk>=7.8.1,<7.9"]
+    vtk = ["cadquery_ocp>=7.9,< 8.0"]
+    novtk = ["cadquery_ocp_novtk>=7.9,< 8.0"]
     ```
 
 I built the following packages using the proxy package for testing on my local pypi server.
@@ -27,8 +27,8 @@ Setup for packages in the **build123d**, **CadQuery**, or **OCP** ecosystem:
 
    [project.optional-dependencies]
    dev = ["pytest"]
-   vtk = ["cadquery-ocp-proxy[vtk] >= 7.8.1, < 7.9"]
-   novtk = ["cadquery-ocp-proxy[novtk] >= 7.8.1, < 7.9"]
+   vtk = ["cadquery-ocp-proxy[vtk] >=7.9, < 8.0"]
+   novtk = ["cadquery-ocp-proxy[novtk] >=7.9, < 8.0"]
    ```
 
 2. Packages that need VTK like `cadquery` would only depend on `cadquery-ocp-proxy[vtk]` as default dependency
@@ -41,8 +41,8 @@ When we `pip install build123d[novtk]==0.11.0`, we get (pip list):
 
 ```text
 build123d               0.11.0
-cadquery-ocp-novtk      7.8.1.1.post1
-cadquery-ocp-proxy      7.8.1
+cadquery-ocp-novtk      7.9.3.0
+cadquery-ocp-proxy      7.9.3.0
 ...
 ocp-gordon              0.19.0
 ocpsvg                  0.6.0
@@ -60,8 +60,8 @@ When we `pip install build123d[vtk]==0.11.0`, we get (pip list):
 
 ```text
 build123d               0.11.0
-cadquery-ocp            7.8.1.1.post1
-cadquery-ocp-proxy      7.8.1
+cadquery-ocp            7.9.3.0
+cadquery-ocp-proxy      7.9.3.0
 ...
 ocp-gordon              0.19.0
 ocpsvg                  0.6.0
@@ -79,8 +79,8 @@ When we `pip install cadquery==2.7`, we get (pip list):
 
 ```text
 cadquery           2.7
-cadquery-ocp       7.8.1.1.post1
-cadquery-ocp-proxy 7.8.1
+cadquery-ocp       7.9.3.0
+cadquery-ocp-proxy 7.9.3.0
 ```
 
 **Tests:**
@@ -91,8 +91,8 @@ Since the dependency of `ocpsvg` is `cadquery-ocp-proxy `, we can `pip install o
 
 ```text
 cadquery           2.7
-cadquery-ocp       7.8.1.1.post1
-cadquery-ocp-proxy 7.8.1
+cadquery-ocp       7.9.3.0
+cadquery-ocp-proxy 7.9.3.0
 ...
 ocpsvg             0.6.0
 ```
@@ -130,8 +130,8 @@ we get (pip list)
 ```text
 build123d               0.11.0
 cadquery                2.7
-cadquery-ocp            7.8.1.1.post1
-cadquery-ocp-proxy      7.8.1
+cadquery-ocp            7.9.3.0
+cadquery-ocp-proxy      7.9.3.0
 ...
 ocp-gordon              0.19.0
 ocpsvg                  0.6.0
