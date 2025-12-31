@@ -215,6 +215,26 @@ runs:
         sed -i.bak 's/0\.0\.0\.0/${{ env.WHEEL }}/g' pyproject.toml
         uv build --wheel
 
+        # Retag wheel with platform-specific tags
+        uv pip install wheel
+        cd dist
+        ORIG_WHEEL=$(ls *.whl)
+
+        if [[ "${{ inputs.os }}" == macos-* ]]; then
+          # macOS: create wheels for both x86_64 and arm64
+          wheel tags --platform-tag macosx_11_1_arm64 "$ORIG_WHEEL"
+          wheel tags --platform-tag macosx_11_1_x86_64 "$ORIG_WHEEL"
+          rm "$ORIG_WHEEL"
+        elif [[ "${{ inputs.os }}" == ubuntu-* ]]; then
+          # Linux: create wheels for both x86_64 and aarch64
+          wheel tags --platform-tag manylinux_2_31_x86_64 "$ORIG_WHEEL"
+          wheel tags --platform-tag manylinux_2_31_aarch64 "$ORIG_WHEEL"
+          rm "$ORIG_WHEEL"
+        else
+          # Windows: single wheel for win_amd64
+          wheel tags --platform-tag win_amd64 --remove "$ORIG_WHEEL"
+        fi
+
     - name: Upload cadquery_ocp stubs wheel
       if: env.PYWRAP == 'false'
       uses: actions/upload-artifact@v4
