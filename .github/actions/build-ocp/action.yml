@@ -482,8 +482,9 @@ runs:
         python -m wheel pack ${PKG_NAME}*
         cd ..
 
-        env MACOSX_DEPLOYMENT_TARGET=11.0 \
-            DYLD_LIBRARY_PATH=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:$HOME/opt/local/vtk-${{ env.VTK }}/lib:$CONDA_PREFIX/lib \
+        # Note: Not setting MACOSX_DEPLOYMENT_TARGET here - OCCT libs were built with 11.1
+        # Delocate will warn about version mismatch but still build the wheel
+        env DYLD_LIBRARY_PATH=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:$HOME/opt/local/vtk-${{ env.VTK }}/lib:$CONDA_PREFIX/lib \
             python -m delocate.cmd.delocate_wheel \
             -e libvtk \
             --wheel-dir=wheel \
