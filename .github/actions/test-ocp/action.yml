@@ -58,6 +58,13 @@ runs:
 
     # - - -
 
+    - name: Download cadquery_ocp_stubs wheel
+      uses: actions/download-artifact@v4
+      with:
+        name: cadquery-ocp-${{ env.WHEEL }}-stubs-${{ inputs.os == 'macos-15-intel' && 'macos-15' || (inputs.os == 'ubuntu-22.04-arm' && 'ubuntu-22.04' || inputs.os) }}
+
+    # - - -
+
     - name: Install VTK and OCP wheel (${{ inputs.use-vtk }})
       shell: bash -l {0}
       run: |
