@@ -65,6 +65,21 @@ runs:
 
     # - - -
 
+    - name: Remove non-matching stubs wheel
+      shell: bash -l {0}
+      run: |
+        # Remove the stubs wheel that doesn't match this platform
+        # (artifact contains both arch variants for Linux and macOS)
+        case "${{ inputs.os }}" in
+          macos-15)         rm -f *macosx*x86_64*.whl ;;
+          macos-15-intel)   rm -f *macosx*arm64*.whl ;;
+          ubuntu-22.04)     rm -f *manylinux*aarch64*.whl ;;
+          ubuntu-22.04-arm) rm -f *manylinux*x86_64*.whl ;;
+        esac
+        ls -l *.whl
+
+    # - - -
+
     - name: Install VTK and OCP wheel (${{ inputs.use-vtk }})
       shell: bash -l {0}
       run: |
