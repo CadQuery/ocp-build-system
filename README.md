@@ -1,20 +1,6 @@
 # Build System for OCP
 
-## VTK 9.5.2 for Python 3.13
-
-### Recipe
-
-The github action can be found in [.github/workflows/build-ocp.yml](.github/workflows/build-vtk.yml)
-
-### Wheels
-
-The action creates a wheel for Python 3.13 for os in ["ubuntu-22.04", "macos-15-intel", "macos-14", "windows-2019"]
-
-### Known issues
-
-This wheel will work with `cadquery_ocp`, but other packages that depend on `vtk` will most probably not work.
-
-## OCP 7.9.2.0
+## OCP 7.9.3.0
 
 **NOTE:** For final wheels always use the official sources from the [OCP repository](https://github.com/cadquery/OCP). This can be achieved by setting the environment variable `PYWRAP` to `false`. Only use `true` if you know what you do!
 
@@ -24,12 +10,13 @@ The github action can be found in [.github/workflows/build-ocp.yml](.github/work
 
 ### Wheels
 
-The action creates two different types of delocated wheels for OCP 7.9.2.0:
+The action creates three different types of delocated wheels for OCP 7.9.3.0:
 
-1. `cadquery_ocp-7.9.2.0` which is build against pypi's VTK 9.5.2
-2. `cadquery_ocp_novtk-7.9.2.0` which comes without VTK support
+1. `cadquery_ocp-7.9.3.0` which is build against pypi's VTK 9.5.2
+2. `cadquery_ocp_novtk-7.9.3.0` which comes without VTK support
+3. `cadquery_ocp_proxy-7.9.3.0`, a dependecy of 1. and 2.
 
-The wheels encapsulate the native OCP module into a folder `OCP`.
+The wheels `cadquery_ocp-7.9.3.0` and `cadquery_ocp_novtk-7.9.3.0` encapsulate the native OCP module into a folder `OCP`.
 
 ```
 OCP
@@ -67,11 +54,12 @@ The wheels are created for
 - **MacOS (Intel)**: running from macOS 11.11 or newer
 - **MacOS (arm64)**: running from macOS 11.11 or newer
 - **Linux (Intel)**: running Ubuntu 20.04 or newer (GLIBC_2.31 and GLIBCXX_3.4.26)
+- **Linux (aarch46)**: running Ubuntu 20.04 on ARM or newer (GLIBC_2.31 and GLIBCXX_3.4.26)
 
 ### Supported Python Versions
 
-- The **vtk** version can be built with pypi's `vtk==9.5.2` for Python 3.10 - 3.13.
-- The **novtk** version can be built for Python 3.10 - 3.14.
+- The `cadquery_ocp-7.9.3.0` version can be built with pypi's `vtk==9.5.2` for Python 3.10 - 3.13.
+- The `cadquery_ocp_novtk-7.9.3.0` version can be built for Python 3.10 - 3.14.
 
 ### Tests
 
@@ -85,20 +73,20 @@ The action heavily caches artifacts since some steps can take 0.5 - 1.5 h.
 For **vtk** wheels:
 
 - `VTK-9.5.2-py<version>-<os>-`: The generated VTK SDK
-- `OCCT-7.9.2-py-<version>-vtk-<os>-`: The compiled OCCT SDK with VTK support
-- `OCP-source-7.9.2.0-vtk-<os>-`: The generated OCP source with VTK support
-- `OCP-7.9.2.0-VTK-vtk-py<version>-<os>-`: The compiled OCP Python module with VTK support
+- `OCCT-7.9.3-py-<version>-vtk-<os>-`: The compiled OCCT SDK with VTK support
+- `OCP-source-7.9.3.0-vtk-<os>-`: The generated OCP source with VTK support
+- `OCP-7.9.3.0-VTK-vtk-py<version>-<os>-`: The compiled OCP Python module with VTK support
 
 For **novtk** wheels:
 
-- `OCCT-7.9.2-py-<version>-novtk-<os>-`: The compiled OCCT SDK without VTK support
-- `OCP-7.9.2.0-VTK-novtk-py<version>-<os>-`: The compiled OCP Python module without VTK support
+- `OCCT-7.9.3-py-<version>-novtk-<os>-`: The compiled OCCT SDK without VTK support
+- `OCP-7.9.3.0-VTK-novtk-py<version>-<os>-`: The compiled OCP Python module without VTK support
 
 `<os>` being "ubuntu-22.04", "macos-15-intel", "macos-14", and "windows-2019".
 `<version>` being "3.10", "3.11", "3.12", and "3.13"
 
 To recompile, delete the respective [cached elements](https://github.com/bernhard-42/repackage-ocp/actions/caches) first.
 
-## OCP 7.9.2.0 stubs
+## OCP 7.9.3.0 stubs
 
-Will be created in
+`cadquery_ocp_stubs-7.9.3.0`, API stubs for OCP 7.9.3.0 are created by the above github workflow
