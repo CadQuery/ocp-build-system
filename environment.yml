@@ -10,4 +10,5 @@ dependencies:
   - tbb-devel
   - pybind11-stubgen
   - rapidjson
+  - fmt
   
