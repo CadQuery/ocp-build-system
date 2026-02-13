@@ -208,7 +208,7 @@ runs:
             -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
             -D CMAKE_CXX_STANDARD=17 \
             -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -isystem $CONDA_PREFIX/include/python${{ inputs.python-version }} -D_GLIBCXX_USE_CXX11_ABI=$CXX11_ABI -fvisibility=hidden -w" \
-            -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
+            -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib -lfmt" \
             -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
@@ -249,6 +249,7 @@ runs:
             -D CMAKE_BUILD_TYPE=Release \
             -D CMAKE_OSX_DEPLOYMENT_TARGET="11.1" \
             -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -isystem $CONDA_PREFIX/include/python${{ inputs.python-version }} -fvisibility=hidden -w" \
+            -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -lfmt" \
             $VTK_DIR \
             -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib/cmake/opencascade \
             -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
@@ -305,7 +306,8 @@ runs:
           -D Python3_ROOT_DIR=%CONDA_PREFIX% ^
           %VTK_DIR% ^
           -D OpenCASCADE_DIR=%USERPROFILE%\opt\local\occt-${{ env.OCCT }}-${{ inputs.use-vtk }}\cmake ^
-          -D pybind11_DIR=%CONDA_PREFIX%\Lib\site-packages\pybind11\share\cmake\pybind11
+          -D pybind11_DIR=%CONDA_PREFIX%\Lib\site-packages\pybind11\share\cmake\pybind11 ^
+          -D CMAKE_MODULE_LINKER_FLAGS="/LIBPATH:%CONDA_PREFIX%\Library\lib fmt.lib"
 
         ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
 
