@@ -236,12 +236,13 @@ runs:
         cd OCP
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
-          export LDFLAGS="-L$HOME/opt/local/vtk-${{ env.VTK }}/lib"
           VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
+          FMT_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib -lfmt"
         else
           VTK_DIR=""
+          FMT_LINKER_FLAGS="-L $CONDA_PREFIX/lib -lfmt"
         fi
-        
+
         echo "Building OCP with VTK_DIR=$VTK_DIR"
 
         env ${{ inputs.env }} cmake -B build -S OCP -G Ninja \
@@ -249,7 +250,7 @@ runs:
             -D CMAKE_BUILD_TYPE=Release \
             -D CMAKE_OSX_DEPLOYMENT_TARGET="11.1" \
             -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -isystem $CONDA_PREFIX/include/python${{ inputs.python-version }} -fvisibility=hidden -w" \
-            -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -lfmt" \
+            -D CMAKE_MODULE_LINKER_FLAGS="$FMT_LINKER_FLAGS" \
             $VTK_DIR \
             -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib/cmake/opencascade \
             -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
@@ -301,7 +302,7 @@ runs:
 
         cmake -B build -S OCP -G Ninja ^
           -D CMAKE_BUILD_TYPE=Release ^
-          -D CMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /GR /EHsc /wd4834 /wd4996 /external:I%CONDA_PREFIX%\Include /external:I%CONDA_PREFIX%\Lib\site-packages\pybind11\include" ^
+          -D CMAKE_CXX_FLAGS="/DWIN32 /D_WINDOWS /GR /EHsc /wd4834 /wd4996 /external:I%CONDA_PREFIX%\Include /external:I%CONDA_PREFIX%\Library\include /external:I%CONDA_PREFIX%\Lib\site-packages\pybind11\include" ^
           -D Python3_FIND_STRATEGY=LOCATION ^
           -D Python3_ROOT_DIR=%CONDA_PREFIX% ^
           %VTK_DIR% ^
@@ -373,7 +374,7 @@ runs:
           mv *.pyd OCP
 
         elif [[ "$RUNNER_OS" == "macOS" ]]; then
-          DYLD_LIBRARY_PATH=$HOME/opt/local/vtk-${{ env.VTK }}/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib \
+          DYLD_LIBRARY_PATH=$HOME/opt/local/vtk-${{ env.VTK }}/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:$CONDA_PREFIX/lib \
           python ocp-tree.py
           mv *.so OCP
           ls -l OCP/*.so
@@ -381,7 +382,7 @@ runs:
           ls -l OCP/*.so
           
         else
-          LD_LIBRARY_PATH=$HOME/opt/local/vtk-${{ env.VTK }}/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib \
+          LD_LIBRARY_PATH=$HOME/opt/local/vtk-${{ env.VTK }}/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:$CONDA_PREFIX/lib \
           python ocp-tree.py
           mv *.so OCP
           ls -l OCP/*.so
