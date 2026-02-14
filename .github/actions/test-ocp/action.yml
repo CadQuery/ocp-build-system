@@ -145,14 +145,9 @@ runs:
         # uv pip install .
         # cd ..
 
-        # echo "=> Patching and installing build123"
         cd build123d
-        # # Patch to allow cadquery_ocp v7.9
-        # if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
-        #   sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp-novtk >= 7.9, < 8.0\",/' pyproject.toml
-        # else
-        #   sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp >= 7.9, < 8.0\",/' pyproject.toml
-        # fi
+        # Remove cadquery-ocp-novtk dep (correct OCP variant already installed)
+        sed -i.bak '/"cadquery-ocp-novtk/d' pyproject.toml
         # Patch to allow Python 3.14
         sed -i.bak 's/< 3.14/< 3.15/' pyproject.toml
         uv pip install .
