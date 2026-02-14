@@ -114,7 +114,7 @@ runs:
           uv pip install pypi/lib3mf*.whl
         fi
 
-        # git clone https://github.com/gumyr/build123d.git
+        git clone https://github.com/gumyr/build123d.git
         # ocpsvg_min=$(uv run python get-min-version.py build123d/pyproject.toml ocpsvg)
         # ocp_gordon_min=$(uv run python get-min-version.py build123d/pyproject.toml ocp_gordon)
         # echo "=> ocpsvg $ocpsvg_min / ocp_gordon v$ocp_gordon_min"
@@ -145,14 +145,14 @@ runs:
         # uv pip install .
         # cd ..
 
-        echo "=> Patching and installing build123"
+        # echo "=> Patching and installing build123"
         cd build123d
-        # Patch to allow cadquery_ocp v7.9
-        if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
-          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp-novtk >= 7.9, < 8.0\",/' pyproject.toml
-        else
-          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp >= 7.9, < 8.0\",/' pyproject.toml
-        fi
+        # # Patch to allow cadquery_ocp v7.9
+        # if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
+        #   sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp-novtk >= 7.9, < 8.0\",/' pyproject.toml
+        # else
+        #   sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp >= 7.9, < 8.0\",/' pyproject.toml
+        # fi
         # Patch to allow Python 3.14
         sed -i.bak 's/< 3.14/< 3.15/' pyproject.toml
         uv pip install .
@@ -161,13 +161,13 @@ runs:
         uv pip list
 
         # 7.9. COMPATIBILITY ISSUE
-        awk '/def test_export_step_timestamp_datetime/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/_tmp && mv tests/_tmp tests/test_exporters3d.py
-        awk '/def test_export_step_timestamp_str/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/_tmp && mv tests/_tmp tests/test_exporters3d.py
+        # awk '/def test_export_step_timestamp_datetime/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/_tmp && mv tests/_tmp tests/test_exporters3d.py
+        # awk '/def test_export_step_timestamp_str/{print "    @pytest.mark.skip()"} 1' tests/test_exporters3d.py > tests/_tmp && mv tests/_tmp tests/test_exporters3d.py
 
         # ubuntu aarch64 has a different rounding result
-        if [[ "$(uname -s)" == "Linux" && "$(uname -m)" == "aarch64" ]]; then
-          awk '/def test_show_topology_compound/{print "    @unittest.skip(\"ubuntu aarch64 rounding issue\")"} 1' tests/test_direct_api/test_assembly.py > tests/_tmp && mv tests/_tmp tests/test_direct_api/test_assembly.py
-        fi
+        # if [[ "$(uname -s)" == "Linux" && "$(uname -m)" == "aarch64" ]]; then
+        #   awk '/def test_show_topology_compound/{print "    @unittest.skip(\"ubuntu aarch64 rounding issue\")"} 1' tests/test_direct_api/test_assembly.py > tests/_tmp && mv tests/_tmp tests/test_direct_api/test_assembly.py
+        # fi
 
         if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
           echo "=> Running novtk tests"
