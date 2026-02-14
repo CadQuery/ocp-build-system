@@ -114,36 +114,36 @@ runs:
           uv pip install pypi/lib3mf*.whl
         fi
 
-        git clone https://github.com/gumyr/build123d.git
-        ocpsvg_min=$(uv run python get-min-version.py build123d/pyproject.toml ocpsvg)
-        ocp_gordon_min=$(uv run python get-min-version.py build123d/pyproject.toml ocp_gordon)
-        echo "=> ocpsvg $ocpsvg_min / ocp_gordon v$ocp_gordon_min"
+        # git clone https://github.com/gumyr/build123d.git
+        # ocpsvg_min=$(uv run python get-min-version.py build123d/pyproject.toml ocpsvg)
+        # ocp_gordon_min=$(uv run python get-min-version.py build123d/pyproject.toml ocp_gordon)
+        # echo "=> ocpsvg $ocpsvg_min / ocp_gordon v$ocp_gordon_min"
 
-        echo "=> Patching and installing ocpsvg"
-        git clone https://github.com/snoyer/ocpsvg.git
-        cd ocpsvg
-        git checkout -b $ocpsvg_min
-        # Patch to allow cadquery_ocp v7.9
-        if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
-          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp-novtk >= 7.9, < 8.0\",/' pyproject.toml
-        else
-          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp >= 7.9, < 8.0\",/' pyproject.toml
-        fi
-        uv pip install .
-        cd ..
+        # echo "=> Patching and installing ocpsvg"
+        # git clone https://github.com/snoyer/ocpsvg.git
+        # cd ocpsvg
+        # git checkout -b $ocpsvg_min
+        # # Patch to allow cadquery_ocp v7.9
+        # if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
+        #   sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp-novtk >= 7.9, < 8.0\",/' pyproject.toml
+        # else
+        #   sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp >= 7.9, < 8.0\",/' pyproject.toml
+        # fi
+        # uv pip install .
+        # cd ..
 
-        echo "=> Patching and installing ocp_gordon"
-        git clone https://github.com/gongfan99/ocp_gordon.git
-        cd ocp_gordon
-        git checkout -b v$ocp_gordon_min
-        # Patch to allow cadquery_ocp v7.9
-        if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
-          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp-novtk >= 7.9, < 8.0\",/' pyproject.toml
-        else
-          sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp >= 7.9, < 8.0\",/' pyproject.toml
-        fi
-        uv pip install .
-        cd ..
+        # echo "=> Patching and installing ocp_gordon"
+        # git clone https://github.com/gongfan99/ocp_gordon.git
+        # cd ocp_gordon
+        # git checkout -b v$ocp_gordon_min
+        # # Patch to allow cadquery_ocp v7.9
+        # if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
+        #   sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp-novtk >= 7.9, < 8.0\",/' pyproject.toml
+        # else
+        #   sed -i.bak 's/"cadquery-ocp >=.*$/\"cadquery-ocp >= 7.9, < 8.0\",/' pyproject.toml
+        # fi
+        # uv pip install .
+        # cd ..
 
         echo "=> Patching and installing build123"
         cd build123d
