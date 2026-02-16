@@ -9,6 +9,10 @@ description = "Typing stubs for cadquery-ocp based on the official CadQuery/OCP 
 authors = [{ name = "Bernhard Walter" }]
 requires-python = ">=3.10,<3.15"
 readme = "README.md"
+license = { text = "Apache-2.0" }
+classifiers = [
+  "License :: OSI Approved :: Apache Software License",
+]
 
 [tool.setuptools]
 package-dir = { "cadquery_ocp_stubs" = "OCP-stubs" }
