@@ -5,6 +5,10 @@ description = "Proxy package to track cadquery_ocp / cadquery_ocp_novtk version"
 readme = "README.md"
 authors = [{ name = "Bernhard", email = "b_walter@arcor.de" }]
 requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+classifiers = [
+  "License :: OSI Approved :: Apache Software License",
+]
 dependencies = []
 
 [build-system]
