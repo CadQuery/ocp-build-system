@@ -20,11 +20,11 @@ jobs:
 
     steps:
       - name: Checkout project
-        uses: actions/checkout@v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
 
       # see https://github.com/marketplace/actions/setup-miniconda
       - name: Setup Conda
-        uses: conda-incubator/setup-miniconda@v3
+        uses: conda-incubator/setup-miniconda@8ee1f361103df19b6f8c8655fd3967a8ecb162d5 #v4.0.1
         with:
           #miniforge-version: latest
           miniconda-version: latest
@@ -71,7 +71,7 @@ jobs:
 
       # see https://github.com/marketplace/actions/upload-a-build-artifact
       - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
         with:
           name: cadquery-ocp-${{ matrix.os }}-cp${{ matrix.python-version }}
           path: dist/*.whl

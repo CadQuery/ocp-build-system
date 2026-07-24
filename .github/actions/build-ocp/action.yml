@@ -33,7 +33,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
 
     # - - - - - - - - - - - - - - - - - - - - -
     # Install dependencies
@@ -66,7 +66,7 @@ runs:
 
     
     - name: Set up Python ${{ inputs.python-version }} via micromamba
-      uses: mamba-org/setup-micromamba@v3
+      uses: mamba-org/setup-micromamba@ce51e99f4bb8a82ab7158c4dc59ef4634c59c4f9 #v3.1.0
       with:
         environment-file: environment.yml
         log-level: warning
@@ -106,7 +106,7 @@ runs:
     - name: Restore VTK SDK cache
       if: inputs.use-vtk == 'vtk'
       id: cache-vtk-restore
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
       with:
         path: |
           ~/opt/local/vtk-${{ env.VTK }}
@@ -115,7 +115,7 @@ runs:
     
     - name: Restore OCCT SDK cache with VTK support
       id: cache-occt-restore
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
       with:
         path: |
           ~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}
@@ -128,14 +128,14 @@ runs:
     # OCP sources are cached by build-ocp-source action
     - name: Restore OCP source cache
       id: cache-ocp-source-restore
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
       with:
         path: ${{ github.workspace }}/OCP
         key: OCP-source-${{ env.OCP }}-vtk-${{ inputs.ocp-source-tag }}
 
     - name: Restore OCP module cache
       id: cache-ocp-restore
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
       with:
         path: ${{ github.workspace }}/OCP/build/${{ inputs.module }}
         key: OCP-${{ env.OCP }}-VTK-${{ inputs.use-vtk }}-${{ inputs.os }}-py${{ inputs.python-version }}-
@@ -312,13 +312,13 @@ runs:
     
     - name: Cache OCP module
       id: cache-ocp-save
-      uses: actions/cache/save@v5
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
       with:
         path: ${{ github.workspace }}/OCP/build/${{ inputs.module }}
         key: ${{ steps.cache-ocp-restore.outputs.cache-primary-key }}
 
     # - name: Debug Upload module
-    #   uses: actions/upload-artifact@v4
+    #   uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
     #   with:
     #     name: debug_module_${{ inputs.os }}-${{ inputs.use-vtk }}-py_${{ inputs.python-version }}
     #     path: ./OCP/build/${{ inputs.module }}
@@ -515,7 +515,7 @@ runs:
     
     - name: Upload vtk cadquery_ocp wheel
       if: inputs.use-vtk == 'vtk'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
       with:
         name: cadquery-ocp-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
         path: pypi/wheel/*.whl
@@ -523,7 +523,7 @@ runs:
     
     - name: Upload novtk cadquery_ocp wheel
       if: inputs.use-vtk == 'novtk'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
       with:
         name: cadquery-ocp-novtk-${{ env.WHEEL }}-${{ inputs.os }}-cp${{ inputs.python-version }}
         path: pypi/wheel/*.whl  

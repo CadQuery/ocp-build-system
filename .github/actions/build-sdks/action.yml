@@ -26,14 +26,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - uses: actions/checkout@v5
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
  
     # - - -
 
     - name: Restore VTK SDK cache
       if: inputs.use-vtk == 'vtk'
       id: cache-vtk-restore
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
       with:
         path: |
           ~/opt/local/vtk-${{ env.VTK }}
@@ -43,7 +43,7 @@ runs:
 
     - name: Restore OCCT SDK cache
       id: cache-occt-restore
-      uses: actions/cache/restore@v5
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
       with:
         path: |
           ~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}
@@ -72,7 +72,7 @@ runs:
 
     - name: Set up Python ${{ inputs.python-version }} via micromamba
       if: steps.cache-occt-restore.outputs.cache-hit != 'true'
-      uses: mamba-org/setup-micromamba@v3
+      uses: mamba-org/setup-micromamba@ce51e99f4bb8a82ab7158c4dc59ef4634c59c4f9 #v3.1.0
       with:
         environment-file: environment.yml
         log-level: warning
@@ -216,7 +216,7 @@ runs:
     - name: Cache VTK build folder
       if: inputs.use-vtk == 'vtk'
       id: cache-vtk-save
-      uses: actions/cache/save@v5
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
       with:
         path: |
           ~/opt/local/vtk-${{ env.VTK }}
@@ -410,7 +410,7 @@ runs:
 
     - name: Cache OCCT build folder
       id: cache-occt-save
-      uses: actions/cache/save@v5
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
       with:
         path: |
           ~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}
@@ -421,9 +421,8 @@ runs:
     # ================================================================================
 
     # - - -
-
     # - name: Upload SDK
-    #   uses: actions/upload-artifact@v4
+    #   uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
     #   with:
     #     name: SDK_${{ inputs.os }}-py_${{ inputs.python-version }}-${{ inputs.use-vtk }}
     #     path: ~/opt/local
