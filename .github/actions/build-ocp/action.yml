@@ -50,7 +50,26 @@ runs:
         DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
           mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
           libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential \
-          ca-certificates curl unzip  > /dev/null 2>&1
+          ca-certificates curl unzip \
+          autoconf automake libtool libjpeg-dev liblzma-dev libzstd-dev libwebp-dev zlib1g-dev > /dev/null 2>&1
+
+    # - - -
+
+    - name: (Ubuntu) Build libtiff without JBIG support
+      if: runner.os == 'Linux'
+      shell: bash -l {0}
+      run: |
+        # (Ubuntu) Build libtiff without JBIG support
+        # Ubuntu's libtiff5 links libjbig (GPL-2.0-or-later), which auditwheel would vendor
+        # into the wheel via libTKService -> libfreeimage -> libtiff -> libjbig. Rebuild
+        # Ubuntu's own (security-patched) libtiff source with the JBIG codec disabled.
+        set -e
+        sed -n 's/^deb /deb-src /p' /etc/apt/sources.list >> /etc/apt/sources.list && apt-get update -qq
+        mkdir -p /tmp/tiff && cd /tmp/tiff && apt-get source tiff && cd tiff-*/
+        autoreconf -fi > /dev/null 2>&1
+        ./configure --prefix=/opt/tiff-nojbig --disable-jbig --disable-static \
+          --enable-ld-version-script CFLAGS=-O2 > /dev/null
+        make -C port -j "$(nproc)" > /dev/null && make -C libtiff -j "$(nproc)" install > /dev/null
 
     # - - -
 
@@ -431,7 +450,7 @@ runs:
           PKG_NAME="cadquery_ocp_novtk"
         fi
 
-        env LD_LIBRARY_PATH=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:$CONDA_PREFIX/lib \
+        env LD_LIBRARY_PATH=/opt/tiff-nojbig/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:$CONDA_PREFIX/lib \
             python -m auditwheel \
             repair \
             --plat=${{ inputs.plat }} \
@@ -452,6 +471,9 @@ runs:
         patchelf --add-rpath '$ORIGIN/../'${PKG_NAME}.libs ${PKG_NAME}-${{ env.WHEEL }}/${PKG_NAME}.libs/*
         python -m wheel pack ${PKG_NAME}-${{ env.WHEEL }}
         cd ..
+
+        # fail the build if a GPL JBIG library sneaked back into the wheel
+        if unzip -l wheel/*.whl | grep -qi jbig; then echo "ERROR: GPL JBIG library in wheel"; exit 1; fi
 
     
     - name: (Mac) Delocate the cadquery_ocp wheel
