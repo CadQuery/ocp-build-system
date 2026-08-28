@@ -1,6 +1,6 @@
 # Build System for OCP
 
-## OCP 7.9.3.0
+## OCP 8.0.0.0
 
 **NOTE:** For final wheels always use the official sources from the [OCP repository](https://github.com/cadquery/OCP). This can be achieved by setting the environment variable `PYWRAP` to `false`. Only use `true` if you know what you do!
 
@@ -10,13 +10,13 @@ The github action can be found in [.github/workflows/build-ocp.yml](.github/work
 
 ### Wheels
 
-The action creates three different types of delocated wheels for OCP 7.9.3.0:
+The action creates three different types of delocated wheels for OCP 8.0.0.0:
 
-1. `cadquery_ocp-7.9.3.0` which is build against pypi's VTK 9.5.2
-2. `cadquery_ocp_novtk-7.9.3.0` which comes without VTK support
-3. `cadquery_ocp_proxy-7.9.3.0`, a dependecy of 1. and 2.
+1. `cadquery_ocp-8.0.0.0.0` which is build against pypi's VTK 9.6.2
+2. `cadquery_ocp_novtk-8.0.0.0.0` which comes without VTK support
+3. `cadquery_ocp_proxy-8.0.0.0.0`, a dependecy of 1. and 2.
 
-The wheels `cadquery_ocp-7.9.3.0` and `cadquery_ocp_novtk-7.9.3.0` encapsulate the native OCP module into a folder `OCP`.
+The wheels `cadquery_ocp-8.0.0.0.0` and `cadquery_ocp_novtk-8.0.0.0.0` encapsulate the native OCP module into a folder `OCP`.
 
 ```
 OCP
@@ -58,8 +58,8 @@ The wheels are created for
 
 ### Supported Python Versions
 
-- The `cadquery_ocp-7.9.3.0` version can be built with pypi's `vtk==9.5.2` for Python 3.10 - 3.13.
-- The `cadquery_ocp_novtk-7.9.3.0` version can be built for Python 3.10 - 3.14.
+- The `cadquery_ocp-8.0.0.0.0` version can be built with pypi's `vtk==9.6.2` for Python 3.11 - 3.14.
+- The `cadquery_ocp_novtk-8.0.0.0.0` version can be built for Python 3.11 - 3.14.
 
 ### Tests
 
@@ -72,21 +72,29 @@ The action heavily caches artifacts since some steps can take 0.5 - 1.5 h.
 
 For **vtk** wheels:
 
-- `VTK-9.5.2-py<version>-<os>-`: The generated VTK SDK
-- `OCCT-7.9.3-py-<version>-vtk-<os>-`: The compiled OCCT SDK with VTK support
-- `OCP-source-7.9.3.0-vtk-<os>-`: The generated OCP source with VTK support
-- `OCP-7.9.3.0-VTK-vtk-py<version>-<os>-`: The compiled OCP Python module with VTK support
+- `VTK-9.6.2-py<version>-<os>-`: The generated VTK SDK
+- `OCCT-8.0.0-py-<version>-vtk-<os>-`: The compiled OCCT SDK with VTK support
+- `OCP-source-8.0.0.0-vtk-<os>-`: The generated OCP source with VTK support
+- `OCP-8.0.0.0-VTK-vtk-py<version>-<os>-`: The compiled OCP Python module with VTK support
 
 For **novtk** wheels:
 
-- `OCCT-7.9.3-py-<version>-novtk-<os>-`: The compiled OCCT SDK without VTK support
-- `OCP-7.9.3.0-VTK-novtk-py<version>-<os>-`: The compiled OCP Python module without VTK support
+- `OCCT-8.0.0-py-<version>-novtk-<os>-`: The compiled OCCT SDK without VTK support
+- `OCP-8.0.0.0-VTK-novtk-py<version>-<os>-`: The compiled OCP Python module without VTK support
 
-`<os>` being "ubuntu-22.04", "ubuntu-22.04-arm", "macos-15-intel", "macos-14", and "windows-latest".
+`<os>` being "ubuntu-22.04", "macos-15-intel", "macos-14", and "windows-latest".
 `<version>` being "3.11", "3.12", "3.13", and "3.14",
 
 To recompile, delete the respective [cached elements](https://github.com/bernhard-42/repackage-ocp/actions/caches) first.
 
-## OCP 7.9.3.0 stubs
+## OCP 8.0.0.0 stubs
 
-`cadquery_ocp_stubs-7.9.3.0`, API stubs for OCP 7.9.3.0 are created by the above github workflow
+`cadquery_ocp_stubs-8.0.0.0.0`, API stubs for OCP 8.0.0.0 are created by the above github workflow
+
+## Changes
+
+### v8.0.0.0
+
+- Support for Python 3.10 dropped
+- Compatibility functions TopoDS.Vertex_s, ... dropped
+- Special handling of VTK imports dropped [#63](https://github.com/CadQuery/ocp-build-system/issues/63)

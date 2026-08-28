@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=75.0", "wheel"]
+requires = ["setuptools>=81.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -7,7 +7,7 @@ name = "cadquery-ocp"
 version = "0.0.0.0"
 description = "Python wrapper for Open CASCADE Technology 3D geometry library based on the official CadQuery/OCP sources"
 authors = [{ name = "Bernhard Walter" }]
-requires-python = ">=3.10,<3.15"
+requires-python = ">=3.11,<3.15"
 readme = "README.md"
 license = { text = "Apache-2.0" }
 classifiers = [

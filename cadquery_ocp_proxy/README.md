@@ -1,11 +1,11 @@
 # TEST SETUP
 
-There is a proxy package `cadquery_ocp_proxy` with version `7.9.3.0` that does nothing, but have optional dependencies:
+There is a proxy package `cadquery_ocp_proxy` with version `8.0.0.0` that does nothing, but have optional dependencies:
 
     ```toml
     [project.optional-dependencies]
-    vtk = ["cadquery_ocp>=7.9,< 8.0"]
-    novtk = ["cadquery_ocp_novtk>=7.9,< 8.0"]
+    vtk = ["cadquery_ocp>=8.0,< 8.1"]
+    novtk = ["cadquery_ocp_novtk>=8.0,< 8.1"]
     ```
 
 I built the following packages using the proxy package for testing on my local pypi server.
@@ -13,23 +13,23 @@ I built the following packages using the proxy package for testing on my local p
 **NOTE: These are artificial new versions to force pip and uv to load them from my pypi server, so don't get confused about the version numbers. They don't exist on pypi.org**
 
 - build123d-0.11.0-py3-none-any.whl
-- cadquery-2.7-py3-none-any.whl
-- ocp_gordon-0.19.0-py3-none-any.whl
+- cadquery-2.8-py3-none-any.whl
+- ocp_gordon-0.22.0-py3-none-any.whl
 - ocpsvg-0.6.0-py3-none-any.whl
-- cadquery_ocp_proxy-7.8.1-py3-none-any.whl
+- cadquery_ocp_proxy-8.0.0.0.0-py3-none-any.whl
 
 Setup for packages in the **build123d**, **CadQuery**, or **OCP** ecosystem:
 
 1. Packages with `cadquery_ocp` dependencies the can (like `ocpsvg` `ocp_gordon`, and `build123d`) would need to use extra dependencies
 
-   ```toml
-   dependencies = ["svgelements >= 1.9.1, <2"]
+    ```toml
+    dependencies = ["svgelements >= 1.9.6, <2"]
 
-   [project.optional-dependencies]
-   dev = ["pytest"]
-   vtk = ["cadquery-ocp-proxy[vtk] >=7.9, < 8.0"]
-   novtk = ["cadquery-ocp-proxy[novtk] >=7.9, < 8.0"]
-   ```
+    [project.optional-dependencies]
+    dev = ["pytest"]
+    vtk = ["cadquery-ocp-proxy[vtk] >=8.0, < 8.1"]
+    novtk = ["cadquery-ocp-proxy[novtk] >=8.0, < 8.1"]
+    ```
 
 2. Packages that need VTK like `cadquery` would only depend on `cadquery-ocp-proxy[vtk]` as default dependency
 
@@ -37,14 +37,14 @@ Setup for packages in the **build123d**, **CadQuery**, or **OCP** ecosystem:
 
 ## Install **build123d** without VTK:
 
-When we `pip install build123d[novtk]==0.11.0`, we get (pip list):
+When we `pip install build123d[novtk]==0.11.1`, we get (pip list):
 
 ```text
-build123d               0.11.0
-cadquery-ocp-novtk      7.9.3.0
-cadquery-ocp-proxy      7.9.3.0
+build123d               0.11.1
+cadquery-ocp-novtk      8.0.0.0.0
+cadquery-ocp-proxy      8.0.0.0.0
 ...
-ocp-gordon              0.19.0
+ocp-gordon              0.22.0
 ocpsvg                  0.6.0
 ```
 
@@ -56,14 +56,14 @@ ocpsvg                  0.6.0
 
 ## Install **build123d** with VTK:
 
-When we `pip install build123d[vtk]==0.11.0`, we get (pip list):
+When we `pip install build123d[vtk]==0.11.1`, we get (pip list):
 
 ```text
-build123d               0.11.0
-cadquery-ocp            7.9.3.0
-cadquery-ocp-proxy      7.9.3.0
+build123d               0.11.1
+cadquery-ocp            8.0.0.0.0
+cadquery-ocp-proxy      8.0.0.0.0
 ...
-ocp-gordon              0.19.0
+ocp-gordon              0.22.0
 ocpsvg                  0.6.0
 ```
 
@@ -75,12 +75,12 @@ ocpsvg                  0.6.0
 
 ## Install **cadquery**:
 
-When we `pip install cadquery==2.7`, we get (pip list):
+When we `pip install cadquery==2.8`, we get (pip list):
 
 ```text
-cadquery           2.7
-cadquery-ocp       7.9.3.0
-cadquery-ocp-proxy 7.9.3.0
+cadquery           2.8
+cadquery-ocp       8.0.0.0.0
+cadquery-ocp-proxy 8.0.0.0.0
 ```
 
 **Tests:**
@@ -90,9 +90,9 @@ cadquery-ocp-proxy 7.9.3.0
 Since the dependency of `ocpsvg` is `cadquery-ocp-proxy `, we can `pip install ocpsvg==0.6.0`
 
 ```text
-cadquery           2.7
-cadquery-ocp       7.9.3.0
-cadquery-ocp-proxy 7.9.3.0
+cadquery           2.8
+cadquery-ocp       8.0.0.0.0
+cadquery-ocp-proxy 8.0.0.0.0
 ...
 ocpsvg             0.6.0
 ```
@@ -102,40 +102,6 @@ All good, because `cadquery-ocp` was already there from the `cadquery` installat
 **Tests:**
 
 - ocpsvg: `pytest tests` passes all test.
-
-## Install **CadQuery** and **build123d** at the same time
-
-When we
-
-```
-pip install build123d[vtk]==0.11.0
-pip install cadquery==2.7
-
-# or
-
-pip install cadquery==2.7
-pip install build123d[vtk]==0.11.0
-
-# or
-
-pip install cadquery==2.7 build123d==0.11.0
-
-# or
-
-pip install build123d==0.11.0 cadquery==2.7
-```
-
-we get (pip list)
-
-```text
-build123d               0.11.0
-cadquery                2.7
-cadquery-ocp            7.9.3.0
-cadquery-ocp-proxy      7.9.3.0
-...
-ocp-gordon              0.19.0
-ocpsvg                  0.6.0
-```
 
 **Tests:**
 
@@ -153,9 +119,9 @@ What happens when we only install `pip install build123d==0.11.0`?
 We get (pip list):
 
     ```text
-    build123d               0.11.0
+    build123d               0.11.1
     ...
-    ocp-gordon              0.19.0
+    ocp-gordon              0.22.0
     ocpsvg                  0.6.0
     ```
 

@@ -7,11 +7,11 @@ on: workflow_dispatch
 #       - v7.9
 
 env:
-  OCP: 7.9.3.1.1
-  WHEEL: 7.9.3.1.1
+  OCP: 8.0.0.0.0
+  WHEEL: 8.0.0.0.0
   VTK: 9.6.2
   VTK_MAJOR: 9.6
-  OCCT: 7.9.3
+  OCCT: 8.0.0
   PYBIND11: 2.13
   PYWRAP: "false"
   # OCP source download URL (default: https://github.com/CadQuery/OCP/releases/download)
