@@ -44,28 +44,40 @@ runs:
       if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
-        # (Ubuntu) Install dependencies
-        # do not use freeimage freetype fontconfig from anaconda. Prevents from manylinux_2_31_x86_64 wheel
-        apt-get update -qq
-        DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
-          mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
-          libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential \
-          ca-certificates curl unzip \
-          autoconf automake libtool libjpeg-dev liblzma-dev libzstd-dev libwebp-dev zlib1g-dev > /dev/null 2>&1
+        # (manylinux) Install dependencies
+        # System libs only - never from conda, which would put conda binaries in the wheel.
+        set -e
+        dnf install -y -q epel-release > /dev/null 2>&1 || true
+        dnf install -y -q \
+          mesa-libGL-devel mesa-libEGL-devel mesa-libGLU-devel freeglut-devel libXcursor-devel \
+          libX11-devel libXi-devel libXmu-devel \
+          freeimage-devel freetype-devel fontconfig-devel fmt-devel \
+          git patch ca-certificates curl unzip cpio dnf-plugins-core \
+          autoconf automake libtool libjpeg-turbo-devel xz-devel libzstd-devel libwebp-devel zlib-devel > /dev/null 2>&1
+
+        # AlmaLinux 8 ships rapidjson 1.1.0 (2016); GCC 14 rejects it. No release since,
+        # so pin a master revision.
+        RAPIDJSON_REV=24b5e7a8b27f42fa16b96fc70aade9106cf7102f
+        curl -Ls https://github.com/Tencent/rapidjson/archive/${RAPIDJSON_REV}.tar.gz | tar xz -C /tmp
+        rm -rf /usr/include/rapidjson
+        cp -r /tmp/rapidjson-${RAPIDJSON_REV}/include/rapidjson /usr/include/
 
     # - - -
 
-    - name: (Ubuntu) Build libtiff without JBIG support
+    - name: (manylinux) Build libtiff without JBIG support
       if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
-        # (Ubuntu) Build libtiff without JBIG support
-        # Ubuntu's libtiff5 links libjbig (GPL-2.0-or-later), which auditwheel would vendor
-        # into the wheel via libTKService -> libfreeimage -> libtiff -> libjbig. Rebuild
-        # Ubuntu's own (security-patched) libtiff source with the JBIG codec disabled.
+        # (manylinux) Build libtiff without JBIG support
+        # AlmaLinux's libtiff links libjbig (GPL-2.0-or-later), which auditwheel would vendor
+        # into the wheel via libTKService -> libfreeimage -> libtiff -> libjbig. Rebuild the
+        # distro's own (security-patched) libtiff source with the JBIG codec disabled.
         set -e
-        sed -n 's/^deb /deb-src /p' /etc/apt/sources.list >> /etc/apt/sources.list && apt-get update -qq
-        mkdir -p /tmp/tiff && cd /tmp/tiff && apt-get source tiff && cd tiff-*/
+        mkdir -p /tmp/tiff && cd /tmp/tiff
+        dnf download --source libtiff -q
+        rpm2cpio *.src.rpm | cpio -idm --quiet
+        tar xf tiff-*.tar.*
+        cd tiff-*/
         autoreconf -fi > /dev/null 2>&1
         ./configure --prefix=/opt/tiff-nojbig --disable-jbig --disable-static \
           --enable-ld-version-script CFLAGS=-O2 > /dev/null
@@ -84,7 +96,19 @@ runs:
     # - - - - - - - - - - - - - - - - - - - - -
 
     
+    - name: (Linux) Set up Python ${{ inputs.python-version }} via uv
+      if: runner.os == 'Linux'
+      shell: bash -l {0}
+      run: |
+        # (Linux) Set up Python via uv - no conda anywhere on the build path
+        set -e
+        uv venv /opt/build-venv --python ${{ inputs.python-version }}
+        uv pip install --python /opt/build-venv -q \
+          "pybind11==2.13.*" cmake ninja pybind11-stubgen setuptools wheel auditwheel patchelf
+        /opt/build-venv/bin/python -V
+
     - name: Set up Python ${{ inputs.python-version }} via micromamba
+      if: runner.os != 'Linux'
       uses: mamba-org/setup-micromamba@ce51e99f4bb8a82ab7158c4dc59ef4634c59c4f9 #v3.1.0
       with:
         environment-file: environment.yml
@@ -99,7 +123,11 @@ runs:
       id: cpu-count
       run: |
         # Get number of CPUs
-        micromamba activate build-ocp
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          export PATH=/opt/build-venv/bin:$PATH
+        else
+          micromamba activate build-ocp
+        fi
 
         cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
         echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
@@ -178,7 +206,9 @@ runs:
         cd OCP
         echo "Patch VTK out of CMakeLists.txt"
         sed -i.bak '/find_package( VTK/,/)/d' CMakeLists.txt
-        sed -i.bak '/VTK::/d' CMakeLists.txt
+        # OCP 8.0.0.0 puts pybind11::pybind11, the VTK:: targets and fmt::fmt on ONE line,
+        # so deleting whole VTK:: lines would drop pybind11 and fmt too.
+        sed -i.bak 's/VTK::[A-Za-z0-9_]*//g' CMakeLists.txt
         sed -i.bak '/message(STATUS "VTK .* found")/d' CMakeLists.txt
         cd ..
 
@@ -207,8 +237,7 @@ runs:
         set -e
         set -o pipefail
 
-        micromamba activate build-ocp
-        micromamba info
+        export PATH=/opt/build-venv/bin:$PATH
 
         cd OCP
 
@@ -224,18 +253,20 @@ runs:
           CXX11_ABI=0  # x86_64 VTK uses old ABI
         fi
 
-        echo "Building OCP with VTK_DIR=$VTK_DIR, CXX11_ABI=$CXX11_ABI"
+        PY_INCLUDE=$(python -c "import sysconfig; print(sysconfig.get_paths()['include'])")
+        echo "Building OCP with VTK_DIR=$VTK_DIR, CXX11_ABI=$CXX11_ABI, PY_INCLUDE=$PY_INCLUDE"
 
         cmake -B build -S OCP -G Ninja \
         -D CMAKE_BUILD_TYPE=Release \
-            -D CMAKE_C_COMPILER=/usr/bin/gcc \
-            -D CMAKE_CXX_COMPILER=/usr/bin/g++ \
+            -D CMAKE_C_COMPILER=$(command -v gcc) \
+            -D CMAKE_CXX_COMPILER=$(command -v g++) \
+            -D Python_EXECUTABLE=$(command -v python) \
             $VTK_DIR \
             -D OpenCASCADE_DIR=$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib/cmake/opencascade \
             -D pybind11_DIR=$(python -c "import pybind11; print(pybind11.get_cmake_dir())") \
             -D CMAKE_CXX_STANDARD=17 \
-            -D CMAKE_CXX_FLAGS="-isystem $CONDA_PREFIX/include -isystem $CONDA_PREFIX/include/python${{ inputs.python-version }} -D_GLIBCXX_USE_CXX11_ABI=$CXX11_ABI -DFMT_HEADER_ONLY -fvisibility=hidden -w" \
-            -D CMAKE_MODULE_LINKER_FLAGS="-L $CONDA_PREFIX/lib -L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
+            -D CMAKE_CXX_FLAGS="-isystem $PY_INCLUDE -D_GLIBCXX_USE_CXX11_ABI=$CXX11_ABI -DFMT_HEADER_ONLY -fvisibility=hidden -w" \
+            -D CMAKE_MODULE_LINKER_FLAGS="-L $HOME/opt/local/vtk-${{ env.VTK }}/lib" \
             -D CMAKE_BUILD_WITH_INSTALL_RPATH=TRUE
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
@@ -249,10 +280,15 @@ runs:
 
         # OCP's pybind11 translation units are memory-hungry: -j<all cpus> was
         # OOM-killed (exit 137) on all four 4-vCPU Linux runners at ~97% of the
-        # build. Leave one core's worth of memory headroom.
+        # build. -j(cpus-1) cleared x86_64 but aarch64 still OOMed, so leave it
+        # one core more headroom.
+        MEM_GB=$(awk '/MemTotal/{printf "%d", $2/1048576}' /proc/meminfo 2>/dev/null || echo "?")
         JOBS=$(( ${{ steps.cpu-count.outputs.cpu_count }} - 1 ))
+        if [ "$(uname -m)" = "aarch64" ]; then
+          JOBS=$(( ${{ steps.cpu-count.outputs.cpu_count }} - 2 ))
+        fi
         [ "$JOBS" -lt 1 ] && JOBS=1
-        echo "=> Building OCP with -j $JOBS"
+        echo "=> ${{ steps.cpu-count.outputs.cpu_count }} CPUs, ${MEM_GB} GB RAM, $(uname -m): building OCP with -j $JOBS"
         ninja -C build -j $JOBS
 
     - name: (Mac) Generate OCP build files and build OCP
@@ -368,7 +404,11 @@ runs:
         set -e
         set -o pipefail
 
-        micromamba activate build-ocp
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          export PATH=/opt/build-venv/bin:$PATH
+        else
+          micromamba activate build-ocp
+        fi
         pip install build wheel ${{ inputs.delocate }}
 
         cd pypi
@@ -453,7 +493,7 @@ runs:
         set -e
         set -o pipefail
 
-        micromamba activate build-ocp
+        export PATH=/opt/build-venv/bin:$PATH
         cd pypi
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
@@ -464,7 +504,12 @@ runs:
           PKG_NAME="cadquery_ocp_novtk"
         fi
 
-        env LD_LIBRARY_PATH=/opt/tiff-nojbig/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib:$CONDA_PREFIX/lib \
+        env LD_LIBRARY_PATH=/opt/tiff-nojbig/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib \
+            python -m auditwheel \
+            show \
+            dist/*.whl || true
+
+        env LD_LIBRARY_PATH=/opt/tiff-nojbig/lib:$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/lib \
             python -m auditwheel \
             repair \
             --plat=${{ inputs.plat }} \

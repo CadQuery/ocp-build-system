@@ -154,13 +154,14 @@ runs:
         cd cadquery
 
         # Patch to allow cadquery_ocp v7.9
-        sed -i.bak 's/"cadquery-ocp>=7\.8\.1,<7\.9",/"cadquery-ocp>=7.9,< 8.0",/' setup.py
+        sed -i.bak 's/"cadquery-ocp>=7\.9\.3\.1,<8\.0",/"cadquery-ocp>=8.0,< 9.0",/' setup.py
 
         uv pip install .
 
         # 7.9. COMPATIBILITY ISSUE
-        sed -i.bak '/^from pytest import /s/$/, mark/' tests/test_free_functions.py
-        awk '/def test_cap/{print "@mark.skip()"} 1' tests/test_free_functions.py > tests/_tmp && mv tests/_tmp tests/test_free_functions.py
+        # 8.0 try without
+        # sed -i.bak '/^from pytest import /s/$/, mark/' tests/test_free_functions.py
+        # awk '/def test_cap/{print "@mark.skip()"} 1' tests/test_free_functions.py > tests/_tmp && mv tests/_tmp tests/test_free_functions.py
         
         # Workaround for casadi/nlopt atexit segfault on Windows
         # Use os._exit() to skip cleanup handlers entirely

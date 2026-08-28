@@ -35,10 +35,9 @@ runs:
         set -u
         set -o pipefail
 
-        apt-get update -qq 
-        DEBIAN_FRONTEND=noninteractive apt-get install -qq \
-          ca-certificates mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev \
-          git patch clang build-essential curl > /dev/null 2>&1
+        dnf install -y -q \
+          ca-certificates mesa-libGL-devel mesa-libEGL-devel mesa-libGLU-devel freeglut-devel \
+          git patch curl > /dev/null 2>&1
 
     # - - -
 
@@ -51,8 +50,7 @@ runs:
         set -u
         set -o pipefail
 
-        apt-get update -qq 
-        DEBIAN_FRONTEND=noninteractive apt-get install -qq curl unzip > /dev/null 2>&1
+        dnf install -y -q curl unzip > /dev/null 2>&1
 
     # - - - (micromamba needs ca-certificates for ubuntu)
 

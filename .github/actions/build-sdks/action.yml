@@ -55,12 +55,23 @@ runs:
       if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
-        # (Ubuntu) Install dependencies
-        # do not use freeimage freetype fontconfig from anaconda. Prevents from manylinux_2_31_x86_64 wheel
-        apt-get update -qq
-        DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
-          mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
-          libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential ca-certificates   > /dev/null 2>&1
+        # (manylinux) Install dependencies
+        # System libs only - never from conda, which would put conda binaries in the wheel.
+        set -e
+        dnf install -y -q epel-release > /dev/null 2>&1 || true
+        dnf install -y -q \
+          mesa-libGL-devel mesa-libEGL-devel mesa-libGLU-devel freeglut-devel libXcursor-devel \
+          libX11-devel libXi-devel libXmu-devel \
+          freeimage-devel freetype-devel fontconfig-devel fmt-devel \
+          git patch ca-certificates curl unzip > /dev/null 2>&1
+
+        # AlmaLinux 8 ships rapidjson 1.1.0 (2016); GCC 14 rejects it with
+        # "assignment of read-only member GenericStringRef::length". There has been no
+        # release since 1.1.0, so pin a master revision.
+        RAPIDJSON_REV=24b5e7a8b27f42fa16b96fc70aade9106cf7102f
+        curl -Ls https://github.com/Tencent/rapidjson/archive/${RAPIDJSON_REV}.tar.gz | tar xz -C /tmp
+        rm -rf /usr/include/rapidjson
+        cp -r /tmp/rapidjson-${RAPIDJSON_REV}/include/rapidjson /usr/include/
           
     # - - - (micromamba needs ca-certificates for ubuntu)
 
@@ -70,8 +81,19 @@ runs:
       run: |
         sed -i.bak 's/python=3.13/python=${{ inputs.python-version }}/' environment.yml
 
+    - name: (Linux) Set up Python ${{ inputs.python-version }} via uv
+      if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        # (Linux) Set up Python via uv - no conda anywhere on the build path
+        set -e
+        uv venv /opt/build-venv --python ${{ inputs.python-version }}
+        uv pip install --python /opt/build-venv -q \
+          "pybind11==2.13.*" cmake ninja pybind11-stubgen setuptools wheel
+        /opt/build-venv/bin/python -V
+
     - name: Set up Python ${{ inputs.python-version }} via micromamba
-      if: steps.cache-occt-restore.outputs.cache-hit != 'true'
+      if: runner.os != 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       uses: mamba-org/setup-micromamba@ce51e99f4bb8a82ab7158c4dc59ef4634c59c4f9 #v3.1.0
       with:
         environment-file: environment.yml
@@ -88,7 +110,11 @@ runs:
       id: cpu-count
       run: |
         # Get number of CPUs
-        micromamba activate build-ocp
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          export PATH=/opt/build-venv/bin:$PATH
+        else
+          micromamba activate build-ocp
+        fi
 
         cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())")
         echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
@@ -242,13 +268,6 @@ runs:
 
         patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/switch-vtk-freetype-cmake-order.patch
 
-        # GCC 9.4 (the ubuntu:20.04 container required for manylinux_2_31) predates
-        # P1286R2 and so deletes Bnd_Box's defaulted noexcept constructor, because
-        # RealFirst/RealLast are constexpr but not noexcept. Newer compilers already
-        # behave as if patched. Verified against a full 5656-target OCCT 8.0.0 build:
-        # this is the only source change GCC 9.4 needs.
-        patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/standard-real-noexcept.patch
-
         if [[ "$RUNNER_OS" == "Windows" ]]; then
           # OCCT 8.0.0 moved toolkits under their module directory and replaced the
           # plain-text EXTERNLIB file with a CMake script that defines
@@ -268,7 +287,11 @@ runs:
         set -e
         set -o pipefail
 
-        micromamba activate build-ocp
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          export PATH=/opt/build-venv/bin:$PATH
+        else
+          micromamba activate build-ocp
+        fi
         cd OCCT
 
         rm -fr build
@@ -279,12 +302,15 @@ runs:
           else
             export CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0"  # x86_64 VTK uses old ABI
           fi
-          COMPILER_FLAGS="-D CMAKE_C_COMPILER=/usr/bin/gcc -D CMAKE_CXX_COMPILER=/usr/bin/g++"
+          # manylinux puts the GCC toolset on PATH, not in /usr/bin
+          COMPILER_FLAGS="-D CMAKE_C_COMPILER=$(command -v gcc) -D CMAKE_CXX_COMPILER=$(command -v g++)"
+          PREFIX_PATH=""   # system libs; no conda prefix on Linux
         elif  [[ "$RUNNER_OS" == "macOS" ]]; then
           export CFLAGS="-mmacosx-version-min=11.1"
           export CXXFLAGS="-mmacosx-version-min=11.1"
           export LDFLAGS="-mmacosx-version-min=11.1"
           COMPILER_FLAGS="-D CMAKE_C_COMPILER=/usr/bin/clang -D CMAKE_CXX_COMPILER=/usr/bin/clang++"
+          PREFIX_PATH="-D CMAKE_PREFIX_PATH=$CONDA_PREFIX"
         fi
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
@@ -306,7 +332,7 @@ runs:
             -D BUILD_RELEASE_DISABLE_EXCEPTIONS=OFF \
             -D BUILD_MODULE_Draw=OFF  \
             -D BUILD_OPT_PROFILE=Production \
-            -D CMAKE_PREFIX_PATH=$CONDA_PREFIX \
+            $PREFIX_PATH \
             \
             -D VTK_RENDERING_BACKEND=OpenGL2 \
             -D 3RDPARTY_VTK_INCLUDE_DIR=$HOME/opt/local/vtk-${{ env.VTK }}/include${{ inputs.vtk-suffix }} \
@@ -337,7 +363,7 @@ runs:
             -D BUILD_RELEASE_DISABLE_EXCEPTIONS=OFF \
             -D BUILD_MODULE_Draw=OFF \
             -D BUILD_OPT_PROFILE=Production \
-            -D CMAKE_PREFIX_PATH=$CONDA_PREFIX
+            $PREFIX_PATH
         fi
 
         # Build OCCT
