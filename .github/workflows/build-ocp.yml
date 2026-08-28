@@ -4,7 +4,7 @@ on: workflow_dispatch
 # on:
 #   push:
 #     branches:
-#       - v7.9
+#       - v8.0
 
 env:
   OCP: 8.0.0.0.0
