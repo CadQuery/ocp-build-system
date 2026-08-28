@@ -241,6 +241,12 @@ runs:
 
         cd OCP
 
+        # manylinux CPython ships no shared libpython, so find_package(Python ... Development)
+        # fails on the implied Development.Embed. Building an extension module needs only
+        # Development.Module. Applies to both the vtk and novtk variants.
+        sed -i.bak 's/COMPONENTS Interpreter Development)/COMPONENTS Interpreter Development.Module)/' OCP/CMakeLists.txt
+        grep -n "find_package (Python" OCP/CMakeLists.txt
+
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
           VTK_DIR="-D VTK_DIR=$HOME/opt/local/vtk-${{ env.VTK }}"
         else
