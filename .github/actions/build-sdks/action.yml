@@ -92,8 +92,10 @@ runs:
           "pybind11==2.13.*" cmake ninja pybind11-stubgen setuptools wheel
         /opt/build-venv/bin/python -V
 
+    # On Linux the build env comes from uv; micromamba is still needed for the
+    # vtk variant, which extracts VTK headers from a throwaway conda env.
     - name: Set up Python ${{ inputs.python-version }} via micromamba
-      if: runner.os != 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
+      if: (runner.os != 'Linux' || inputs.use-vtk == 'vtk') && steps.cache-occt-restore.outputs.cache-hit != 'true'
       uses: mamba-org/setup-micromamba@ce51e99f4bb8a82ab7158c4dc59ef4634c59c4f9 #v3.1.0
       with:
         environment-file: environment.yml
