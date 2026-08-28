@@ -40,7 +40,7 @@ runs:
     # - - - - - - - - - - - - - - - - - - - - -
 
     
-    - name: (Ubuntu) Install dependencies
+    - name: (manylinux) Install dependencies
       if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
