@@ -60,7 +60,7 @@ runs:
         apt-get update -qq
         DEBIAN_FRONTEND=noninteractive apt-get install -qq -y \
           mesa-common-dev libegl1-mesa-dev libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libxcursor-dev \
-          libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang build-essential ca-certificates   > /dev/null 2>&1
+          libfreeimage-dev libfreetype-dev libfontconfig-dev git patch clang lld build-essential ca-certificates   > /dev/null 2>&1
           
     # - - - (micromamba needs ca-certificates for ubuntu)
 
@@ -243,12 +243,10 @@ runs:
         patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/switch-vtk-freetype-cmake-order.patch
 
         if [[ "$RUNNER_OS" == "Windows" ]]; then
-          echo vtkCommonTransforms >> src/TKIVtk/EXTERNLIB
-          echo vtkCommonMath >> src/TKIVtk/EXTERNLIB
-          echo vtkCommonExecutionModel >> src/TKIVtk/EXTERNLIB
-          echo vtkCommonDataModel >> src/TKIVtk/EXTERNLIB
-          echo vtksys >> src/TKIVtk/EXTERNLIB
-          echo vtkFiltersCore >> src/TKIVtk/EXTERNLIB
+          # OCCT 8.0.0 moved toolkits under their module directory and replaced the
+          # plain-text EXTERNLIB file with a CMake script that defines
+          # OCCT_<toolkit>_EXTERNAL_LIBS, so append to that list instead.
+          echo 'list(APPEND OCCT_TKIVtk_EXTERNAL_LIBS vtkCommonTransforms vtkCommonMath vtkCommonExecutionModel vtkCommonDataModel vtksys vtkFiltersCore)' >> src/Visualization/TKIVtk/EXTERNLIB.cmake
         fi
 
         mkdir -p ~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}
@@ -274,7 +272,13 @@ runs:
           else
             export CXXFLAGS="-D_GLIBCXX_USE_CXX11_ABI=0"  # x86_64 VTK uses old ABI
           fi
-          COMPILER_FLAGS="-D CMAKE_C_COMPILER=/usr/bin/gcc -D CMAKE_CXX_COMPILER=/usr/bin/g++"
+          # The ubuntu:20.04 container (needed for manylinux_2_31) only has GCC 9.4,
+          # which is too old for OCCT 8.0.0's C++17: it rejects Bnd_Box's defaulted
+          # noexcept constructor (pre-P1286R2 rule). Clang uses the system libstdc++,
+          # so glibc, the manylinux target and the C++11 ABI setting above are unchanged.
+          # BUILD_OPT_PROFILE=Production adds -flto, and clang's bitcode needs lld.
+          export LDFLAGS="-fuse-ld=lld"
+          COMPILER_FLAGS="-D CMAKE_C_COMPILER=/usr/bin/clang -D CMAKE_CXX_COMPILER=/usr/bin/clang++"
         elif  [[ "$RUNNER_OS" == "macOS" ]]; then
           export CFLAGS="-mmacosx-version-min=11.1"
           export CXXFLAGS="-mmacosx-version-min=11.1"
