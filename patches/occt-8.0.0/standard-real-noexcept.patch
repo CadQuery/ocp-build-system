@@ -1,0 +1,22 @@
+diff --git a/src/FoundationClasses/TKernel/Standard/Standard_Real.hxx b/src/FoundationClasses/TKernel/Standard/Standard_Real.hxx
+index 7205b828..2d26fba1 100644
+--- a/src/FoundationClasses/TKernel/Standard/Standard_Real.hxx
++++ b/src/FoundationClasses/TKernel/Standard/Standard_Real.hxx
+@@ -164,7 +164,7 @@ inline double Abs(const double theValue)
+ }
+ 
+ //! Returns the minimum value of a double.
+-[[nodiscard]] constexpr double RealFirst()
++[[nodiscard]] constexpr double RealFirst() noexcept
+ {
+   return -DBL_MAX;
+ }
+@@ -176,7 +176,7 @@ inline double Abs(const double theValue)
+ }
+ 
+ //! Returns the maximum value of a double.
+-[[nodiscard]] constexpr double RealLast()
++[[nodiscard]] constexpr double RealLast() noexcept
+ {
+   return DBL_MAX;
+ }
