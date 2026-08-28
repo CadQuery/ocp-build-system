@@ -190,6 +190,14 @@ runs:
           sed -i.bak '/register_IVtk/d' OCP/OCP.cpp
         done
 
+        # OCP 8.0.0.0 also pulls IVtk into the collections_* bindings, which 7.9.x did
+        # not: 14 files include <IVtk_Types.hxx>, and collections_3 / collections_pre_3
+        # (pre)register NCollection templates on IVtk_IdType and IVtk_SelectionMode.
+        # Without VTK, OCCT does not install those headers.
+        sed -i.bak -e '/#include <IVtk_[A-Za-z_]*\.hxx>/d' \
+                   -e '/register_template_NCollection_[A-Za-z]*<IVtk_/d' OCP/*.cpp
+        rm -f OCP/*.cpp.bak
+
     
     - name: (Linux) Generate OCP build files and build OCP
       if: runner.os == 'Linux' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
