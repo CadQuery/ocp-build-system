@@ -7,7 +7,7 @@ on: workflow_dispatch
 #       - v8.0
 
 env:
-  OCP: 8.0.0.0.0
+  OCP: 8.0.0.0
   WHEEL: 8.0.0.0.0
   VTK: 9.6.2
   VTK_MAJOR: 9.6
