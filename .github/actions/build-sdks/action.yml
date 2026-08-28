@@ -87,7 +87,8 @@ runs:
       run: |
         # (Linux) Set up Python via uv - no conda anywhere on the build path
         set -e
-        uv venv /opt/build-venv --python ${{ inputs.python-version }}
+        # --seed provides pip in the venv; shared steps still call plain `pip`
+        uv venv --seed /opt/build-venv --python ${{ inputs.python-version }}
         uv pip install --python /opt/build-venv -q \
           "pybind11==2.13.*" cmake ninja pybind11-stubgen setuptools wheel
         /opt/build-venv/bin/python -V
