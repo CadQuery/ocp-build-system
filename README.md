@@ -82,7 +82,7 @@ For **novtk** wheels:
 - `OCCT-8.0.0-py-<version>-novtk-<os>-`: The compiled OCCT SDK without VTK support
 - `OCP-8.0.0.0-VTK-novtk-py<version>-<os>-`: The compiled OCP Python module without VTK support
 
-`<os>` being "ubuntu-22.04", "macos-15-intel", "macos-14", and "windows-latest".
+`<os>` being "ubuntu-22.04", "ubuntu-22.04-arm", "macos-15-intel", "macos-14", and "windows-latest".
 `<version>` being "3.11", "3.12", "3.13", and "3.14",
 
 To recompile, delete the respective [cached elements](https://github.com/bernhard-42/repackage-ocp/actions/caches) first.
