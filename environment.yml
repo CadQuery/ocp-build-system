@@ -3,7 +3,7 @@ channels:
   - conda-forge
 dependencies:
   - python=3.13
-  - setuptools>=75
+  - setuptools>=81
   - pybind11=2.13.*
   - cmake >3.24
   - ninja
