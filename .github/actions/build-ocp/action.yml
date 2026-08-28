@@ -247,7 +247,13 @@ runs:
           done
         fi
 
-        ninja -C build -j ${{ steps.cpu-count.outputs.cpu_count }}
+        # OCP's pybind11 translation units are memory-hungry: -j<all cpus> was
+        # OOM-killed (exit 137) on all four 4-vCPU Linux runners at ~97% of the
+        # build. Leave one core's worth of memory headroom.
+        JOBS=$(( ${{ steps.cpu-count.outputs.cpu_count }} - 1 ))
+        [ "$JOBS" -lt 1 ] && JOBS=1
+        echo "=> Building OCP with -j $JOBS"
+        ninja -C build -j $JOBS
 
     - name: (Mac) Generate OCP build files and build OCP
       if: runner.os == 'macOS' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
