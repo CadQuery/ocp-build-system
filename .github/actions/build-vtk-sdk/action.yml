@@ -1,0 +1,139 @@
+name: "Build VTK SDK"
+description: "Stage the VTK SDK (headers + libraries) into ~/opt/local/vtk-<version>"
+
+# Staging only - nothing is compiled here, so there is no build environment to choose.
+# micromamba is the single tool: VTK publishes no headers on PyPI, so they come from a
+# throwaway conda env, and the libraries come from Kitware's PyPI wheel pip-installed
+# into a second throwaway env. Nothing from either env reaches the build or the wheel.
+#
+# The cache this writes is not an optimisation - it is how the VTK SDK reaches the
+# separate build-ocp job, which shares no filesystem with this one.
+inputs:
+  os:
+    description: "Operating system to use for the build"
+    required: true
+  python-version:
+    description: "Python version to use for the build"
+    required: true
+  vtk-libs:
+    description: "Glob of VTK libraries inside the vtk wheel, relative to site-packages"
+    required: true
+  vtk-libdest:
+    description: "Subdirectory of the VTK SDK the libraries are copied into (lib or bin)"
+    required: true
+  vtk-prefix:
+    description: "VTK prefix for library paths"
+    required: true
+  shells:
+    description: "Shell configuration for the OS"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
+ 
+    # - - -
+
+    - name: Restore VTK SDK cache
+
+      id: cache-vtk-restore
+      uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
+      with:
+        path: |
+          ~/opt/local/vtk-${{ env.VTK }}
+        key: VTK-${{ env.VTK }}-${{ inputs.os }}-py-${{ inputs.python-version }}-
+
+    # - - -
+    # VTK ships no headers on PyPI, so the conda env created below is used purely to
+    # extract the include tree. The libraries come from Kitware's PyPI wheel.
+
+    - name: Install micromamba and create the VTK env
+      if: steps.cache-vtk-restore.outputs.cache-hit != 'true'
+      uses: mamba-org/setup-micromamba@ce51e99f4bb8a82ab7158c4dc59ef4634c59c4f9 #v3.1.0
+      with:
+        environment-name: vtk
+        create-args: >-
+          python=${{ inputs.python-version }}
+          vtk=${{ env.VTK }}
+        log-level: warning
+        init-shell: ${{ inputs.shells }}
+
+    - name: Install VTK SDK include files
+      if: steps.cache-vtk-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        # Install VTK SDK include files
+        set -e
+        set -o pipefail
+
+        DEST=~/opt/local/vtk-${{ env.VTK }}
+        rm -fr $DEST
+        mkdir -p $DEST/include
+        mkdir -p $DEST/bin
+        mkdir -p $DEST/lib
+        mkdir -p $DEST/lib/cmake
+
+        cp -r $CONDA_PREFIX/${{ inputs.vtk-prefix }}include/vtk-${{ env.VTK_MAJOR }}/ $DEST/include/
+
+        # Map OS to platform type
+        case "${{ inputs.os }}" in
+          ubuntu-*) PLATFORM="linux" ;;
+          macos-*)  PLATFORM="macos" ;;
+          windows-*) PLATFORM="windows" ;;
+        esac
+
+        # Parse VTK version and patch vtk-config.cmake
+        VTK_VERSION="${{ env.VTK }}"
+        VTK_MAJOR=$(echo $VTK_VERSION | cut -d. -f1)
+        VTK_MINOR=$(echo $VTK_VERSION | cut -d. -f2)
+        VTK_BUILD=$(echo $VTK_VERSION | cut -d. -f3)
+
+        sed -e "s/^set(VTK_MAJOR_VERSION .*)$/set(VTK_MAJOR_VERSION $VTK_MAJOR)/" \
+            -e "s/^set(VTK_MINOR_VERSION .*)$/set(VTK_MINOR_VERSION $VTK_MINOR)/" \
+            -e "s/^set(VTK_BUILD_VERSION .*)$/set(VTK_BUILD_VERSION $VTK_BUILD)/" \
+            cmake/vtk-config-$PLATFORM.cmake > $DEST/vtk-config.cmake
+
+    # - - -
+
+    - name: Install VTK SDK libs
+      if: steps.cache-vtk-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        # Install VTK SDK libs
+        set -e
+        set -o pipefail
+
+        DEST=~/opt/local/vtk-${{ env.VTK }}
+
+        # These libraries come from Kitware's PyPI wheel, never from conda. Reuse the
+        # env created for the headers - but install into a separate directory, because
+        # conda's vtk package ships its own site-packages/vtkmodules and a plain
+        # `pip install vtk` would overwrite it (or be overwritten), silently mixing the
+        # two sources depending on step order.
+        pip install -q --target /tmp/vtk-wheel vtk==${{ env.VTK }}
+        SITE_PACKAGES=/tmp/vtk-wheel
+
+        cp $SITE_PACKAGES/${{ inputs.vtk-libs }} $DEST/${{ inputs.vtk-libdest }}/
+        cp $SITE_PACKAGES/vtk.py $DEST
+
+        # Windows links against import libraries, which the wheel does not ship;
+        # generate them from the DLLs with dumpbin/lib.
+        if [[ "$RUNNER_OS" == "Windows" ]]; then
+          cp create_lib.sh $DEST
+          pushd $DEST/lib/
+          ../create_lib.sh
+          popd
+        fi
+
+    # - - -
+
+    - name: Cache VTK build folder
+
+      id: cache-vtk-save
+      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
+      with:
+        path: |
+          ~/opt/local/vtk-${{ env.VTK }}
+        key: ${{ steps.cache-vtk-restore.outputs.cache-primary-key }}
+

@@ -1,5 +1,20 @@
-name: "Build SDKs"
-description: "Building OCCT and VTK SDK"
+name: "Build OCCT SDK"
+description: "Compile and install the OCCT SDK into ~/opt/local/occt-<version>-<variant>"
+
+# Build environment follows the OS, and only the OS:
+#
+#   Linux    uv          - C libraries come from dnf, so no conda is needed
+#   mac/win  micromamba  - no system package manager for freeimage/freetype/fontconfig.
+#                          Homebrew is not an option: its bottles target the runner OS,
+#                          which breaks -mmacosx-version-min=11.1
+#
+# Whichever applies is activated at login-shell level (setup-uv's activate-environment
+# on Linux, setup-micromamba's init-shell elsewhere), so steps just call
+# `python`/`cmake`/`ninja` without activating anything themselves. Exactly one Python
+# environment is active per step.
+#
+# For the vtk variant this action consumes the VTK SDK staged by build-vtk-sdk, via the
+# VTK cache - it never stages VTK itself.
 inputs:
   os:
     description: "Operating system to use for the build"
@@ -10,17 +25,8 @@ inputs:
   use-vtk:
     description: "Whether to use VTK in the build"
     required: true
-  vtk-libs:
-    description: "Glob of VTK libraries inside the vtk wheel, relative to site-packages"
-    required: true
-  vtk-libdest:
-    description: "Subdirectory of the VTK SDK the libraries are copied into (lib or bin)"
-    required: true
   vtk-suffix:
-    description: "VTK suffix for library paths"
-    required: true
-  vtk-prefix:
-    description: "VTK prefix for library paths"
+    description: "VTK suffix for include paths"
     required: true
   shells:
     description: "Shell configuration for the OS"
@@ -79,30 +85,44 @@ runs:
         rm -rf /usr/include/rapidjson
         cp -r /tmp/rapidjson-${RAPIDJSON_REV}/include/rapidjson /usr/include/
           
-    # - - - (micromamba needs ca-certificates for ubuntu)
+    # - - - - - - - - - - - - - - - - - - - - -
+    # Install Python
+    # - - - - - - - - - - - - - - - - - - - - -
 
-    - name: (All) Patch environment.yml for Python
-      if: steps.cache-occt-restore.outputs.cache-hit != 'true'
+    # Exactly one Python environment must be active per step, so the two uv installs are
+    # kept separate. Neither is gated on a cache key: their consumers are gated on
+    # different ones (OCCT vs VTK).
+
+    # uv is default for Python env for manylinux
+    - name: (manylinux) Install uv and create the build env
+      if: runner.os == 'Linux'
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 #v9.0.0
+      with:
+        python-version: ${{ inputs.python-version }}
+        enable-cache: false
+        activate-environment: true
+
+    - name: (manylinux) Set up Python ${{ inputs.python-version }} via uv
+      if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        # (manylinux) Build env from PyPI only - no conda on the build path. setup-uv has
+        # already created and activated the venv, so uv and python resolve to it.
+        set -e
+        echo "uv: $(command -v uv) $(uv --version)"
+        uv pip install -q \
+          pip "pybind11==2.13.*" cmake ninja pybind11-stubgen setuptools wheel
+        python -V    # mac/win vtk: uv is only a tool for the VTK staging step, which makes its own
+
+    # micromamba is default Python env for Windows and MacOS
+    - name: (Mac, Windows) Patch environment.yml for Python
+      if: runner.os != 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
         sed -i.bak 's/python=3.13/python=${{ inputs.python-version }}/' environment.yml
 
-    - name: (Linux) Set up Python ${{ inputs.python-version }} via uv
-      if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
-      shell: bash -l {0}
-      run: |
-        # (Linux) Set up Python via uv - no conda anywhere on the build path
-        set -e
-        # --seed provides pip in the venv; shared steps still call plain `pip`
-        uv venv --seed /opt/build-venv --python ${{ inputs.python-version }}
-        uv pip install --python /opt/build-venv -q \
-          "pybind11==2.13.*" cmake ninja pybind11-stubgen setuptools wheel
-        /opt/build-venv/bin/python -V
-
-    # On Linux the build env comes from uv; micromamba is still needed for the
-    # vtk variant, which extracts VTK headers from a throwaway conda env.
     - name: Set up Python ${{ inputs.python-version }} via micromamba
-      if: (runner.os != 'Linux' || inputs.use-vtk == 'vtk') && steps.cache-occt-restore.outputs.cache-hit != 'true'
+      if: runner.os != 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       uses: mamba-org/setup-micromamba@ce51e99f4bb8a82ab7158c4dc59ef4634c59c4f9 #v3.1.0
       with:
         environment-file: environment.yml
@@ -111,20 +131,17 @@ runs:
         # cache-environment: true
         # cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-${{ inputs.use-vtk }}
 
-    # - - -
-
+    # Exactly one Python environment must be active per step
+    # This is needed for a throwaway venv. No python-version and no activation here, so micromamba stays
+    # the single active environment.
     - name: Get number of CPUs
       if: steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       id: cpu-count
       run: |
         # Get number of CPUs
-        if [[ "$RUNNER_OS" == "Linux" ]]; then
-          export PATH=/opt/build-venv/bin:$PATH
-        else
-          micromamba activate build-ocp
-        fi
 
+        echo "python: $(command -v python)"
         cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())")
         echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
         echo "=> Using $cpu_count CPUs"
@@ -141,110 +158,6 @@ runs:
 
     # - - - - - - - - - - - - - - - - - - - - -
     #                VTK SDK
-    # - - - - - - - - - - - - - - - - - - - - -
-
-    - name: Install VTK SDK include files
-      if: inputs.use-vtk == 'vtk' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
-      shell: bash -l {0}
-      run: |
-        # Install VTK SDK include files
-        set -e
-        set -o pipefail
-
-        # VTK ships no headers on PyPI, so use a throwaway conda env purely to extract
-        # the include tree. Nothing from it reaches the build or the wheel: headers
-        # compile away, and the VTK libraries come from Kitware's PyPI wheel. This is
-        # the only remaining conda use on Linux, and only for the vtk variant.
-        micromamba create -y -n vtk python=${{ inputs.python-version }}
-        micromamba activate vtk
-        micromamba install -y vtk=${{ env.VTK }}
-
-        DEST=~/opt/local/vtk-${{ env.VTK }}
-        rm -fr $DEST
-        mkdir -p $DEST/include
-        mkdir -p $DEST/bin
-        mkdir -p $DEST/lib
-        mkdir -p $DEST/lib/cmake
-
-        cp -r $CONDA_PREFIX/${{ inputs.vtk-prefix }}include/vtk-${{ env.VTK_MAJOR }}/ $DEST/include/
-
-        # Map OS to platform type
-        case "${{ inputs.os }}" in
-          ubuntu-*) PLATFORM="linux" ;;
-          macos-*)  PLATFORM="macos" ;;
-          windows-*) PLATFORM="windows" ;;
-        esac
-
-        # Parse VTK version and patch vtk-config.cmake
-        VTK_VERSION="${{ env.VTK }}"
-        VTK_MAJOR=$(echo $VTK_VERSION | cut -d. -f1)
-        VTK_MINOR=$(echo $VTK_VERSION | cut -d. -f2)
-        VTK_BUILD=$(echo $VTK_VERSION | cut -d. -f3)
-
-        sed -e "s/^set(VTK_MAJOR_VERSION .*)$/set(VTK_MAJOR_VERSION $VTK_MAJOR)/" \
-            -e "s/^set(VTK_MINOR_VERSION .*)$/set(VTK_MINOR_VERSION $VTK_MINOR)/" \
-            -e "s/^set(VTK_BUILD_VERSION .*)$/set(VTK_BUILD_VERSION $VTK_BUILD)/" \
-            cmake/vtk-config-$PLATFORM.cmake > $DEST/vtk-config.cmake
-
-        micromamba deactivate
-
-    # - - -
-
-    - name: (Linux, Mac) Install VTK SDK libs
-      if: inputs.use-vtk == 'vtk' && runner.os != 'Windows' && steps.cache-vtk-restore.outputs.cache-hit != 'true'
-      shell: bash -l {0}
-      run: |
-        # (Linux, Mac) Install VTK SDK libs
-        set -e
-        set -o pipefail
-
-        PY_VER=${{ inputs.python-version }}
-
-        micromamba create -y -n vtk-$PY_VER python=$PY_VER
-        micromamba activate vtk-$PY_VER
-
-        pip install vtk==${{ env.VTK }}
-
-        DEST=~/opt/local/vtk-${{ env.VTK }}
-
-        # These libraries come from Kitware's PyPI wheel, never from conda - the venv
-        # below is only a throwaway interpreter to pip into.
-        uv venv /tmp/vtk-dl --python ${{ inputs.python-version }}
-        uv pip install --python /tmp/vtk-dl -q vtk==${{ env.VTK }}
-
-        # Windows python reports a native path (C:\...), which MSYS cp cannot use.
-        CMD="import sysconfig; print(sysconfig.get_paths()['purelib'])"
-        if [[ "$RUNNER_OS" == "Windows" ]]; then
-          SITE_PACKAGES=$(cygpath -u "$(/tmp/vtk-dl/Scripts/python.exe -c "$CMD")")
-        else
-          SITE_PACKAGES=$(/tmp/vtk-dl/bin/python -c "$CMD")
-        fi
-
-        cp $SITE_PACKAGES/${{ inputs.vtk-libs }} $DEST/${{ inputs.vtk-libdest }}/
-        cp $SITE_PACKAGES/vtk.py $DEST
-
-        # Windows links against import libraries, which the wheel does not ship;
-        # generate them from the DLLs with dumpbin/lib.
-        if [[ "$RUNNER_OS" == "Windows" ]]; then
-          cp create_lib.sh $DEST
-          pushd $DEST/lib/
-          ../create_lib.sh
-          popd
-        fi
-
-    # - - -
-
-    - name: Cache VTK build folder
-      if: inputs.use-vtk == 'vtk'
-      id: cache-vtk-save
-      uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 #v6.1.0
-      with:
-        path: |
-          ~/opt/local/vtk-${{ env.VTK }}
-        key: ${{ steps.cache-vtk-restore.outputs.cache-primary-key }}
-
-    # - - - - - - - - - - - - - - - - - - - - -
-    #                OCCT SDK
     # - - - - - - - - - - - - - - - - - - - - -
 
     - name: Download and prepare OCCT SDK
@@ -282,11 +195,7 @@ runs:
         set -e
         set -o pipefail
 
-        if [[ "$RUNNER_OS" == "Linux" ]]; then
-          export PATH=/opt/build-venv/bin:$PATH
-        else
-          micromamba activate build-ocp
-        fi
+        echo "python: $(command -v python)"
         cd OCCT
 
         rm -fr build

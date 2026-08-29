@@ -49,17 +49,24 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
 
-      - name: Build SDKs
-        id: build-sdks
-        uses: ./.github/actions/build-sdks
+      - name: Build VTK SDK
+        if: matrix.use-vtk == 'vtk'
+        uses: ./.github/actions/build-vtk-sdk
+        with:
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+          vtk-libs: "vtkmodules/libvtk*.so"
+          vtk-libdest: "lib"
+          vtk-prefix: ""
+          shells: "bash"
+
+      - name: Build OCCT SDK
+        uses: ./.github/actions/build-occt-sdk
         with:
           os: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
           use-vtk: ${{ matrix.use-vtk }}
-          vtk-libs: "vtkmodules/libvtk*.so"
-          vtk-libdest: "lib"
           vtk-suffix: "/vtk-${{ env.VTK_MAJOR }}/"
-          vtk-prefix: ""
           shells: "bash"
 
   sdks-win-mac:
@@ -96,17 +103,24 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
 
-      - name: Build SDKs
-        id: build-sdks
-        uses: ./.github/actions/build-sdks
+      - name: Build VTK SDK
+        if: matrix.use-vtk == 'vtk'
+        uses: ./.github/actions/build-vtk-sdk
+        with:
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+          vtk-libs: ${{ matrix.vtk-libs }}
+          vtk-libdest: ${{ matrix.vtk-libdest }}
+          vtk-prefix: ${{ matrix.vtk-prefix }}
+          shells: ${{ matrix.shells }}
+
+      - name: Build OCCT SDK
+        uses: ./.github/actions/build-occt-sdk
         with:
           os: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
           use-vtk: ${{ matrix.use-vtk }}
-          vtk-libs: ${{ matrix.vtk-libs }}
-          vtk-libdest: ${{ matrix.vtk-libdest }}
           vtk-suffix: ${{ matrix.vtk-suffix }}
-          vtk-prefix: ${{ matrix.vtk-prefix }}
           shells: ${{ matrix.shells }}
 
   # ================================================================================
