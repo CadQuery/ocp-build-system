@@ -787,3 +787,515 @@ index 7568fa9..2a2261e 100644
          BSplCLib.Knots_s(occ_knots, occ_unique_knots, occ_multiplicities)
  
          # print(f'params={params}')
+diff --git a/tests/test_bspline_algorithms.py b/tests/test_bspline_algorithms.py
+index f521a0e..188efbd 100644
+--- a/tests/test_bspline_algorithms.py
++++ b/tests/test_bspline_algorithms.py
+@@ -13,8 +13,8 @@ from OCP.Geom import (
+ from OCP.GeomAPI import GeomAPI_ProjectPointOnCurve
+ from OCP.gp import gp_Ax2, gp_Dir, gp_Pnt
+ from OCP.Precision import Precision
+-from OCP.TColgp import TColgp_Array1OfPnt, TColgp_Array2OfPnt, TColgp_HArray1OfPnt
+-from OCP.TColStd import TColStd_Array1OfInteger, TColStd_Array1OfReal
++from OCP.collections import Array1_gp_Pnt, Array2_gp_Pnt, HArray1_gp_Pnt
++from OCP.collections import Array1_int, Array1_double
+ 
+ from ocp_gordon.internal.bspline_algorithms import (
+     BSplineAlgorithms,
+@@ -34,18 +34,18 @@ def assert_list_almost_equal(list1, list2, places=7):
+ # first and last values of mults = degree + 1
+ @pytest.fixture
+ def simple_bspline_curve():
+-    poles = TColgp_Array1OfPnt(1, 4)
++    poles = Array1_gp_Pnt(1, 4)
+     poles.SetValue(1, gp_Pnt(0, 0, 0))
+     poles.SetValue(2, gp_Pnt(1, 1, 0))
+     poles.SetValue(3, gp_Pnt(2, -1, 0))
+     poles.SetValue(4, gp_Pnt(3, 0, 0))
+ 
+-    knots = TColStd_Array1OfReal(1, 3)
++    knots = Array1_double(1, 3)
+     knots.SetValue(1, 0.0)
+     knots.SetValue(2, 0.5)
+     knots.SetValue(3, 1.0)
+ 
+-    mults = TColStd_Array1OfInteger(1, 3)
++    mults = Array1_int(1, 3)
+     mults.SetValue(1, 3)
+     mults.SetValue(2, 1)
+     mults.SetValue(3, 3)
+@@ -84,7 +84,7 @@ def test_linspace_with_breaks():
+ 
+ 
+ def test_is_u_dir_closed():
+-    poles_closed_u = TColgp_Array2OfPnt(1, 2, 1, 2)
++    poles_closed_u = Array2_gp_Pnt(1, 2, 1, 2)
+     poles_closed_u.SetValue(1, 1, gp_Pnt(0, 0, 0))
+     poles_closed_u.SetValue(2, 1, gp_Pnt(0, 1, 0))
+     poles_closed_u.SetValue(1, 2, gp_Pnt(1, 0, 0))
+@@ -95,7 +95,7 @@ def test_is_u_dir_closed():
+ 
+     assert BSplineAlgorithms.is_u_dir_closed(poles_closed_u, 1e-6)
+ 
+-    poles_not_closed_u = TColgp_Array2OfPnt(1, 2, 1, 2)
++    poles_not_closed_u = Array2_gp_Pnt(1, 2, 1, 2)
+     poles_not_closed_u.SetValue(1, 1, gp_Pnt(0, 0, 0))
+     poles_not_closed_u.SetValue(2, 1, gp_Pnt(0, 1, 0))
+     poles_not_closed_u.SetValue(1, 2, gp_Pnt(1, 0, 0))
+@@ -104,7 +104,7 @@ def test_is_u_dir_closed():
+ 
+ 
+ def test_is_v_dir_closed():
+-    poles_closed_v = TColgp_Array2OfPnt(1, 2, 1, 2)
++    poles_closed_v = Array2_gp_Pnt(1, 2, 1, 2)
+     poles_closed_v.SetValue(1, 1, gp_Pnt(0, 0, 0))
+     poles_closed_v.SetValue(1, 2, gp_Pnt(1, 0, 0))
+     poles_closed_v.SetValue(2, 1, gp_Pnt(0, 1, 0))
+@@ -115,7 +115,7 @@ def test_is_v_dir_closed():
+ 
+     assert BSplineAlgorithms.is_v_dir_closed(poles_closed_v, 1e-6)
+ 
+-    poles_not_closed_v = TColgp_Array2OfPnt(1, 2, 1, 2)
++    poles_not_closed_v = Array2_gp_Pnt(1, 2, 1, 2)
+     poles_not_closed_v.SetValue(1, 1, gp_Pnt(0, 0, 0))
+     poles_not_closed_v.SetValue(1, 2, gp_Pnt(1, 0, 0))
+     poles_not_closed_v.SetValue(2, 1, gp_Pnt(0, 1, 0))
+@@ -124,7 +124,7 @@ def test_is_v_dir_closed():
+ 
+ 
+ def test_compute_params_bspline_curve():
+-    points_h_array = TColgp_HArray1OfPnt(1, 3)
++    points_h_array = HArray1_gp_Pnt(1, 3)
+     points_h_array.SetValue(1, gp_Pnt(0, 0, 0))
+     points_h_array.SetValue(2, gp_Pnt(1, 0, 0))
+     points_h_array.SetValue(3, gp_Pnt(2, 0, 0))
+@@ -135,7 +135,7 @@ def test_compute_params_bspline_curve():
+     assert math.isclose(params[1], 0.5)
+     assert math.isclose(params[2], 1.0)
+ 
+-    points_h_array_non_uniform = TColgp_HArray1OfPnt(1, 4)
++    points_h_array_non_uniform = HArray1_gp_Pnt(1, 4)
+     points_h_array_non_uniform.SetValue(1, gp_Pnt(0, 0, 0))
+     points_h_array_non_uniform.SetValue(2, gp_Pnt(1, 0, 0))
+     points_h_array_non_uniform.SetValue(3, gp_Pnt(3, 0, 0))
+@@ -157,19 +157,19 @@ def test_get_kink_parameters(simple_bspline_curve):
+     kinks = BSplineAlgorithms.get_kink_parameters(simple_bspline_curve)
+     assert len(kinks) == 0
+ 
+-    poles_kink = TColgp_Array1OfPnt(1, 5)
++    poles_kink = Array1_gp_Pnt(1, 5)
+     poles_kink.SetValue(1, gp_Pnt(0, 0, 0))
+     poles_kink.SetValue(2, gp_Pnt(1, 1, 0))
+     poles_kink.SetValue(3, gp_Pnt(1, 0, 0))
+     poles_kink.SetValue(4, gp_Pnt(2, 1, 0))
+     poles_kink.SetValue(5, gp_Pnt(3, 0, 0))
+ 
+-    knots_kink = TColStd_Array1OfReal(1, 3)
++    knots_kink = Array1_double(1, 3)
+     knots_kink.SetValue(1, 0.0)
+     knots_kink.SetValue(2, 0.5)
+     knots_kink.SetValue(3, 1.0)
+ 
+-    mults_kink = TColStd_Array1OfInteger(1, 3)
++    mults_kink = Array1_int(1, 3)
+     mults_kink.SetValue(1, 3)
+     mults_kink.SetValue(2, 2)
+     mults_kink.SetValue(3, 3)
+@@ -191,16 +191,16 @@ def test_trim_curve(simple_bspline_curve):
+ 
+ def test_match_parameter_range(simple_bspline_curve):
+     curve1 = clone_bspline(simple_bspline_curve)
+-    curve2_poles = TColgp_Array1OfPnt(1, 4)
++    curve2_poles = Array1_gp_Pnt(1, 4)
+     curve2_poles.SetValue(1, gp_Pnt(0, 0, 0))
+     curve2_poles.SetValue(2, gp_Pnt(1, 1, 0))
+     curve2_poles.SetValue(3, gp_Pnt(2, -1, 0))
+     curve2_poles.SetValue(4, gp_Pnt(3, 0, 0))
+-    curve2_knots = TColStd_Array1OfReal(1, 3)
++    curve2_knots = Array1_double(1, 3)
+     curve2_knots.SetValue(1, 0.5)
+     curve2_knots.SetValue(2, 1.0)
+     curve2_knots.SetValue(3, 1.5)
+-    curve2_mults = TColStd_Array1OfInteger(1, 3)
++    curve2_mults = Array1_int(1, 3)
+     curve2_mults.SetValue(1, 3)
+     curve2_mults.SetValue(2, 1)
+     curve2_mults.SetValue(3, 3)
+@@ -220,17 +220,17 @@ def test_match_parameter_range(simple_bspline_curve):
+ def test_match_degree(simple_bspline_curve):
+     curve1 = clone_bspline(simple_bspline_curve)
+ 
+-    poles_deg3 = TColgp_Array1OfPnt(1, 5)
++    poles_deg3 = Array1_gp_Pnt(1, 5)
+     poles_deg3.SetValue(1, gp_Pnt(0, 0, 0))
+     poles_deg3.SetValue(2, gp_Pnt(1, 1, 0))
+     poles_deg3.SetValue(3, gp_Pnt(2, -1, 0))
+     poles_deg3.SetValue(4, gp_Pnt(3, 1, 0))
+     poles_deg3.SetValue(5, gp_Pnt(4, 0, 0))
+-    knots_deg3 = TColStd_Array1OfReal(1, 3)
++    knots_deg3 = Array1_double(1, 3)
+     knots_deg3.SetValue(1, 0.0)
+     knots_deg3.SetValue(2, 0.5)
+     knots_deg3.SetValue(3, 1.0)
+-    mults_deg3 = TColStd_Array1OfInteger(1, 3)
++    mults_deg3 = Array1_int(1, 3)
+     mults_deg3.SetValue(1, 4)
+     mults_deg3.SetValue(2, 1)
+     mults_deg3.SetValue(3, 4)
+@@ -328,13 +328,13 @@ def test_scale_single_curve(simple_bspline_curve):
+ 
+ def test_scale_list_of_curves(simple_bspline_curve):
+     curve1 = clone_bspline(simple_bspline_curve)
+-    curve2_poles = TColgp_Array1OfPnt(1, 2)
++    curve2_poles = Array1_gp_Pnt(1, 2)
+     curve2_poles.SetValue(1, gp_Pnt(0, 0, 0))
+     curve2_poles.SetValue(2, gp_Pnt(10, 0, 0))
+-    curve2_knots = TColStd_Array1OfReal(1, 2)
++    curve2_knots = Array1_double(1, 2)
+     curve2_knots.SetValue(1, 0.0)
+     curve2_knots.SetValue(2, 1.0)
+-    curve2_mults = TColStd_Array1OfInteger(1, 2)
++    curve2_mults = Array1_int(1, 2)
+     curve2_mults.SetValue(1, 2)
+     curve2_mults.SetValue(2, 2)
+     curve2 = Geom_BSplineCurve(curve2_poles, curve2_knots, curve2_mults, 1)
+@@ -346,23 +346,23 @@ def test_scale_list_of_curves(simple_bspline_curve):
+ 
+ 
+ def test_get_kink_parameters_surface():
+-    poles_surf = TColgp_Array2OfPnt(1, 2, 1, 2)
++    poles_surf = Array2_gp_Pnt(1, 2, 1, 2)
+     poles_surf.SetValue(1, 1, gp_Pnt(0, 0, 0))
+     poles_surf.SetValue(1, 2, gp_Pnt(1, 0, 0))
+     poles_surf.SetValue(2, 1, gp_Pnt(0, 1, 0))
+     poles_surf.SetValue(2, 2, gp_Pnt(1, 1, 0))
+ 
+-    knots_u = TColStd_Array1OfReal(1, 2)
++    knots_u = Array1_double(1, 2)
+     knots_u.SetValue(1, 0.0)
+     knots_u.SetValue(2, 1.0)
+-    mults_u = TColStd_Array1OfInteger(1, 2)
++    mults_u = Array1_int(1, 2)
+     mults_u.SetValue(1, 2)
+     mults_u.SetValue(2, 2)
+ 
+-    knots_v = TColStd_Array1OfReal(1, 2)
++    knots_v = Array1_double(1, 2)
+     knots_v.SetValue(1, 0.0)
+     knots_v.SetValue(2, 1.0)
+-    mults_v = TColStd_Array1OfInteger(1, 2)
++    mults_v = Array1_int(1, 2)
+     mults_v.SetValue(1, 2)
+     mults_v.SetValue(2, 2)
+ 
+@@ -410,7 +410,7 @@ def test_knots_from_curve_parameters_closed_odd_degree():
+ 
+ 
+ def test_compute_params_bspline_surf():
+-    poles_surf = TColgp_Array2OfPnt(1, 3, 1, 3)
++    poles_surf = Array2_gp_Pnt(1, 3, 1, 3)
+     poles_surf.SetValue(1, 1, gp_Pnt(0, 0, 0))
+     poles_surf.SetValue(1, 2, gp_Pnt(1, 0, 0))
+     poles_surf.SetValue(1, 3, gp_Pnt(2, 0, 0))
+diff --git a/tests/test_bspline_approx_interp.py b/tests/test_bspline_approx_interp.py
+index 0a936b2..e743036 100644
+--- a/tests/test_bspline_approx_interp.py
++++ b/tests/test_bspline_approx_interp.py
+@@ -1,7 +1,7 @@
+ import pytest
+ import numpy as np
+ from OCP.Geom import Geom_BSplineCurve, Geom_Curve
+-from OCP.TColgp import TColgp_Array1OfPnt
++from OCP.collections import Array1_gp_Pnt
+ from OCP.gp import gp_Pnt
+ import math
+ 
+@@ -19,7 +19,7 @@ def assert_list_almost_equal(list1, list2, places=7):
+ 
+ @pytest.fixture
+ def simple_points_array():
+-    points = TColgp_Array1OfPnt(1, 4)
++    points = Array1_gp_Pnt(1, 4)
+     points.SetValue(1, gp_Pnt(0, 0, 0))
+     points.SetValue(2, gp_Pnt(1, 1, 0))
+     points.SetValue(3, gp_Pnt(2, -1, 0))
+@@ -29,7 +29,7 @@ def simple_points_array():
+ 
+ @pytest.fixture
+ def linear_points_array():
+-    points = TColgp_Array1OfPnt(1, 3)
++    points = Array1_gp_Pnt(1, 3)
+     points.SetValue(1, gp_Pnt(0, 0, 0))
+     points.SetValue(2, gp_Pnt(1, 0, 0))
+     points.SetValue(3, gp_Pnt(2, 0, 0))
+@@ -38,7 +38,7 @@ def linear_points_array():
+ 
+ @pytest.fixture
+ def closed_points_array():
+-    points = TColgp_Array1OfPnt(1, 5)
++    points = Array1_gp_Pnt(1, 5)
+     points.SetValue(1, gp_Pnt(0, 0, 0))
+     points.SetValue(2, gp_Pnt(1, 0, 0))
+     points.SetValue(3, gp_Pnt(1, 1, 0))
+@@ -241,7 +241,7 @@ class TestBSplineApproxInterp:
+ 
+     def test_project_on_curve(self, linear_points_array):
+         # Create a simple linear B-spline curve
+-        poles = TColgp_Array1OfPnt(1, 2)
++        poles = Array1_gp_Pnt(1, 2)
+         poles.SetValue(1, gp_Pnt(0, 0, 0))
+         poles.SetValue(2, gp_Pnt(2, 0, 0))
+         knots = BSplineAlgorithms.to_array([0.0, 1.0])
+diff --git a/tests/test_curve_network_sorter.py b/tests/test_curve_network_sorter.py
+index ba5315c..723312a 100644
+--- a/tests/test_curve_network_sorter.py
++++ b/tests/test_curve_network_sorter.py
+@@ -4,8 +4,8 @@ import numpy as np
+ import pytest
+ from OCP.Geom import Geom_BSplineCurve, Geom_Curve
+ from OCP.gp import gp_Pnt
+-from OCP.TColgp import TColgp_Array1OfPnt
+-from OCP.TColStd import TColStd_Array1OfInteger, TColStd_Array1OfReal
++from OCP.collections import Array1_gp_Pnt
++from OCP.collections import Array1_int, Array1_double
+ 
+ # Import the CurveNetworkSorter from the internal module
+ from ocp_gordon.internal.curve_network_sorter import CurveNetworkSorter
+@@ -18,15 +18,15 @@ def create_linear_bspline_curve(
+     """
+     Helper to create a simple linear B-spline curve.
+     """
+-    control_points = TColgp_Array1OfPnt(1, 2)
++    control_points = Array1_gp_Pnt(1, 2)
+     control_points.SetValue(1, start_point)
+     control_points.SetValue(2, end_point)
+ 
+-    knots = TColStd_Array1OfReal(1, 2)
++    knots = Array1_double(1, 2)
+     knots.SetValue(1, 0.0)
+     knots.SetValue(2, 1.0)
+ 
+-    multiplicities = TColStd_Array1OfInteger(1, 2)  # Corrected type
++    multiplicities = Array1_int(1, 2)  # Corrected type
+     multiplicities.SetValue(1, degree + 1)
+     multiplicities.SetValue(2, degree + 1)
+ 
+diff --git a/tests/test_curves_to_surface.py b/tests/test_curves_to_surface.py
+index 1a80f33..da5ff77 100644
+--- a/tests/test_curves_to_surface.py
++++ b/tests/test_curves_to_surface.py
+@@ -2,8 +2,8 @@ import pytest
+ import numpy as np
+ 
+ from OCP.gp import gp_Pnt
+-from OCP.TColgp import TColgp_Array1OfPnt, TColgp_Array2OfPnt
+-from OCP.TColStd import TColStd_Array1OfReal, TColStd_Array1OfInteger
++from OCP.collections import Array1_gp_Pnt, Array2_gp_Pnt
++from OCP.collections import Array1_double, Array1_int
+ from OCP.Geom import Geom_BSplineCurve, Geom_BSplineSurface
+ from OCP.GeomConvert import GeomConvert
+ 
+@@ -16,7 +16,7 @@ from ocp_gordon.internal.error import ErrorCode, error
+ @pytest.fixture
+ def create_test_bspline_curve():
+     def _create_test_bspline_curve(poles_data, degree, periodic=False):
+-        poles = TColgp_Array1OfPnt(1, len(poles_data))
++        poles = Array1_gp_Pnt(1, len(poles_data))
+         for i, p_data in enumerate(poles_data, 1):
+             poles.SetValue(i, gp_Pnt(p_data[0], p_data[1], p_data[2]))
+ 
+@@ -28,8 +28,8 @@ def create_test_bspline_curve():
+             # For a periodic curve, the number of knots is num_poles + 1.
+             # The knot values are uniform.
+             num_knots_periodic = num_poles + 1
+-            knots_array = TColStd_Array1OfReal(1, num_knots_periodic)
+-            mults_array = TColStd_Array1OfInteger(1, num_knots_periodic)
++            knots_array = Array1_double(1, num_knots_periodic)
++            mults_array = Array1_int(1, num_knots_periodic)
+ 
+             for i in range(1, num_knots_periodic + 1):
+                 knots_array.SetValue(i, float(i - 1))
+@@ -47,8 +47,8 @@ def create_test_bspline_curve():
+             num_internal_knots = num_poles - degree - 1
+             num_unique_knots = num_internal_knots + 2
+ 
+-            final_knots = TColStd_Array1OfReal(1, num_unique_knots)
+-            final_mults = TColStd_Array1OfInteger(1, num_unique_knots)
++            final_knots = Array1_double(1, num_unique_knots)
++            final_mults = Array1_int(1, num_unique_knots)
+ 
+             # First knot (clamped start)
+             final_knots.SetValue(1, 0.0)
+diff --git a/tests/test_gordon_surface_builder.py b/tests/test_gordon_surface_builder.py
+index 62a854c..1a04dae 100644
+--- a/tests/test_gordon_surface_builder.py
++++ b/tests/test_gordon_surface_builder.py
+@@ -3,8 +3,8 @@ import numpy as np
+ from typing import List  # Import List
+ 
+ from OCP.gp import gp_Pnt
+-from OCP.TColgp import TColgp_Array1OfPnt
+-from OCP.TColStd import TColStd_Array1OfReal, TColStd_Array1OfInteger
++from OCP.collections import Array1_gp_Pnt
++from OCP.collections import Array1_double, Array1_int
+ from OCP.Geom import Geom_BSplineCurve, Geom_BSplineSurface
+ 
+ from ocp_gordon.internal.gordon_surface_builder import GordonSurfaceBuilder
+@@ -19,7 +19,7 @@ def create_simple_bspline_curve(
+     num_poles = len(points)
+ 
+     # Control points
+-    poles_array = TColgp_Array1OfPnt(1, num_poles)
++    poles_array = Array1_gp_Pnt(1, num_poles)
+     for i, pnt in enumerate(points, 1):
+         poles_array.SetValue(i, pnt)
+ 
+@@ -53,8 +53,8 @@ def create_simple_bspline_curve(
+         num_internal_knots + 2
+     )  # Number of unique knots (including 0 and 1)
+ 
+-    final_knots = TColStd_Array1OfReal(1, num_unique_knots)
+-    final_mults = TColStd_Array1OfInteger(1, num_unique_knots)
++    final_knots = Array1_double(1, num_unique_knots)
++    final_mults = Array1_int(1, num_unique_knots)
+ 
+     # First knot (clamped start)
+     final_knots.SetValue(1, 0.0)
+diff --git a/tests/test_interpolate_curve_network.py b/tests/test_interpolate_curve_network.py
+index 6849acd..2bf183b 100644
+--- a/tests/test_interpolate_curve_network.py
++++ b/tests/test_interpolate_curve_network.py
+@@ -9,8 +9,8 @@ from OCP.GeomAbs import GeomAbs_Shape
+ from OCP.GeomAPI import GeomAPI_Interpolate, GeomAPI_PointsToBSpline
+ from OCP.gp import gp_Pnt
+ from OCP.Precision import Precision
+-from OCP.TColgp import TColgp_Array1OfPnt, TColgp_HArray1OfPnt
+-from OCP.TColStd import TColStd_Array1OfInteger, TColStd_Array1OfReal
++from OCP.collections import Array1_gp_Pnt, HArray1_gp_Pnt
++from OCP.collections import Array1_int, Array1_double
+ 
+ # Import actual internal dependencies
+ from ocp_gordon.internal.bspline_algorithms import BSplineAlgorithms
+@@ -46,7 +46,7 @@ def create_bspline_curve(points: list[gp_Pnt], interpolate=True):
+     # Create a regular array
+     if interpolate:
+         n_points = len(points)
+-        array = TColgp_HArray1OfPnt(1, n_points)
++        array = HArray1_gp_Pnt(1, n_points)
+ 
+         for i, point in enumerate(points, 1):
+             array.SetValue(i, point)
+@@ -56,7 +56,7 @@ def create_bspline_curve(points: list[gp_Pnt], interpolate=True):
+         return Interpolator.Curve()
+     else:
+         n_points = len(points)
+-        array = TColgp_Array1OfPnt(1, n_points)
++        array = Array1_gp_Pnt(1, n_points)
+ 
+         for i, point in enumerate(points, 1):
+             array.SetValue(i, point)
+@@ -75,7 +75,7 @@ def create_bspline_curve_from_poles(
+     num_poles = len(points)
+ 
+     # Control points
+-    poles_array = TColgp_Array1OfPnt(1, num_poles)
++    poles_array = Array1_gp_Pnt(1, num_poles)
+     for i, pnt in enumerate(points, 1):
+         poles_array.SetValue(i, pnt)
+ 
+@@ -87,8 +87,8 @@ def create_bspline_curve_from_poles(
+         num_internal_knots + 2
+     )  # Number of unique knots (including 0 and 1)
+ 
+-    final_knots = TColStd_Array1OfReal(1, num_unique_knots)
+-    final_mults = TColStd_Array1OfInteger(1, num_unique_knots)
++    final_knots = Array1_double(1, num_unique_knots)
++    final_mults = Array1_int(1, num_unique_knots)
+ 
+     # First knot (clamped start)
+     final_knots.SetValue(1, 0.0)
+diff --git a/tests/test_intersect_bsplines.py b/tests/test_intersect_bsplines.py
+index 3a573e0..60404f4 100644
+--- a/tests/test_intersect_bsplines.py
++++ b/tests/test_intersect_bsplines.py
+@@ -14,7 +14,7 @@ from OCP.GeomAbs import GeomAbs_Shape
+ from OCP.GeomAPI import GeomAPI_PointsToBSpline
+ from OCP.GeomConvert import GeomConvert
+ from OCP.gp import gp_Ax1, gp_Ax2, gp_Dir, gp_Pnt, gp_Trsf
+-from OCP.TColgp import TColgp_Array1OfPnt
++from OCP.collections import Array1_gp_Pnt
+ 
+ # Import the module to test
+ from ocp_gordon.internal.intersect_bsplines import (
+@@ -41,7 +41,7 @@ def create_bspline_from_points(points):
+         Geom_BSplineCurve: B-spline curve through the points
+     """
+     n_points = len(points)
+-    array = TColgp_Array1OfPnt(1, n_points)
++    array = Array1_gp_Pnt(1, n_points)
+ 
+     for i, point in enumerate(points, 1):
+         if len(point) == 1:
+diff --git a/tests/test_misc.py b/tests/test_misc.py
+index f3c129d..d012371 100644
+--- a/tests/test_misc.py
++++ b/tests/test_misc.py
+@@ -4,7 +4,7 @@ import math
+ 
+ from OCP.gp import gp_Pnt, gp_Vec, gp_XYZ
+ from OCP.Geom import Geom_Curve, Geom_BSplineCurve
+-from OCP.TColgp import TColgp_Array1OfPnt
++from OCP.collections import Array1_gp_Pnt
+ from OCP.GeomAPI import GeomAPI_PointsToBSpline
+ 
+ from ocp_gordon.internal.misc import (
+@@ -226,7 +226,7 @@ def create_bspline_curve(points: list[gp_Pnt]):
+     """
+     # Create a regular array
+     n_points = len(points)
+-    array = TColgp_Array1OfPnt(1, n_points)
++    array = Array1_gp_Pnt(1, n_points)
+ 
+     # Fill the array with points (indexing starts at 1 in OCP)
+     for i, point in enumerate(points, 1):
+diff --git a/tests/test_points_to_bspline_interpolation.py b/tests/test_points_to_bspline_interpolation.py
+index 99aa041..6f09980 100644
+--- a/tests/test_points_to_bspline_interpolation.py
++++ b/tests/test_points_to_bspline_interpolation.py
+@@ -1,9 +1,9 @@
+ import pytest
+ import numpy as np
+ from OCP.gp import gp_Pnt
+-from OCP.TColgp import TColgp_HArray1OfPnt, TColgp_Array1OfPnt
++from OCP.collections import HArray1_gp_Pnt, Array1_gp_Pnt
+ from OCP.Geom import Geom_BSplineCurve
+-from OCP.TColStd import TColStd_Array1OfReal, TColStd_Array1OfInteger
++from OCP.collections import Array1_double, Array1_int
+ 
+ from ocp_gordon.internal.points_to_bspline_interpolation import (
+     PointsToBSplineInterpolation,
+@@ -13,12 +13,12 @@ from ocp_gordon.internal.bspline_algorithms import (
+ )  # Assuming BSplineAlgorithms is correctly implemented
+ 
+ 
+-# Helper function to create TColgp_HArray1OfPnt from a list of numpy arrays or gp_Pnt
+-def create_occ_points(points_data: list) -> TColgp_HArray1OfPnt:
++# Helper function to create HArray1_gp_Pnt from a list of numpy arrays or gp_Pnt
++def create_occ_points(points_data: list) -> HArray1_gp_Pnt:
+     if not points_data:
+         raise ValueError("Points data cannot be empty.")
+ 
+-    occ_array = TColgp_Array1OfPnt(1, len(points_data))
++    occ_array = Array1_gp_Pnt(1, len(points_data))
+     for i, p in enumerate(points_data):
+         if isinstance(p, gp_Pnt):
+             occ_array.SetValue(i + 1, p)
+@@ -30,7 +30,7 @@ def create_occ_points(points_data: list) -> TColgp_HArray1OfPnt:
+             raise TypeError(
+                 "Unsupported point data type. Must be gp_Pnt or list/tuple/ndarray."
+             )
+-    return TColgp_HArray1OfPnt(occ_array)
++    return HArray1_gp_Pnt(occ_array)
+ 
+ 
+ class TestPointsToBSplineInterpolation:

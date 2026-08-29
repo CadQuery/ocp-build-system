@@ -41,3 +41,74 @@ index 3365e8b..58658c5 100755
      "pytest",
      "coverage",
      "mypy",
+diff --git a/tests/ocp.py b/tests/ocp.py
+index 52989cd..b93a419 100644
+--- a/tests/ocp.py
++++ b/tests/ocp.py
+@@ -8,7 +8,7 @@ from OCP.BRepTools import BRepTools
+ from OCP.gp import gp_Pnt, gp_Vec
+ from OCP.GProp import GProp_GProps
+ from OCP.TopoDS import TopoDS_Edge, TopoDS_Face, TopoDS_Shape, TopoDS_Wire
+-from OCP.TopTools import TopTools_ListOfShape
++from OCP.collections import List_TopoDS_Shape
+ 
+ 
+ def face_area(face: TopoDS_Face):
+@@ -38,7 +38,7 @@ def is_valid(shape: TopoDS_Shape):
+ def wire_via_BRepBuilderAPI(edges: Iterable[TopoDS_Edge]) -> TopoDS_Wire:
+     """Make a wire using `BRepBuilderAPI_MakeWire.Wire`"""
+     makewire = BRepBuilderAPI_MakeWire()
+-    edge_list = TopTools_ListOfShape()
++    edge_list = List_TopoDS_Shape()
+     for edge in edges:
+         edge_list.Append(edge)
+     makewire.Add(edge_list)
+diff --git a/tests/test_svg.py b/tests/test_svg.py
+index ad350d2..7ff8821 100755
+--- a/tests/test_svg.py
++++ b/tests/test_svg.py
+@@ -81,6 +81,24 @@ def extend_curve(
+     return wire_from_curves(segment_curve(p0, p1), curve, segment_curve(p2, p3))
+ 
+ 
++def bounding_box_bounds(shape: TopoDS_Shape):
++    """`(xmin, ymin, zmin, xmax, ymax, zmax)` of a shape's bounding box.
++
++    `Bnd_Box.Get()` resolves to the overload returning the `Limits` struct, which
++    is not bound, so read the six bounds individually.
++    """
++    bbox = bounding_box(shape)
++    return (
++        bbox.GetXMin(),
++        bbox.GetYMin(),
++        bbox.GetZMin(),
++        bbox.GetXMax(),
++        bbox.GetYMax(),
++        bbox.GetZMax(),
++    )
++
++
++
+ @pytest.mark.parametrize(
+     "points, closed, svg_d",
+     [
+@@ -1034,7 +1052,7 @@ def test_circles_and_ellipses(
+     curve = curves[0]
+     assert type(curve) is curve_type
+     assert isinstance(curve, (Geom_Circle, Geom_Ellipse))
+-    x0, y0, _, x1, y1, _ = bounding_box(imported[0]).Get()
++    x0, y0, _, x1, y1, _ = bounding_box_bounds(imported[0])
+     assert ((x0 + x1) / 2, (y0 + y1) / 2) == approx(center)
+ 
+ 
+@@ -1061,8 +1079,8 @@ def test_skewed_circles_and_ellipses(element: str, svg_d: str):
+     assert len(imported) == 2
+     assert isinstance(imported[0], TopoDS_Wire)
+     assert isinstance(imported[1], TopoDS_Wire)
+-    bounds0 = bounding_box(imported[0]).Get()
+-    bounds1 = bounding_box(imported[1]).Get()
++    bounds0 = bounding_box_bounds(imported[0])
++    bounds1 = bounding_box_bounds(imported[1])
+     assert bounds0 == approx(bounds1, abs=1e-3)
+ 
+ 
