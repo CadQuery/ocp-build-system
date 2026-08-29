@@ -131,9 +131,6 @@ runs:
         # cache-environment: true
         # cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-${{ inputs.use-vtk }}
 
-    # Exactly one Python environment must be active per step
-    # This is needed for a throwaway venv. No python-version and no activation here, so micromamba stays
-    # the single active environment.
     - name: Get number of CPUs
       if: steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
@@ -187,7 +184,7 @@ runs:
 
     # - - -
 
-    - name: (Linux, Mac) Compile and install OCCT SDK
+    - name: (manylinux, Mac) Compile and install OCCT SDK
       if: runner.os  != 'Windows' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
