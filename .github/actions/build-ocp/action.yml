@@ -96,50 +96,43 @@ runs:
         cat environment.yml
 
     # - - - - - - - - - - - - - - - - - - - - -
-    # Install Python (micromamba)
+    # Install Python
     # - - - - - - - - - - - - - - - - - - - - -
 
+    # uv is default for Python env for manylinux
+    - name: (Linux) Install uv
+      if: runner.os == 'Linux'
+      uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 #v9.0.0
+      with:
+        python-version: ${{ inputs.python-version }}
+        enable-cache: false
+        # uv is the first-class environment; on Linux it is the build env
+        activate-environment: ${{ runner.os == 'Linux' }}
     
     - name: (Linux) Set up Python ${{ inputs.python-version }} via uv
       if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
-        # (Linux) Set up Python via uv - no conda anywhere on the build path
+        # (Linux) Build env from PyPI only - no conda on the build path. setup-uv has
+        # already created and activated the venv, so uv and python resolve to it.
         set -e
-        # --seed provides pip in the venv; shared steps still call plain `pip`
-        uv venv --seed /opt/build-venv --python ${{ inputs.python-version }}
-        uv pip install --python /opt/build-venv -q \
-          "pybind11==2.13.*" cmake ninja pybind11-stubgen setuptools wheel auditwheel patchelf
-        /opt/build-venv/bin/python -V
+        echo "uv: $(command -v uv) $(uv --version)"
+        uv pip install -q \
+          pip "pybind11==2.13.*" cmake ninja pybind11-stubgen setuptools wheel auditwheel patchelf
+        python -V
 
-    - name: Set up Python ${{ inputs.python-version }} via micromamba
+    # micromamba is default Python env for Windows and MacOS for accessing fontconfig, freetype, freeimage
+    - name: (Mac, Windows) Set up Python ${{ inputs.python-version }} via micromamba
       if: runner.os != 'Linux'
       uses: mamba-org/setup-micromamba@ce51e99f4bb8a82ab7158c4dc59ef4634c59c4f9 #v3.1.0
       with:
         environment-file: environment.yml
         log-level: warning
-        init-shell: ${{ inputs.shells }}
+        init-shell: ${{ runner.os == 'Linux' && 'none' || inputs.shells }}
         # cache-environment: true
         # cache-environment-key: environment-${{ inputs.python-version }}-${{ inputs.os }}-${{ inputs.use-vtk }}
 
-    
-    - name: Get number of CPUs
-      shell: bash -l {0}
-      id: cpu-count
-      run: |
-        # Get number of CPUs
-        if [[ "$RUNNER_OS" == "Linux" ]]; then
-          export PATH=/opt/build-venv/bin:$PATH
-        else
-          micromamba activate build-ocp
-        fi
-
-        cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
-        echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
-        echo "=> Using $cpu_count CPUs"
-
-    
-    - name: (Mac, Windows) Install dependencies
+    - name: (Mac, Windows)  Set up Python ${{ inputs.python-version }} via micromamba
       if: runner.os != 'Linux'
       shell: bash -l {0}
       run: |
@@ -149,6 +142,18 @@ runs:
 
         micromamba activate build-ocp
         micromamba install -y fontconfig=2.13.* freetype=2.12.* freeimage=3.18.*
+
+    - name: Get number of CPUs
+      shell: bash -l {0}
+      id: cpu-count
+      run: |
+        # Get number of CPUs
+
+        echo "python: $(command -v python)"
+        cpu_count=$(python -c "import multiprocessing; print(multiprocessing.cpu_count())") 
+        echo "cpu_count=$cpu_count" >> $GITHUB_OUTPUT
+        echo "=> Using $cpu_count CPUs"
+
 
     # - - - - - - - - - - - - - - - - - - - - -
     # Restore SDKs
@@ -241,8 +246,6 @@ runs:
         # (Linux) Generate OCP build files and build OCP
         set -e
         set -o pipefail
-
-        export PATH=/opt/build-venv/bin:$PATH
 
         cd OCP
 
@@ -415,11 +418,7 @@ runs:
         set -e
         set -o pipefail
 
-        if [[ "$RUNNER_OS" == "Linux" ]]; then
-          export PATH=/opt/build-venv/bin:$PATH
-        else
-          micromamba activate build-ocp
-        fi
+        echo "python: $(command -v python)"
         pip install build wheel ${{ inputs.delocate }}
 
         cd pypi
@@ -504,7 +503,6 @@ runs:
         set -e
         set -o pipefail
 
-        export PATH=/opt/build-venv/bin:$PATH
         cd pypi
 
         if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
