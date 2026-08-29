@@ -112,7 +112,7 @@ runs:
         echo "uv: $(command -v uv) $(uv --version)"
         uv pip install -q \
           pip "pybind11==2.13.*" cmake ninja pybind11-stubgen setuptools wheel
-        python -V    # mac/win vtk: uv is only a tool for the VTK staging step, which makes its own
+        python -V
 
     # micromamba is default Python env for Windows and MacOS
     - name: (Mac, Windows) Patch environment.yml for Python
