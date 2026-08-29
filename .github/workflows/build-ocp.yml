@@ -56,7 +56,8 @@ jobs:
           os: ${{ matrix.os }}
           python-version: ${{ matrix.python-version }}
           use-vtk: ${{ matrix.use-vtk }}
-          vtk-libs: "libvtk*.so"
+          vtk-libs: "vtkmodules/libvtk*.so"
+          vtk-libdest: "lib"
           vtk-suffix: "/vtk-${{ env.VTK_MAJOR }}/"
           vtk-prefix: ""
           shells: "bash"
@@ -74,17 +75,20 @@ jobs:
         use-vtk: ["vtk", "novtk"]
         include:
           - os: "macos-15"
-            vtk-libs: ".dylibs/libvtk*.dylib"
+            vtk-libs: "vtkmodules/.dylibs/libvtk*.dylib"
+            vtk-libdest: "lib"
             vtk-suffix: "/"
             vtk-prefix: ""
             shells: "bash"
           - os: "macos-15-intel"
-            vtk-libs: ".dylibs/libvtk*.dylib"
+            vtk-libs: "vtkmodules/.dylibs/libvtk*.dylib"
+            vtk-libdest: "lib"
             vtk-suffix: "/"
             vtk-prefix: ""
             shells: "bash"
           - os: "windows-latest"
-            vtk-libs: "vtk*.dll"
+            vtk-libs: "vtk.libs/*.dll"
+            vtk-libdest: "bin"
             vtk-suffix: "/"
             vtk-prefix: "Library/"
             shells: "bash cmd.exe"
@@ -100,6 +104,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           use-vtk: ${{ matrix.use-vtk }}
           vtk-libs: ${{ matrix.vtk-libs }}
+          vtk-libdest: ${{ matrix.vtk-libdest }}
           vtk-suffix: ${{ matrix.vtk-suffix }}
           vtk-prefix: ${{ matrix.vtk-prefix }}
           shells: ${{ matrix.shells }}
