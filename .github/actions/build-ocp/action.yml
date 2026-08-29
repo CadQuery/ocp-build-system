@@ -55,8 +55,12 @@ runs:
           git patch ca-certificates curl unzip cpio dnf-plugins-core \
           autoconf automake libtool libjpeg-turbo-devel xz-devel libzstd-devel libwebp-devel zlib-devel > /dev/null 2>&1
 
-        # AlmaLinux 8 ships rapidjson 1.1.0 (2016); GCC 14 rejects it. No release since,
-        # so pin a master revision.
+        # AlmaLinux 8 ships the real rapidjson 1.1.0 (2016), which GCC 14 rejects with
+        # "assignment of read-only member GenericStringRef::length". Upstream has cut no
+        # release since 1.1.0, so every fix since lives on master only. conda-forge works
+        # around this by shipping 1.1.0.post20250205 - a master snapshot that already has
+        # the fix - which is why the previous conda-based build never hit this. Pinning a
+        # master revision here keeps us in sync with what conda provided.
         RAPIDJSON_REV=24b5e7a8b27f42fa16b96fc70aade9106cf7102f
         curl -Ls https://github.com/Tencent/rapidjson/archive/${RAPIDJSON_REV}.tar.gz | tar xz -C /tmp
         rm -rf /usr/include/rapidjson
