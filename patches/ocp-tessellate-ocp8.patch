@@ -1,0 +1,39 @@
+diff --git a/ocp_tessellate/ocp_utils.py b/ocp_tessellate/ocp_utils.py
+index 0e72ba6..d0b4c23 100644
+--- a/ocp_tessellate/ocp_utils.py
++++ b/ocp_tessellate/ocp_utils.py
+@@ -93,9 +93,12 @@ from OCP.TopoDS import (  # type: ignore
+     TopoDS_Vertex,
+     TopoDS_Wire,
+ )
+-from OCP.TopTools import (  # type: ignore
+-    TopTools_IndexedDataMapOfShapeListOfShape,
+-    TopTools_IndexedMapOfShape,
++# OCP 8 moved the NCollection instantiations out of OCP.TopTools into the single
++# OCP.collections module, where they carry their template arguments in the name.
++# Aliased back to the OCCT class names so the call sites below stay unchanged.
++from OCP.collections import (  # type: ignore
++    IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher as TopTools_IndexedDataMapOfShapeListOfShape,
++    IndexedMap_TopoDS_Shape_TopTools_ShapeMapHasher as TopTools_IndexedMapOfShape,
+ )
+ from numpy.typing import ArrayLike
+ 
+@@ -1169,7 +1172,17 @@ class BoundingBox(object):
+         else:
+             BRepBndLib.Add_s(obj, bbox)
+         if not bbox.IsVoid():
+-            values = bbox.Get()
++            # On OCP 8 Bnd_Box.Get() resolves to the overload returning the
++            # Bnd_Box::Limits struct, which is not bound and always raises, so read
++            # the six bounds individually.
++            values = (
++                bbox.GetXMin(),
++                bbox.GetYMin(),
++                bbox.GetZMin(),
++                bbox.GetXMax(),
++                bbox.GetYMax(),
++                bbox.GetZMax(),
++            )
+             return (values[0], values[3], values[1], values[4], values[2], values[5])
+         else:
+             c = self._center_of_mass(obj)
