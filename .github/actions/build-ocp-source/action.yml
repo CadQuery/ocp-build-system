@@ -52,8 +52,6 @@ runs:
 
         dnf install -y -q curl unzip > /dev/null 2>&1
 
-    # - - - (micromamba needs ca-certificates for ubuntu)
-
     - name: Set up Python ${{ inputs.python-version }} via micromamba [PYWRAP=true]
       if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
       uses: mamba-org/setup-micromamba@ce51e99f4bb8a82ab7158c4dc59ef4634c59c4f9 #v3.1.0
