@@ -145,7 +145,10 @@ runs:
         set -e
         set -o pipefail
 
-        # Create an environment with conda VTK to get the include files
+        # VTK ships no headers on PyPI, so use a throwaway conda env purely to extract
+        # the include tree. Nothing from it reaches the build or the wheel: headers
+        # compile away, and the VTK libraries come from Kitware's PyPI wheel. This is
+        # the only remaining conda use on Linux, and only for the vtk variant.
         micromamba create -y -n vtk python=${{ inputs.python-version }}
         micromamba activate vtk
         micromamba install -y vtk=${{ env.VTK }}
