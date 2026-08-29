@@ -1,3 +1,25 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index c3d33556..4dc36f5e 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -33,7 +33,7 @@ classifiers = [
+ ]
+ 
+ dependencies = [
+-    "cadquery-ocp-novtk >= 7.9, < 8.0",
++    "cadquery-ocp-novtk >= 8.0, < 9.0",
+     "typing_extensions >= 4.6.0, < 5",
+     "numpy >= 2, < 3",
+     "svgpathtools >= 1.5.1, < 2",
+@@ -87,7 +87,7 @@ development = [
+ 
+ # typing stubs for the OCP CAD kernel
+ stubs = [
+-    "cadquery-ocp-stubs >= 7.9, < 8.0",
++    "cadquery-ocp-stubs >= 8.0, < 9.0",
+ ]
+ 
+ # dependencies to build the docs
 diff --git a/src/build123d/exporters3d.py b/src/build123d/exporters3d.py
 index 3c56b3f4..347d0538 100644
 --- a/src/build123d/exporters3d.py
