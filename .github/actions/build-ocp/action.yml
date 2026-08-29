@@ -100,7 +100,7 @@ runs:
     # - - - - - - - - - - - - - - - - - - - - -
 
     # uv is default for Python env for manylinux
-    - name: (Linux) Install uv
+    - name: (manylinux) Install uv
       if: runner.os == 'Linux'
       uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 #v9.0.0
       with:
@@ -109,11 +109,11 @@ runs:
         # uv is the first-class environment; on Linux it is the build env
         activate-environment: ${{ runner.os == 'Linux' }}
     
-    - name: (Linux) Set up Python ${{ inputs.python-version }} via uv
+    - name: (manylinux) Set up Python ${{ inputs.python-version }} via uv
       if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
-        # (Linux) Build env from PyPI only - no conda on the build path. setup-uv has
+        # (manylinux) Build env from PyPI only - no conda on the build path. setup-uv has
         # already created and activated the venv, so uv and python resolve to it.
         set -e
         echo "uv: $(command -v uv) $(uv --version)"
@@ -239,11 +239,11 @@ runs:
         rm -f OCP/*.cpp.bak
 
     
-    - name: (Linux) Generate OCP build files and build OCP
+    - name: (manylinux) Generate OCP build files and build OCP
       if: runner.os == 'Linux' && steps.cache-ocp-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
-        # (Linux) Generate OCP build files and build OCP
+        # (manylinux) Generate OCP build files and build OCP
         set -e
         set -o pipefail
 
@@ -495,11 +495,11 @@ runs:
         unzip -l dist/${PKG_NAME}*.whl
 
     
-    - name: (Linux) Delocate the cadquery_ocp wheel
+    - name: (manylinux) Delocate the cadquery_ocp wheel
       if: runner.os == 'Linux'
       shell: bash -l {0}
       run: |
-        # (Linux) Delocate the cadquery_ocp wheel
+        # (manylinux) Delocate the cadquery_ocp wheel
         set -e
         set -o pipefail
 
