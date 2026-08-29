@@ -54,7 +54,7 @@ runs:
 
     # - - -
 
-    - name: (Ubuntu) Install dependencies
+    - name: (manylinux) Install dependencies
       if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
       shell: bash -l {0}
       run: |
