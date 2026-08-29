@@ -114,6 +114,23 @@ runs:
           uv pip install pypi/lib3mf*.whl
         fi
 
+        # build123d's OCP-facing dependencies do not support OCP 8 either: the same
+        # NCollection -> OCP.collections move, plus ocp_gordon hits the OCP 8.0.0.0 bug
+        # where Array2_*.__call__ carries Array1's single-index signature. Clone both at
+        # a pinned commit and apply the migration patches so build123d resolves the
+        # patched sources instead of the unpatched PyPI releases (which would also drag
+        # cadquery-ocp-proxy back to 7.9 via their "< 8.0" bounds).
+        # These patches are meant to go upstream; drop this block once both release.
+        git clone https://github.com/gongfan99/ocp_gordon.git
+        git -C ocp_gordon checkout 977399a97d47e45e4b4746917bbdc1bb7141d709
+        git -C ocp_gordon apply ../patches/ocp_gordon-ocp8.patch
+        uv pip install ./ocp_gordon
+
+        git clone https://github.com/snoyer/ocpsvg.git
+        git -C ocpsvg checkout 83f57aa0b3d5636d64405238f39914917ef9e234
+        git -C ocpsvg apply ../patches/ocpsvg-ocp8.patch
+        uv pip install ./ocpsvg
+
         git clone https://github.com/gumyr/build123d.git
         cd build123d
         git checkout 2851b011901c5603eace947f411ebda9191b739c
@@ -124,11 +141,11 @@ runs:
         # Drop the checkout and this patch once the changes are upstream.
         git apply ../patches/build123d-ocp8.patch
         
-        # The correct OCP variant is already installed from the wheels built above, so
-        # drop the novtk dependency - it is the wrong package for the vtk job and carries
-        # a "< 8.0" bound that excludes 8.x for the novtk one. Widen the stubs bound too.
+        # Variant plumbing only (the patch already allows OCP 8): the correct variant is
+        # installed from the wheels built above, and which one differs per job - vtk uses
+        # cadquery-ocp, novtk uses cadquery-ocp-novtk - so drop the declared dependency
+        # and let the pre-installed wheel satisfy it.
         sed -i.bak '/"cadquery-ocp-novtk/d' pyproject.toml
-        sed -i.bak 's/cadquery-ocp-stubs >= 7.9, < 8.0/cadquery-ocp-stubs >= 7.9, < 9.0/' pyproject.toml
         uv pip install .
 
         echo "=> Installed packages for test"
