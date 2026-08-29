@@ -1,0 +1,43 @@
+diff --git a/ocpsvg/ocp.py b/ocpsvg/ocp.py
+index 3b7baa9..d20a462 100644
+--- a/ocpsvg/ocp.py
++++ b/ocpsvg/ocp.py
+@@ -50,7 +50,7 @@ from OCP.ShapeExtend import ShapeExtend_WireData
+ from OCP.ShapeFix import ShapeFix_Face
+ from OCP.Standard import Standard_Failure
+ from OCP.StdFail import StdFail_NotDone
+-from OCP.TColgp import TColgp_Array1OfPnt
++from OCP.collections import Array1_gp_Pnt
+ from OCP.TopAbs import TopAbs_Orientation
+ from OCP.TopoDS import (
+     TopoDS,
+@@ -308,7 +308,7 @@ def bezier_curve(*controls: gp_Pnt) -> Geom_BezierCurve:
+             f"bezier curve must have between 2 and {BEZIER_MAX_DEGREE} control points"
+         )
+ 
+-    poles = TColgp_Array1OfPnt(1, n)
++    poles = Array1_gp_Pnt(1, n)
+     for i, control in enumerate(controls, 1):
+         poles.SetValue(i, control)
+ 
+diff --git a/pyproject.toml b/pyproject.toml
+index 3365e8b..58658c5 100755
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -5,14 +5,14 @@ readme = "readme-pypi.md"
+ version = "0.6.0"
+ requires-python = ">=3.10"
+ dependencies = [
+-    "cadquery_ocp_proxy >= 7.9, < 8.0",
++    "cadquery_ocp_proxy >= 8.0, < 9.0",
+     "svgelements >= 1.9.1, <2",
+ ]
+ 
+ 
+ [project.optional-dependencies]
+ dev = [
+-    "cadquery_ocp_novtk >=7.9, < 8.0",
++    "cadquery_ocp_novtk >= 8.0, < 9.0",
+     "pytest",
+     "coverage",
+     "mypy",

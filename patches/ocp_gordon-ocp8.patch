@@ -1,0 +1,789 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index 40f69f8..15e0ae6 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -18,7 +18,7 @@ classifiers = [
+     "Topic :: Software Development :: Libraries :: Python Modules",
+ ]
+ dependencies = [
+-    "cadquery_ocp_proxy >= 7.9, < 8.0",
++    "cadquery_ocp_proxy >= 8.0, < 9.0",
+     "numpy >= 2, < 3",
+     "scipy",
+ ]
+@@ -43,12 +43,12 @@ Used-by = "https://github.com/gumyr/build123d"
+ [project.optional-dependencies]
+ test = [
+     "pytest",
+-    "cadquery_ocp_novtk >=7.9, < 8.0",
++    "cadquery_ocp_novtk >= 8.0, < 9.0",
+ ]
+ 
+ # typing stubs for the OCP CAD kernel
+ stubs = [
+-    "cadquery-ocp-stubs >= 7.9, < 8.0"
++    "cadquery-ocp-stubs >= 8.0, < 9.0"
+ ]
+ 
+ [tool.setuptools.packages.find]
+diff --git a/src_py/ocp_gordon/internal/bspline_algorithms.py b/src_py/ocp_gordon/internal/bspline_algorithms.py
+index 50b9019..1301ea0 100644
+--- a/src_py/ocp_gordon/internal/bspline_algorithms.py
++++ b/src_py/ocp_gordon/internal/bspline_algorithms.py
+@@ -25,18 +25,8 @@ from OCP.GeomConvert import GeomConvert, GeomConvert_ApproxCurve
+ from OCP.gp import gp_Pnt, gp_Pnt2d
+ from OCP.math import math_Matrix
+ from OCP.Precision import Precision
+-from OCP.TColgp import (
+-    TColgp_Array1OfPnt,
+-    TColgp_Array2OfPnt,
+-    TColgp_HArray1OfPnt,
+-    TColgp_HArray1OfPnt2d,
+-)
+-from OCP.TColStd import (
+-    TColStd_Array1OfInteger,
+-    TColStd_Array1OfReal,
+-    TColStd_HArray1OfInteger,
+-    TColStd_HArray1OfReal,
+-)
++from OCP.collections import Array1_gp_Pnt, Array2_gp_Pnt, HArray1_gp_Pnt, HArray1_gp_Pnt2d
++from OCP.collections import Array1_double, Array1_int, HArray1_double, HArray1_int
+ 
+ from .approx_result import ApproxResult
+ from .error import ErrorCode, error  # Import ErrorCode
+@@ -136,28 +126,28 @@ class BSplineAlgorithms:
+         return result
+ 
+     @staticmethod
+-    def is_u_dir_closed(points: TColgp_Array2OfPnt, tolerance: float) -> bool:
++    def is_u_dir_closed(points: Array2_gp_Pnt, tolerance: float) -> bool:
+         u_dir_closed = True
+         ulo = points.LowerRow()
+         uhi = points.UpperRow()
+         # check that first row and last row are the same
+         for v_idx in range(points.LowerCol(), points.UpperCol() + 1):
+-            pfirst = points(ulo, v_idx)  # Use __call__ for TColgp_Array2OfPnt
+-            pLast = points(uhi, v_idx)  # Use __call__ for TColgp_Array2OfPnt
++            pfirst = points.Value(ulo, v_idx)  # Use __call__ for Array2_gp_Pnt
++            pLast = points.Value(uhi, v_idx)  # Use __call__ for Array2_gp_Pnt
+             if not pfirst.IsEqual(pLast, tolerance):
+                 u_dir_closed = False
+                 break
+         return u_dir_closed
+ 
+     @staticmethod
+-    def is_v_dir_closed(points: TColgp_Array2OfPnt, tolerance: float) -> bool:
++    def is_v_dir_closed(points: Array2_gp_Pnt, tolerance: float) -> bool:
+         v_dir_closed = True
+         vlo = points.LowerCol()
+         vhi = points.UpperCol()
+         for u_idx in range(points.LowerRow(), points.UpperRow() + 1):
+-            if not points(u_idx, vlo).IsEqual(
+-                points(u_idx, vhi), tolerance
+-            ):  # Use __call__ for TColgp_Array2OfPnt
++            if not points.Value(u_idx, vlo).IsEqual(
++                points.Value(u_idx, vhi), tolerance
++            ):  # Use __call__ for Array2_gp_Pnt
+                 v_dir_closed = False
+                 break
+         return v_dir_closed
+@@ -227,7 +217,7 @@ class BSplineAlgorithms:
+ 
+     @staticmethod
+     def compute_params_bspline_curve(
+-        points: TColgp_HArray1OfPnt, alpha: float = 0.5
++        points: HArray1_gp_Pnt, alpha: float = 0.5
+     ) -> list[float]:
+         """
+         Computes parameters of a B-spline curve at given points.
+@@ -248,7 +238,7 @@ class BSplineAlgorithms:
+         total_length = 0.0
+ 
+         # Convert handle array to regular array for access
+-        # TColgp_HArray1OfPnt is a handle, need to access underlying array
++        # HArray1_gp_Pnt is a handle, need to access underlying array
+         for i in range(1, n_points):
+             p1 = points(i)
+             p2 = points(i + 1)
+@@ -457,24 +447,24 @@ class BSplineAlgorithms:
+         return max_scale if max_scale > 0 else 1.0
+ 
+     @staticmethod
+-    def _scale_array2_of_pnt(points: TColgp_Array2OfPnt) -> float:
++    def _scale_array2_of_pnt(points: Array2_gp_Pnt) -> float:
+         """
+         Returns the scale of the point matrix.
+-        Matches the C++ scale(const TColgp_Array2OfPnt& points) function.
++        Matches the C++ scale(const Array2_gp_Pnt& points) function.
+         """
+         the_scale = 0.0
+         for u_idx in range(points.LowerRow(), points.UpperRow() + 1):
+-            p_first = points(u_idx, points.LowerCol())
++            p_first = points.Value(u_idx, points.LowerCol())
+             for v_idx in range(points.LowerCol() + 1, points.UpperCol() + 1):
+-                dist = p_first.Distance(points(u_idx, v_idx))
++                dist = p_first.Distance(points.Value(u_idx, v_idx))
+                 the_scale = max(the_scale, dist)
+         return the_scale
+ 
+     @staticmethod
+-    def _scale_array1_of_pnt(points: TColgp_Array1OfPnt) -> float:
++    def _scale_array1_of_pnt(points: Array1_gp_Pnt) -> float:
+         """
+         Returns the scale of the point list by searching for the largest distance between two points.
+-        Matches the C++ scale(const TColgp_Array1OfPnt& points) function.
++        Matches the C++ scale(const Array1_gp_Pnt& points) function.
+         """
+         the_scale = 0.0
+         for i in range(points.Lower(), points.Upper() + 1):
+@@ -490,8 +480,8 @@ class BSplineAlgorithms:
+         obj: (
+             Geom_BSplineCurve
+             | list[Geom_BSplineCurve]
+-            | TColgp_Array2OfPnt
+-            | TColgp_Array1OfPnt
++            | Array2_gp_Pnt
++            | Array1_gp_Pnt
+         ),
+     ) -> float:
+         """
+@@ -502,9 +492,9 @@ class BSplineAlgorithms:
+             return BSplineAlgorithms._scale_curve(obj)
+         elif isinstance(obj, list):  # Assuming list of Geom_BSplineCurve
+             return BSplineAlgorithms._scale_curve_list(obj)
+-        elif isinstance(obj, TColgp_Array2OfPnt):
++        elif isinstance(obj, Array2_gp_Pnt):
+             return BSplineAlgorithms._scale_array2_of_pnt(obj)
+-        elif isinstance(obj, TColgp_Array1OfPnt):
++        elif isinstance(obj, Array1_gp_Pnt):
+             return BSplineAlgorithms._scale_array1_of_pnt(obj)
+         else:
+             raise TypeError("Unsupported type for scale function")
+@@ -631,14 +621,14 @@ class BSplineAlgorithms:
+             raise error("parameter sizes dont match")
+ 
+         # create a B-spline as a function for reparametrization
+-        old_parameters_pnts = TColgp_HArray1OfPnt2d(1, len(old_parameters))
++        old_parameters_pnts = HArray1_gp_Pnt2d(1, len(old_parameters))
+         for parameter_idx in range(len(old_parameters)):
+             occIdx = parameter_idx + 1
+             old_parameters_pnts.SetValue(
+                 occIdx, gp_Pnt2d(old_parameters[parameter_idx], 0)
+             )
+ 
+-        # Convert new_parameters (List[float]) to TColStd_Array1OfReal
++        # Convert new_parameters (List[float]) to Array1_double
+         new_parameters_array = BSplineAlgorithms.to_array(new_parameters)
+ 
+         # Correct order of arguments: old_parameters_pnts, PeriodicFlag, new_parameters_array
+@@ -684,7 +674,7 @@ class BSplineAlgorithms:
+         for kink in kinks:
+             bisect.insort_left(parameters, kink)
+ 
+-        points = TColgp_HArray1OfPnt(1, len(parameters))
++        points = HArray1_gp_Pnt(1, len(parameters))
+         for i in range(1, len(parameters) + 1):
+             oldParameter = reparametrizing_spline.Value(parameters[i - 1]).X()
+             points.SetValue(i, spline.Value(oldParameter))
+@@ -748,7 +738,7 @@ class BSplineAlgorithms:
+ 
+         # Get current knots
+         n_knots = spline.NbKnots()
+-        knots_array = TColStd_Array1OfReal(1, n_knots)
++        knots_array = Array1_double(1, n_knots)
+         for i in range(1, n_knots + 1):
+             old_knot = spline.Knot(i)
+             new_knot = a * old_knot + b
+@@ -756,14 +746,14 @@ class BSplineAlgorithms:
+ 
+         # Create new spline with transformed knots
+         n_poles = spline.NbPoles()
+-        poles = TColgp_Array1OfPnt(1, n_poles)
+-        weights = TColStd_Array1OfReal(1, n_poles)
++        poles = Array1_gp_Pnt(1, n_poles)
++        weights = Array1_double(1, n_poles)
+ 
+         for i in range(1, n_poles + 1):
+             poles.SetValue(i, spline.Pole(i))
+             weights.SetValue(i, spline.Weight(i))
+ 
+-        mult_array = TColStd_Array1OfInteger(1, n_knots)
++        mult_array = Array1_int(1, n_knots)
+         for i in range(1, n_knots + 1):
+             mult_array.SetValue(i, spline.Multiplicity(i))
+ 
+@@ -915,8 +905,8 @@ class BSplineAlgorithms:
+     @staticmethod
+     def bspline_basis_mat(
+         degree: int,
+-        knots: TColStd_Array1OfReal,
+-        params: TColStd_Array1OfReal,
++        knots: Array1_double,
++        params: Array1_double,
+         deriv_order: int = 0,
+     ) -> np.ndarray:
+         """
+@@ -959,7 +949,7 @@ class BSplineAlgorithms:
+         return basis_mat
+ 
+     @staticmethod
+-    def max_distance_of_bounding_box(points: TColgp_Array1OfPnt) -> float:
++    def max_distance_of_bounding_box(points: Array1_gp_Pnt) -> float:
+         """
+         Compute maximum distance between points in bounding box.
+ 
+@@ -977,7 +967,7 @@ class BSplineAlgorithms:
+         return max_distance
+ 
+     @staticmethod
+-    def is_closed(points: TColgp_HArray1OfPnt, c2_continuous: bool = False) -> bool:
++    def is_closed(points: HArray1_gp_Pnt, c2_continuous: bool = False) -> bool:
+         """
+         Check if points form a closed curve.
+ 
+@@ -996,72 +986,72 @@ class BSplineAlgorithms:
+         )
+ 
+     @staticmethod
+-    def to_array(vector: list[float]) -> TColStd_HArray1OfReal:
++    def to_array(vector: list[float]) -> HArray1_double:
+         """
+-        Convert Python list to TColStd_HArray1OfReal.
++        Convert Python list to HArray1_double.
+ 
+         Args:
+             vector: List of values
+ 
+         Returns:
+-            TColStd_HArray1OfReal handle
++            HArray1_double handle
+         """
+-        array = TColStd_HArray1OfReal(1, len(vector))
++        array = HArray1_double(1, len(vector))
+         for i, value in enumerate(vector, 1):
+             array.SetValue(i, value)
+         return array
+ 
+     @staticmethod
+-    def to_array_int(vector: list[int]) -> TColStd_HArray1OfInteger:
++    def to_array_int(vector: list[int]) -> HArray1_int:
+         """
+-        Convert Python list to TColStd_HArray1OfInteger.
++        Convert Python list to HArray1_int.
+ 
+         Args:
+             vector: List of integer values
+ 
+         Returns:
+-            TColStd_HArray1OfInteger handle
++            HArray1_int handle
+         """
+-        array = TColStd_HArray1OfInteger(1, len(vector))
++        array = HArray1_int(1, len(vector))
+         for i, value in enumerate(vector, 1):
+             array.SetValue(i, value)
+         return array
+ 
+     @staticmethod
+     def _pnt_array2_get_column(
+-        matrix: TColgp_Array2OfPnt, col_index: int
+-    ) -> TColgp_HArray1OfPnt:
++        matrix: Array2_gp_Pnt, col_index: int
++    ) -> HArray1_gp_Pnt:
+         """
+-        Extracts a column from a TColgp_Array2OfPnt and returns it as a TColgp_HArray1OfPnt.
++        Extracts a column from a Array2_gp_Pnt and returns it as a HArray1_gp_Pnt.
+         Matches the C++ array2GetColumn helper function.
+         """
+         lower_row = matrix.LowerRow()
+         upper_row = matrix.UpperRow()
+-        col_vector = TColgp_HArray1OfPnt(lower_row, upper_row)
++        col_vector = HArray1_gp_Pnt(lower_row, upper_row)
+ 
+         for row_idx in range(lower_row, upper_row + 1):
+-            col_vector.SetValue(row_idx, matrix(row_idx, col_index))
++            col_vector.SetValue(row_idx, matrix.Value(row_idx, col_index))
+         return col_vector
+ 
+     @staticmethod
+     def _pnt_array2_get_row(
+-        matrix: TColgp_Array2OfPnt, row_index: int
+-    ) -> TColgp_HArray1OfPnt:
++        matrix: Array2_gp_Pnt, row_index: int
++    ) -> HArray1_gp_Pnt:
+         """
+-        Extracts a row from a TColgp_Array2OfPnt and returns it as a TColgp_HArray1OfPnt.
++        Extracts a row from a Array2_gp_Pnt and returns it as a HArray1_gp_Pnt.
+         Matches the C++ array2GetRow helper function.
+         """
+         lower_col = matrix.LowerCol()
+         upper_col = matrix.UpperCol()
+-        row_vector = TColgp_HArray1OfPnt(lower_col, upper_col)
++        row_vector = HArray1_gp_Pnt(lower_col, upper_col)
+ 
+         for col_idx in range(lower_col, upper_col + 1):
+-            row_vector.SetValue(col_idx, matrix(row_index, col_idx))
++            row_vector.SetValue(col_idx, matrix.Value(row_index, col_idx))
+         return row_vector
+ 
+     @staticmethod
+     def compute_params_bspline_surf(
+-        points: TColgp_Array2OfPnt, alpha: float = 0.5
++        points: Array2_gp_Pnt, alpha: float = 0.5
+     ) -> tuple[list[float], list[float]]:
+         """
+         Computes parameters for a B-spline surface in both u and v directions.
+@@ -1077,7 +1067,7 @@ class BSplineAlgorithms:
+ 
+         # Iterate over each column (v-index) to compute u-parameters for that "profile"
+         for v_idx in range(points.LowerCol(), points.UpperCol() + 1):
+-            # Extract the column as a 1D array of points (TColgp_HArray1OfPnt)
++            # Extract the column as a 1D array of points (HArray1_gp_Pnt)
+             points_u_line = BSplineAlgorithms._pnt_array2_get_column(points, v_idx)
+ 
+             # Compute parameters for this 1D array of points
+@@ -1100,7 +1090,7 @@ class BSplineAlgorithms:
+ 
+         # Iterate over each row (u-index) to compute v-parameters for that "guide"
+         for u_idx in range(points.LowerRow(), points.UpperRow() + 1):
+-            # Extract the row as a 1D array of points (TColgp_HArray1OfPnt)
++            # Extract the row as a 1D array of points (HArray1_gp_Pnt)
+             points_v_line = BSplineAlgorithms._pnt_array2_get_row(points, u_idx)
+ 
+             # Compute parameters for this 1D array of points
+diff --git a/src_py/ocp_gordon/internal/bspline_approx_interp.py b/src_py/ocp_gordon/internal/bspline_approx_interp.py
+index 6536e3e..9a965c7 100644
+--- a/src_py/ocp_gordon/internal/bspline_approx_interp.py
++++ b/src_py/ocp_gordon/internal/bspline_approx_interp.py
+@@ -12,8 +12,8 @@ import numpy as np
+ from OCP.BSplCLib import BSplCLib  # For KnotSequence
+ from OCP.Geom import Geom_BSplineCurve, Geom_Curve
+ from OCP.gp import gp_Pnt, gp_Vec
+-from OCP.TColgp import TColgp_Array1OfPnt
+-from OCP.TColStd import TColStd_Array1OfInteger, TColStd_Array1OfReal
++from OCP.collections import Array1_gp_Pnt
++from OCP.collections import Array1_double, Array1_int
+ 
+ from .approx_result import ApproxResult
+ from .bspline_algorithms import BSplineAlgorithms  # For bspline_basis_mat, scale, etc.
+@@ -37,12 +37,12 @@ class BSplineApproxInterp:
+ 
+     def __init__(
+         self,
+-        points: TColgp_Array1OfPnt,
++        points: Array1_gp_Pnt,
+         n_control_points: int,
+         degree: int = 3,
+         continuous_if_closed: bool = False,
+     ):
+-        self.m_pnts = TColgp_Array1OfPnt(1, points.Length())
++        self.m_pnts = Array1_gp_Pnt(1, points.Length())
+         for i in range(points.Lower(), points.Upper() + 1):
+             self.m_pnts.SetValue(i, points(i))
+ 
+@@ -66,7 +66,7 @@ class BSplineApproxInterp:
+         if with_kink:
+             self.m_index_of_kinks.append(point_index)
+ 
+-    def _max_distance_of_bounding_box(self, points: TColgp_Array1OfPnt) -> float:
++    def _max_distance_of_bounding_box(self, points: Array1_gp_Pnt) -> float:
+         if points.Length() == 0:
+             return 0.0
+ 
+@@ -169,11 +169,11 @@ class BSplineApproxInterp:
+         knots_list, mults_list = self._compute_knots(self.m_ncp, params)
+ 
+         # Convert to OCP arrays
+-        knots_array = TColStd_Array1OfReal(1, len(knots_list))
++        knots_array = Array1_double(1, len(knots_list))
+         for i, k in enumerate(knots_list, 1):
+             knots_array.SetValue(i, k)
+ 
+-        mults_array = TColStd_Array1OfInteger(1, len(mults_list))
++        mults_array = Array1_int(1, len(mults_list))
+         for i, m in enumerate(mults_list, 1):
+             mults_array.SetValue(i, m)
+ 
+@@ -193,11 +193,11 @@ class BSplineApproxInterp:
+ 
+         knots_list, mults_list = self._compute_knots(self.m_ncp, params)
+ 
+-        knots_array = TColStd_Array1OfReal(1, len(knots_list))
++        knots_array = Array1_double(1, len(knots_list))
+         for i, k in enumerate(knots_list, 1):
+             knots_array.SetValue(i, k)
+ 
+-        mults_array = TColStd_Array1OfInteger(1, len(mults_list))
++        mults_array = Array1_int(1, len(mults_list))
+         for i, m in enumerate(mults_list, 1):
+             mults_array.SetValue(i, m)
+ 
+@@ -288,14 +288,14 @@ class BSplineApproxInterp:
+         n_ctr_pnts: int,
+         contin_cons: int,
+         params: list[float],
+-        flat_knots: TColStd_Array1OfReal,
++        flat_knots: Array1_double,
+     ) -> np.ndarray:
+         continuity_entries = np.zeros((contin_cons, n_ctr_pnts))
+ 
+-        # Need to convert single float to TColStd_Array1OfReal for bspline_basis_mat
+-        continuity_params1 = TColStd_Array1OfReal(1, 1)
++        # Need to convert single float to Array1_double for bspline_basis_mat
++        continuity_params1 = Array1_double(1, 1)
+         continuity_params1.SetValue(1, params[0])
+-        continuity_params2 = TColStd_Array1OfReal(1, 1)
++        continuity_params2 = Array1_double(1, 1)
+         continuity_params2.SetValue(1, params[len(params) - 1])
+ 
+         diff1_1 = BSplineAlgorithms.bspline_basis_mat(
+@@ -333,12 +333,12 @@ class BSplineApproxInterp:
+     def _solve(
+         self,
+         params: list[float],
+-        knots: TColStd_Array1OfReal,
+-        mults: TColStd_Array1OfInteger,
++        knots: Array1_double,
++        mults: Array1_int,
+     ) -> ApproxResult:
+         # compute flat knots
+         n_flat_knots = BSplCLib.KnotSequenceLength_s(mults, self.m_degree, False)
+-        flat_knots_array = TColStd_Array1OfReal(1, n_flat_knots)
++        flat_knots_array = Array1_double(1, n_flat_knots)
+         BSplCLib.KnotSequence_s(knots, mults, flat_knots_array)
+ 
+         n_approximated = len(self.m_index_of_approximated)
+@@ -378,7 +378,7 @@ class BSplineApproxInterp:
+ 
+         if n_approximated > 0:
+             app_params_list = [params[idx] for idx in self.m_index_of_approximated]
+-            app_params_array = TColStd_Array1OfReal(1, n_approximated)
++            app_params_array = Array1_double(1, n_approximated)
+             for i, p in enumerate(app_params_list, 1):
+                 app_params_array.SetValue(i, p)
+ 
+@@ -404,7 +404,7 @@ class BSplineApproxInterp:
+                 interp_params_list = [
+                     params[idx] for idx in self.m_index_of_interpolated
+                 ]
+-                interp_params_array = TColStd_Array1OfReal(1, n_interpolated)
++                interp_params_array = Array1_double(1, n_interpolated)
+                 for i, p in enumerate(interp_params_list, 1):
+                     interp_params_array.SetValue(i, p)
+ 
+@@ -440,7 +440,7 @@ class BSplineApproxInterp:
+         except np.linalg.LinAlgError:
+             raise error("Singular Matrix", ErrorCode.MATH_ERROR)
+ 
+-        poles = TColgp_Array1OfPnt(1, n_ctr_pnts)
++        poles = Array1_gp_Pnt(1, n_ctr_pnts)
+         for i in range(n_ctr_pnts):
+             pnt = gp_Pnt(cp_full[i][0], cp_full[i][1], cp_full[i][2])
+             poles.SetValue(i + 1, pnt)
+diff --git a/src_py/ocp_gordon/internal/curves_to_surface.py b/src_py/ocp_gordon/internal/curves_to_surface.py
+index 6fdd973..9d1c7ea 100644
+--- a/src_py/ocp_gordon/internal/curves_to_surface.py
++++ b/src_py/ocp_gordon/internal/curves_to_surface.py
+@@ -21,19 +21,8 @@ from OCP.GeomAPI import (  # Equivalent to Geom2dAPI_ProjectPointOnCurve for 3D
+ from OCP.GeomConvert import GeomConvert
+ from OCP.gp import gp_Pnt
+ from OCP.Precision import Precision  # For C++ Precision equivalent
+-from OCP.TColgp import (
+-    TColgp_Array1OfPnt,
+-    TColgp_Array2OfPnt,
+-    TColgp_HArray1OfPnt,
+-    TColgp_HArray1OfPnt2d,
+-)
+-from OCP.TColStd import (
+-    TColStd_Array1OfInteger,
+-    TColStd_Array1OfReal,
+-    TColStd_Array2OfReal,
+-    TColStd_HArray1OfInteger,
+-    TColStd_HArray1OfReal,
+-)
++from OCP.collections import Array1_gp_Pnt, Array2_gp_Pnt, HArray1_gp_Pnt, HArray1_gp_Pnt2d
++from OCP.collections import Array1_double, Array1_int, Array2_double, HArray1_double, HArray1_int
+ 
+ from .bspline_algorithms import BSplineAlgorithms
+ from .error import ErrorCode, error  # Import ErrorCode
+@@ -185,9 +174,9 @@ class CurvesToSurface:
+         num_poles_u = first_curve.NbPoles()
+         num_splines = len(self._compatible_splines)
+ 
+-        # TColgp_Array2OfPnt(RowMin, RowMax, ColMin, ColMax)
++        # Array2_gp_Pnt(RowMin, RowMax, ColMin, ColMax)
+         # Rows correspond to poles in U direction, Columns correspond to splines (V direction)
+-        control_points_matrix = TColgp_Array2OfPnt(1, num_poles_u, 1, num_splines)
++        control_points_matrix = Array2_gp_Pnt(1, num_poles_u, 1, num_splines)
+ 
+         for spline_idx, spline in enumerate(self._compatible_splines, 1):
+             for pole_idx in range(1, num_poles_u + 1):
+@@ -255,14 +244,14 @@ class CurvesToSurface:
+         mults_v = None
+ 
+         # C++ uses Handle(TColgp_HArray2OfPnt) cpSurf;
+-        # Python equivalent: a list of lists or a numpy array, then convert to TColgp_Array2OfPnt
+-        # Or directly use TColgp_HArray1OfPnt for interpolation points.
+-        cp_surf = TColgp_Array2OfPnt()
++        # Python equivalent: a list of lists or a numpy array, then convert to Array2_gp_Pnt
++        # Or directly use HArray1_gp_Pnt for interpolation points.
++        cp_surf = Array2_gp_Pnt()
+         interp_spline = None
+ 
+-        # C++ uses Handle(TColgp_HArray1OfPnt) interpPointsVDir = new TColgp_HArray1OfPnt(1, static_cast<Standard_Integer>(nCurves));
++        # C++ uses Handle(HArray1_gp_Pnt) interpPointsVDir = new HArray1_gp_Pnt(1, static_cast<Standard_Integer>(nCurves));
+         # This array will hold the poles for a given U index across all V curves.
+-        interp_points_v_dir = TColgp_HArray1OfPnt(1, n_curves)
++        interp_points_v_dir = HArray1_gp_Pnt(1, n_curves)
+ 
+         # C++ iterates from cpUIdx = 1 to numControlPointsU
+         for cp_u_idx in range(1, num_control_points_u + 1):
+@@ -301,23 +290,23 @@ class CurvesToSurface:
+                 knots_v_list = []
+                 for i in range(1, interp_spline.NbKnots() + 1):
+                     knots_v_list.append(interp_spline.Knot(i))
+-                knots_v = TColStd_Array1OfReal(1, len(knots_v_list))
++                knots_v = Array1_double(1, len(knots_v_list))
+                 for i, k in enumerate(knots_v_list, 1):
+                     knots_v.SetValue(i, k)
+ 
+                 mults_v_list = []
+                 for i in range(1, interp_spline.NbKnots() + 1):
+                     mults_v_list.append(interp_spline.Multiplicity(i))
+-                mults_v = TColStd_Array1OfInteger(1, len(mults_v_list))
++                mults_v = Array1_int(1, len(mults_v_list))
+                 for i, m in enumerate(mults_v_list, 1):
+                     mults_v.SetValue(i, m)
+ 
+                 # Initialize the surface control points array
+                 # C++ uses Handle(TColgp_HArray2OfPnt) cpSurf;
+                 # cpSurf = new TColgp_HArray2OfPnt(1, static_cast<Standard_Integer>(numControlPointsU), 1, interpSpline->NbPoles());
+-                # Python equivalent: TColgp_Array2OfPnt(RowMin, RowMax, ColMin, ColMax)
++                # Python equivalent: Array2_gp_Pnt(RowMin, RowMax, ColMin, ColMax)
+                 # Rows = U direction (num_control_points_u), Cols = V direction (interpSpline.NbPoles())
+-                cp_surf = TColgp_Array2OfPnt(
++                cp_surf = Array2_gp_Pnt(
+                     1, num_control_points_u, 1, interp_spline.NbPoles()
+                 )
+ 
+@@ -337,14 +326,14 @@ class CurvesToSurface:
+         knots_u_list = []
+         for i in range(1, first_curve.NbKnots() + 1):
+             knots_u_list.append(first_curve.Knot(i))
+-        knots_u = TColStd_Array1OfReal(1, len(knots_u_list))
++        knots_u = Array1_double(1, len(knots_u_list))
+         for i, k in enumerate(knots_u_list, 1):
+             knots_u.SetValue(i, k)
+ 
+         mults_u_list = []
+         for i in range(1, first_curve.NbKnots() + 1):
+             mults_u_list.append(first_curve.Multiplicity(i))
+-        mults_u = TColStd_Array1OfInteger(1, len(mults_u_list))
++        mults_u = Array1_int(1, len(mults_u_list))
+         for i, m in enumerate(mults_u_list, 1):
+             mults_u.SetValue(i, m)
+ 
+diff --git a/src_py/ocp_gordon/internal/gordon_surface_builder.py b/src_py/ocp_gordon/internal/gordon_surface_builder.py
+index f133fcc..80f8b38 100644
+--- a/src_py/ocp_gordon/internal/gordon_surface_builder.py
++++ b/src_py/ocp_gordon/internal/gordon_surface_builder.py
+@@ -7,8 +7,8 @@ that combines skinning surfaces and tensor product surfaces.
+ 
+ from OCP.Geom import Geom_BSplineCurve, Geom_BSplineSurface
+ from OCP.gp import gp_Pnt, gp_XYZ
+-from OCP.TColgp import TColgp_Array2OfPnt
+-from OCP.TColStd import TColStd_Array1OfInteger, TColStd_Array1OfReal
++from OCP.collections import Array2_gp_Pnt
++from OCP.collections import Array1_double, Array1_int
+ 
+ from .bspline_algorithms import BSplineAlgorithms, SurfaceDirection
+ from .curves_to_surface import CurvesToSurface
+@@ -97,7 +97,7 @@ class GordonSurfaceBuilder:
+     # Due to circular import issues, these two functions are implemented directly in this file instead of being imported from bspline_algorithms.py
+     @staticmethod
+     def _points_to_surface_internal(
+-        points: TColgp_Array2OfPnt,
++        points: Array2_gp_Pnt,
+         u_params: list[float],
+         v_params: list[float],
+         make_u_closed: bool,
+@@ -150,8 +150,8 @@ class GordonSurfaceBuilder:
+ 
+             sorted_knots = sorted(list(all_knots))
+ 
+-            common_knots = TColStd_Array1OfReal(1, len(sorted_knots))
+-            common_mults = TColStd_Array1OfInteger(1, len(sorted_knots))
++            common_knots = Array1_double(1, len(sorted_knots))
++            common_mults = Array1_int(1, len(sorted_knots))
+             for idx, knot in enumerate(sorted_knots, 1):
+                 max_mult = 0
+                 for surf in result_surfaces:
+@@ -174,8 +174,8 @@ class GordonSurfaceBuilder:
+ 
+             sorted_knots = sorted(list(all_knots))
+ 
+-            common_knots = TColStd_Array1OfReal(1, len(sorted_knots))
+-            common_mults = TColStd_Array1OfInteger(1, len(sorted_knots))
++            common_knots = Array1_double(1, len(sorted_knots))
++            common_mults = Array1_int(1, len(sorted_knots))
+             for idx, knot in enumerate(sorted_knots, 1):
+                 max_mult = 0
+                 for surf in result_surfaces:
+@@ -241,7 +241,7 @@ class GordonSurfaceBuilder:
+         # Create intersection points array
+         n_u_params = len(intersection_params_spline_u)
+         n_v_params = len(intersection_params_spline_v)
+-        intersection_points = TColgp_Array2OfPnt(1, n_u_params, 1, n_v_params)
++        intersection_points = Array2_gp_Pnt(1, n_u_params, 1, n_v_params)
+ 
+         # Use splines in u-direction to get intersection points
+         for spline_idx in range(len(profiles)):
+diff --git a/src_py/ocp_gordon/internal/misc.py b/src_py/ocp_gordon/internal/misc.py
+index 0e008bc..259b084 100644
+--- a/src_py/ocp_gordon/internal/misc.py
++++ b/src_py/ocp_gordon/internal/misc.py
+@@ -6,12 +6,8 @@ from OCP.Geom import Geom_BSplineCurve, Geom_BSplineSurface
+ from OCP.GeomConvert import GeomConvert_CompCurveToBSplineCurve
+ from OCP.gp import gp_Pnt
+ from OCP.Precision import Precision
+-from OCP.TColgp import TColgp_Array1OfPnt, TColgp_Array2OfPnt
+-from OCP.TColStd import (
+-    TColStd_Array1OfInteger,
+-    TColStd_Array1OfReal,
+-    TColStd_Array2OfReal,
+-)
++from OCP.collections import Array1_gp_Pnt, Array2_gp_Pnt
++from OCP.collections import Array1_double, Array1_int, Array2_double
+ from scipy.optimize import minimize
+ 
+ # This file implements some missing classes/functions for OCP
+@@ -137,19 +133,19 @@ def clone_bspline(spline: Geom_BSplineCurve) -> Geom_BSplineCurve:
+     """
+     # Create a copy by manually constructing from existing data
+     # Get poles
+-    poles = TColgp_Array1OfPnt(1, spline.NbPoles())
++    poles = Array1_gp_Pnt(1, spline.NbPoles())
+     spline.Poles(poles)
+ 
+     # Get weights
+-    weights = TColStd_Array1OfReal(1, spline.NbPoles())
++    weights = Array1_double(1, spline.NbPoles())
+     spline.Weights(weights)
+ 
+     # Get knots
+-    knots = TColStd_Array1OfReal(1, spline.NbKnots())
++    knots = Array1_double(1, spline.NbKnots())
+     spline.Knots(knots)
+ 
+     # Get multiplicities
+-    mults = TColStd_Array1OfInteger(1, spline.NbKnots())
++    mults = Array1_int(1, spline.NbKnots())
+     spline.Multiplicities(mults)
+ 
+     # Create new spline
+@@ -171,27 +167,27 @@ def clone_bspline_surface(surface: Geom_BSplineSurface) -> Geom_BSplineSurface:
+         New B-spline surface
+     """
+     # Get poles
+-    poles = TColgp_Array2OfPnt(1, surface.NbUPoles(), 1, surface.NbVPoles())
++    poles = Array2_gp_Pnt(1, surface.NbUPoles(), 1, surface.NbVPoles())
+     surface.Poles(poles)
+ 
+     # Get weights
+-    weights = TColStd_Array2OfReal(1, surface.NbUPoles(), 1, surface.NbVPoles())
++    weights = Array2_double(1, surface.NbUPoles(), 1, surface.NbVPoles())
+     surface.Weights(weights)
+ 
+     # Get U knots
+-    u_knots = TColStd_Array1OfReal(1, surface.NbUKnots())
++    u_knots = Array1_double(1, surface.NbUKnots())
+     surface.UKnots(u_knots)
+ 
+     # Get V knots
+-    v_knots = TColStd_Array1OfReal(1, surface.NbVKnots())
++    v_knots = Array1_double(1, surface.NbVKnots())
+     surface.VKnots(v_knots)
+ 
+     # Get U multiplicities
+-    u_mults = TColStd_Array1OfInteger(1, surface.NbUKnots())
++    u_mults = Array1_int(1, surface.NbUKnots())
+     surface.UMultiplicities(u_mults)
+ 
+     # Get V multiplicities
+-    v_mults = TColStd_Array1OfInteger(1, surface.NbVKnots())
++    v_mults = Array1_int(1, surface.NbVKnots())
+     surface.VMultiplicities(v_mults)
+ 
+     # Create new surface
+@@ -375,23 +371,23 @@ def load_bsplines_from_object(objs: list):
+     for obj in objs:
+         # Get poles
+         NbPoles = len(obj["poles"])
+-        poles = TColgp_Array1OfPnt(1, NbPoles)
++        poles = Array1_gp_Pnt(1, NbPoles)
+         for i in range(NbPoles):
+             poles.SetValue(i + 1, gp_Pnt(*obj["poles"][i]))
+ 
+         # Get weights
+-        weights = TColStd_Array1OfReal(1, NbPoles)
++        weights = Array1_double(1, NbPoles)
+         for i in range(NbPoles):
+             weights.SetValue(i + 1, obj["weights"][i])
+ 
+         # Get knots
+         NbKnots = len(obj["knots"])
+-        knot_array = TColStd_Array1OfReal(1, NbKnots)
++        knot_array = Array1_double(1, NbKnots)
+         for i in range(NbKnots):
+             knot_array.SetValue(i + 1, obj["knots"][i])
+ 
+         # Get multiplicities
+-        mult_array = TColStd_Array1OfInteger(1, NbKnots)
++        mult_array = Array1_int(1, NbKnots)
+         for i in range(NbKnots):
+             mult_array.SetValue(i + 1, obj["mults"][i])
+ 
+diff --git a/src_py/ocp_gordon/internal/points_to_bspline_interpolation.py b/src_py/ocp_gordon/internal/points_to_bspline_interpolation.py
+index 7568fa9..2a2261e 100644
+--- a/src_py/ocp_gordon/internal/points_to_bspline_interpolation.py
++++ b/src_py/ocp_gordon/internal/points_to_bspline_interpolation.py
+@@ -10,8 +10,8 @@ import numpy as np
+ from OCP.Geom import Geom_BSplineCurve, Geom_TrimmedCurve
+ from OCP.GeomConvert import GeomConvert
+ from OCP.BSplCLib import BSplCLib
+-from OCP.TColgp import TColgp_Array1OfPnt, TColgp_HArray1OfPnt
+-from OCP.TColStd import TColStd_Array1OfReal, TColStd_Array1OfInteger, TColStd_HArray1OfReal
++from OCP.collections import Array1_gp_Pnt, HArray1_gp_Pnt
++from OCP.collections import Array1_double, Array1_int, HArray1_double
+ from OCP.gp import gp_Pnt
+ from typing import List, Tuple, Optional, Union
+ 
+@@ -27,7 +27,7 @@ class PointsToBSplineInterpolation:
+     """
+     
+     def __init__(self,
+-                 points: TColgp_HArray1OfPnt,
++                 points: HArray1_gp_Pnt,
+                  parameters: list[float] | None = None,
+                  max_degree: int = 3,
+                  continuous_if_closed: bool = False):
+@@ -137,7 +137,7 @@ class PointsToBSplineInterpolation:
+         if self.needs_shifting():
+             n_ctrl_pnts += 1
+         
+-        poles = TColgp_Array1OfPnt(1, n_ctrl_pnts)
++        poles = Array1_gp_Pnt(1, n_ctrl_pnts)
+         
+         # Fill control points from solution
+         for i in range(n_params):
+@@ -167,8 +167,8 @@ class PointsToBSplineInterpolation:
+         occ_knots = BSplineAlgorithms.to_array(knots)
+         knotsLen = BSplCLib.KnotsLength_s(occ_knots)
+ 
+-        occ_unique_knots = TColStd_Array1OfReal(1, knotsLen)
+-        occ_multiplicities = TColStd_Array1OfInteger(1, knotsLen)
++        occ_unique_knots = Array1_double(1, knotsLen)
++        occ_multiplicities = Array1_int(1, knotsLen)
+         BSplCLib.Knots_s(occ_knots, occ_unique_knots, occ_multiplicities)
+ 
+         # print(f'params={params}')
