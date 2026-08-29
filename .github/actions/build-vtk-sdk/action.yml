@@ -63,6 +63,13 @@ runs:
         # conda's freetype and versioned libvtk* instead of the dnf and staged ones).
         # The steps below activate it explicitly, so it cannot outlive this action.
         init-shell: none
+        # On mac/win build-occt-sdk sets up micromamba as well, and both post steps
+        # delete the same runner-wide $RUNNER_TEMP/setup-micromamba/micromamba-shell.
+        # Post steps run in reverse order, so build-occt-sdk's removes it first and this
+        # one then failed the job with ENOENT (setup-micromamba v3.1.0). Nothing here
+        # outlives the job - the env is throwaway and the runner is discarded - so
+        # skipping this instance's cleanup costs nothing.
+        post-cleanup: none
 
     - name: Install VTK SDK include files
       if: steps.cache-vtk-restore.outputs.cache-hit != 'true'
