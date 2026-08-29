@@ -1,0 +1,808 @@
+diff --git a/src/build123d/exporters3d.py b/src/build123d/exporters3d.py
+index 3c56b3f4..347d0538 100644
+--- a/src/build123d/exporters3d.py
++++ b/src/build123d/exporters3d.py
+@@ -57,7 +57,7 @@ from OCP.TCollection import (
+     TCollection_ExtendedString,
+     TCollection_HAsciiString,
+ )
+-from OCP.TColStd import TColStd_IndexedDataMapOfStringString
++from OCP.collections import IndexedDataMap_TCollection_AsciiString_TCollection_AsciiString
+ from OCP.TDataStd import TDataStd_Name
+ from OCP.TDF import TDF_Label
+ from OCP.TDocStd import TDocStd_Document
+@@ -323,7 +323,7 @@ def export_gltf(
+     writer.SetParallel(True)
+     # Textures need UVs in the gltf export
+     writer.SetForcedUVExport(True)
+-    index_map = TColStd_IndexedDataMapOfStringString()
++    index_map = IndexedDataMap_TCollection_AsciiString_TCollection_AsciiString()
+     progress = Message_ProgressRange()
+ 
+     messenger = Message.DefaultMessenger_s()
+diff --git a/src/build123d/geometry.py b/src/build123d/geometry.py
+index 1122b403..7b65c5fb 100644
+--- a/src/build123d/geometry.py
++++ b/src/build123d/geometry.py
+@@ -1122,7 +1122,14 @@ class BoundBox:
+         if bounding_box.IsVoid():
+             x_min, y_min, z_min, x_max, y_max, z_max = (0.0,) * 6
+         else:
+-            x_min, y_min, z_min, x_max, y_max, z_max = bounding_box.Get()
++            x_min, y_min, z_min, x_max, y_max, z_max = (
++                bounding_box.GetXMin(),
++                bounding_box.GetYMin(),
++                bounding_box.GetZMin(),
++                bounding_box.GetXMax(),
++                bounding_box.GetYMax(),
++                bounding_box.GetZMax(),
++            )
+         self.wrapped = None if bounding_box.IsVoid() else bounding_box
+         self.min = Vector(x_min, y_min, z_min)  #: location of minimum corner
+         self.max = Vector(x_max, y_max, z_max)  #: location of maximum corner
+diff --git a/src/build123d/importers.py b/src/build123d/importers.py
+index 7ad31816..8607e62e 100644
+--- a/src/build123d/importers.py
++++ b/src/build123d/importers.py
+@@ -47,7 +47,8 @@ from OCP.RWStl import RWStl
+ from OCP.STEPCAFControl import STEPCAFControl_Reader
+ from OCP.TCollection import TCollection_AsciiString, TCollection_ExtendedString
+ from OCP.TDataStd import TDataStd_Name
+-from OCP.TDF import TDF_Label, TDF_LabelSequence
++from OCP.collections import Sequence_TDF_Label
++from OCP.TDF import TDF_Label
+ from OCP.TDocStd import TDocStd_Document
+ from OCP.TopAbs import TopAbs_FACE
+ from OCP.TopExp import TopExp_Explorer
+@@ -203,7 +204,7 @@ def import_step(filename: PathLike | str | bytes) -> Compound:
+ 
+     def build_assembly(parent_tdf_label: TDF_Label | None = None) -> list[Shape]:
+         """Recursively extract object into an assembly"""
+-        sub_tdf_labels = TDF_LabelSequence()
++        sub_tdf_labels = Sequence_TDF_Label()
+         if parent_tdf_label is None:
+             shape_tool.GetFreeShapes(sub_tdf_labels)
+         else:
+diff --git a/src/build123d/text.py b/src/build123d/text.py
+index 8f12a820..fc17c025 100644
+--- a/src/build123d/text.py
++++ b/src/build123d/text.py
+@@ -32,7 +32,7 @@ from OCP.Font import (
+     Font_SystemFont,
+ )
+ from OCP.TCollection import TCollection_AsciiString
+-from OCP.TColStd import TColStd_SequenceOfHAsciiString
++from OCP.collections import Sequence_TCollection_HAsciiString
+ 
+ from build123d.build_enums import FontStyle
+ 
+@@ -87,7 +87,7 @@ class FontManager:
+         self.manager = Font_FontMgr.GetInstance_s()
+ 
+         # Check if OCP manager is already initialized. "singleline" alias is canary
+-        aliases = TColStd_SequenceOfHAsciiString()
++        aliases = Sequence_TCollection_HAsciiString()
+         self.manager.GetAllAliases(aliases)
+         aliases = [aliases.Value(i).ToCString() for i in range(1, aliases.Length() + 1)]
+ 
+diff --git a/src/build123d/topology/composite.py b/src/build123d/topology/composite.py
+index c8b4df7f..5aeb6586 100644
+--- a/src/build123d/topology/composite.py
++++ b/src/build123d/topology/composite.py
+@@ -77,7 +77,7 @@ from OCP.Graphic3d import (
+     Graphic3d_VTA_TOPFIRSTLINE,
+ )
+ from OCP.GProp import GProp_GProps
+-from OCP.NCollection import NCollection_Utf8String
++from OCP.NCollection import NCollection_String
+ from OCP.StdPrs import StdPrs_BRepTextBuilder as Font_BRepTextBuilder, StdPrs_BRepFont
+ from OCP.TopAbs import TopAbs_ShapeEnum
+ from OCP.TopoDS import (
+@@ -390,7 +390,7 @@ class Compound(Mixin3D[TopoDS_Compound]):
+         # Write text to shape
+         builder = Font_BRepTextBuilder()
+         brep_font = StdPrs_BRepFont(
+-            NCollection_Utf8String(system_font.FontName().ToCString()),
++            NCollection_String(system_font.FontName().ToCString()),
+             FONT_ASPECT[font_style],
+             float(font_size),
+         )
+@@ -402,7 +402,7 @@ class Compound(Mixin3D[TopoDS_Compound]):
+             TopoDS.Compound(
+                 builder.Perform(
+                     brep_font,
+-                    NCollection_Utf8String(txt),
++                    NCollection_String(txt),
+                     gp_Ax3(),
+                     horiz_align,
+                     vert_align,
+diff --git a/src/build123d/topology/one_d.py b/src/build123d/topology/one_d.py
+index c0f7b6a4..7e899849 100644
+--- a/src/build123d/topology/one_d.py
++++ b/src/build123d/topology/one_d.py
+@@ -164,12 +164,18 @@ from OCP.HLRBRep import HLRBRep_Algo, HLRBRep_HLRToShape
+ from OCP.ShapeAnalysis import ShapeAnalysis_FreeBounds
+ from OCP.ShapeFix import ShapeFix_Shape, ShapeFix_Wireframe
+ from OCP.Standard import Standard_ConstructionError
+-from OCP.TColgp import TColgp_Array1OfPnt, TColgp_Array1OfVec, TColgp_HArray1OfPnt
+-from OCP.TColStd import (
+-    TColStd_Array1OfInteger,
+-    TColStd_Array1OfReal,
+-    TColStd_HArray1OfBoolean,
+-    TColStd_HArray1OfReal,
++from OCP.collections import (
++    Array1_double,
++    Array1_gp_Pnt,
++    Array1_gp_Vec,
++    Array1_int,
++    HArray1_bool,
++    HArray1_double,
++    HArray1_gp_Pnt,
++    HSequence_TopoDS_Shape,
++    IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher,
++    IndexedMap_TopoDS_Shape_TopTools_ShapeMapHasher,
++    List_TopoDS_Shape,
+ )
+ from OCP.TopAbs import TopAbs_Orientation, TopAbs_ShapeEnum
+ from OCP.TopExp import TopExp, TopExp_Explorer
+@@ -183,12 +189,6 @@ from OCP.TopoDS import (
+     TopoDS_Vertex,
+     TopoDS_Wire,
+ )
+-from OCP.TopTools import (
+-    TopTools_HSequenceOfShape,
+-    TopTools_IndexedDataMapOfShapeListOfShape,
+-    TopTools_IndexedMapOfShape,
+-    TopTools_ListOfShape,
+-)
+ from scipy.optimize import minimize_scalar
+ from scipy.spatial import ConvexHull
+ from typing_extensions import Self
+@@ -431,7 +431,7 @@ def _splice_wire_fillet_corner(
+ 
+     all_topods_edges.insert(insert_index, solution.fillet_topods_edge)
+ 
+-    combined_edges = TopTools_ListOfShape()
++    combined_edges = List_TopoDS_Shape()
+     for topods_edge in all_topods_edges:
+         combined_edges.Append(topods_edge)
+     wire_builder = BRepBuilderAPI_MakeWire()
+@@ -1649,12 +1649,12 @@ class Edge(Mixin1D[TopoDS_Edge]):
+         cntl_gp_pnts = [Vector(cntl_pnt).to_pnt() for cntl_pnt in cntl_pnts]
+ 
+         # The poles are stored in an OCCT Array object
+-        poles = TColgp_Array1OfPnt(1, len(cntl_gp_pnts))
++        poles = Array1_gp_Pnt(1, len(cntl_gp_pnts))
+         for i, cntl_gp_pnt in enumerate(cntl_gp_pnts):
+             poles.SetValue(i + 1, cntl_gp_pnt)
+ 
+         if weights:
+-            pole_weights = TColStd_Array1OfReal(1, len(weights))
++            pole_weights = Array1_double(1, len(weights))
+             for i, weight in enumerate(weights):
+                 pole_weights.SetValue(i + 1, float(weight))
+             bezier_curve = Geom_BezierCurve(poles, pole_weights)
+@@ -2407,7 +2407,7 @@ class Edge(Mixin1D[TopoDS_Edge]):
+         point_vectors = [Vector(point) for point in points]
+         if tangents:
+             tangent_vectors = tuple(Vector(v) for v in tangents)
+-        pnts = TColgp_HArray1OfPnt(1, len(point_vectors))
++        pnts = HArray1_gp_Pnt(1, len(point_vectors))
+         for i, point in enumerate(point_vectors):
+             pnts.SetValue(i + 1, point.to_pnt())
+ 
+@@ -2420,7 +2420,7 @@ class Edge(Mixin1D[TopoDS_Edge]):
+                     "(plus one if periodic), or none specified. Parameter count: "
+                     f"{len(parameters)}, point count: {len(point_vectors)}"
+                 )
+-            parameters_array = TColStd_HArray1OfReal(1, len(parameters))
++            parameters_array = HArray1_double(1, len(parameters))
+             for p_index, p_value in enumerate(parameters):
+                 parameters_array.SetValue(p_index + 1, p_value)
+ 
+@@ -2441,8 +2441,8 @@ class Edge(Mixin1D[TopoDS_Edge]):
+                     )
+ 
+                 # Specify a tangent for each interpolation point:
+-                tangents_array = TColgp_Array1OfVec(1, len(tangent_vectors))
+-                tangent_enabled_array = TColStd_HArray1OfBoolean(
++                tangents_array = Array1_gp_Vec(1, len(tangent_vectors))
++                tangent_enabled_array = HArray1_bool(
+                     1, len(tangent_vectors)
+                 )
+                 for t_index, t_value in enumerate(tangent_vectors):
+@@ -2503,21 +2503,21 @@ class Edge(Mixin1D[TopoDS_Edge]):
+                 unique_knots.append(knot)
+                 multiplicities.append(1)
+ 
+-        poles_array = TColgp_Array1OfPnt(1, len(point_vectors))
++        poles_array = Array1_gp_Pnt(1, len(point_vectors))
+         for index, point in enumerate(point_vectors, start=1):
+             poles_array.SetValue(index, point.to_pnt())
+ 
+-        knots_array = TColStd_Array1OfReal(1, len(unique_knots))
++        knots_array = Array1_double(1, len(unique_knots))
+         for index, knot in enumerate(unique_knots, start=1):
+             knots_array.SetValue(index, float(knot))
+ 
+-        multiplicities_array = TColStd_Array1OfInteger(1, len(multiplicities))
++        multiplicities_array = Array1_int(1, len(multiplicities))
+         for index, multiplicity in enumerate(multiplicities, start=1):
+             multiplicities_array.SetValue(index, multiplicity)
+ 
+         weights_list = list(weights) if weights is not None else []
+         if weights_list:
+-            weights_array = TColStd_Array1OfReal(1, len(weights_list))
++            weights_array = Array1_double(1, len(weights_list))
+             for index, weight in enumerate(weights_list, start=1):
+                 weights_array.SetValue(index, float(weight))
+             spline_geom = Geom_BSplineCurve(
+@@ -2567,7 +2567,7 @@ class Edge(Mixin1D[TopoDS_Edge]):
+         Returns:
+             Edge: spline
+         """
+-        pnts = TColgp_HArray1OfPnt(1, len(points))
++        pnts = HArray1_gp_Pnt(1, len(points))
+         for i, point in enumerate(points):
+             pnts.SetValue(i + 1, Vector(point).to_pnt())
+ 
+@@ -3634,7 +3634,7 @@ class Wire(Mixin1D[TopoDS_Wire]):
+             edges = placed_edges
+ 
+         wire_builder = BRepBuilderAPI_MakeWire()
+-        combined_edges = TopTools_ListOfShape()
++        combined_edges = List_TopoDS_Shape()
+         for edge in edges:
+             if edge.wrapped is not None:
+                 combined_edges.Append(edge.wrapped)
+@@ -3670,8 +3670,8 @@ class Wire(Mixin1D[TopoDS_Wire]):
+             ShapeList[Wire]: Wires
+         """
+ 
+-        edges_in = TopTools_HSequenceOfShape()
+-        wires_out = TopTools_HSequenceOfShape()
++        edges_in = HSequence_TopoDS_Shape()
++        wires_out = HSequence_TopoDS_Shape()
+ 
+         for edge in [e for w in wires for e in w.edges()]:
+             if edge.wrapped is not None:
+@@ -3962,7 +3962,7 @@ class Wire(Mixin1D[TopoDS_Wire]):
+         unchamfered_face = _make_topods_face_from_wires(self.wrapped)
+         chamfer_builder = BRepFilletAPI_MakeFillet2d(unchamfered_face)
+ 
+-        vertex_edge_map = TopTools_IndexedDataMapOfShapeListOfShape()
++        vertex_edge_map = IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher()
+         TopExp.MapShapesAndAncestors_s(
+             unchamfered_face, ta.TopAbs_VERTEX, ta.TopAbs_EDGE, vertex_edge_map
+         )
+@@ -3972,7 +3972,7 @@ class Wire(Mixin1D[TopoDS_Wire]):
+                 continue
+             edge_list = vertex_edge_map.FindFromKey(v.wrapped)
+ 
+-            # Index or iterator access to OCP.TopTools.TopTools_ListOfShape is slow on M1 macs
++            # Index or iterator access to OCP.TopTools.List_TopoDS_Shape is slow on M1 macs
+             # Using First() and Last() to omit
+             edges = (
+                 Edge(tcast(TopoDS_Edge, downcast(edge_list.First()))),
+@@ -4239,7 +4239,7 @@ class Wire(Mixin1D[TopoDS_Wire]):
+             closest_topods_edge_param = extrema.ParOnEdgeS2(1)[0]
+         elif supp_type == BRepExtrema_SupportType.BRepExtrema_IsVertex:
+             v_hit = tcast(TopoDS_Vertex, downcast(extrema.SupportOnShape2(1)))
+-            vertex_edge_map = TopTools_IndexedDataMapOfShapeListOfShape()
++            vertex_edge_map = IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher()
+             TopExp.MapShapesAndAncestors_s(
+                 self.wrapped, ta.TopAbs_VERTEX, ta.TopAbs_EDGE, vertex_edge_map
+             )
+@@ -4619,8 +4619,8 @@ def edges_to_wires(edges: Iterable[Edge], tol: float = 1e-6) -> ShapeList[Wire]:
+ 
+     """
+ 
+-    edges_in = TopTools_HSequenceOfShape()
+-    wires_out = TopTools_HSequenceOfShape()
++    edges_in = HSequence_TopoDS_Shape()
++    wires_out = HSequence_TopoDS_Shape()
+ 
+     for edge in edges:
+         if edge.wrapped is not None:
+@@ -4723,13 +4723,13 @@ def topo_explore_connected_faces(
+         raise ValueError("edge has no valid parent")
+ 
+     # make a edge --> faces mapping
+-    edge_face_map = TopTools_IndexedDataMapOfShapeListOfShape()
++    edge_face_map = IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher()
+     TopExp.MapShapesAndAncestors_s(
+         parent.wrapped, ta.TopAbs_EDGE, ta.TopAbs_FACE, edge_face_map
+     )
+ 
+     # Query the map and select only unique faces
+-    unique_face_map = TopTools_IndexedMapOfShape()
++    unique_face_map = IndexedMap_TopoDS_Shape_TopTools_ShapeMapHasher()
+     unique_faces = []
+     if edge_face_map.Contains(edge.wrapped):
+         for face in edge_face_map.FindFromKey(edge.wrapped):
+diff --git a/src/build123d/topology/shape_core.py b/src/build123d/topology/shape_core.py
+index 3bb2f53a..dc697988 100644
+--- a/src/build123d/topology/shape_core.py
++++ b/src/build123d/topology/shape_core.py
+@@ -132,11 +132,9 @@ from OCP.TopoDS import (
+     TopoDS_Vertex,
+     TopoDS_Wire,
+ )
+-from OCP.TopTools import (
+-    TopTools_IndexedDataMapOfShapeListOfShape,
+-    TopTools_ListOfShape,
+-    TopTools_ShapeMapHasher,
+-)
++from OCP.collections import IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher
++from OCP.collections import List_TopoDS_Shape
++from OCP.TopTools import TopTools_ShapeMapHasher
+ from typing_extensions import Self
+ 
+ from bd_materials import FinishedMaterial, resolve as resolve_material
+@@ -459,7 +457,9 @@ class Shape(NodeMixin, Generic[TOPODS]):
+             shape = shape_stack.pop(0)
+ 
+             # Create an empty indexed data map to store the edges and their corresponding faces.
+-            shape_map = TopTools_IndexedDataMapOfShapeListOfShape()
++            shape_map = (
++                IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher()
++            )
+ 
+             # Fill the map with edges and their associated faces in the given shape. Each edge in
+             # the map is associated with a list of faces that share that edge.
+@@ -1486,7 +1486,7 @@ class Shape(NodeMixin, Generic[TOPODS]):
+     #     if self._wrapped is None:
+     #         return {}
+ 
+-    #     res = TopTools_IndexedDataMapOfShapeListOfShape()
++    #     res = IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher()
+ 
+     #     TopExp.MapShapesAndAncestors_s(
+     #         self.wrapped,
+@@ -2074,7 +2074,7 @@ class Shape(NodeMixin, Generic[TOPODS]):
+         if keep in [Keep.INSIDE, Keep.OUTSIDE]:
+             raise ValueError(f"{keep} is invalid")
+ 
+-        shape_list = TopTools_ListOfShape()
++        shape_list = List_TopoDS_Shape()
+         shape_list.Append(self.wrapped)
+ 
+         # Define the splitting tool
+@@ -2083,7 +2083,7 @@ class Shape(NodeMixin, Generic[TOPODS]):
+             if isinstance(tool, Plane)
+             else tool.wrapped
+         )
+-        tool_list = TopTools_ListOfShape()
++        tool_list = List_TopoDS_Shape()
+         tool_list.Append(trim_tool)
+ 
+         # Create the splitter algorithm
+@@ -2633,12 +2633,12 @@ class Shape(NodeMixin, Generic[TOPODS]):
+         # The base of the operation
+         base = args[0] if isinstance(args, (list, tuple)) else args
+ 
+-        arg = TopTools_ListOfShape()
++        arg = List_TopoDS_Shape()
+         for obj in args:
+             if obj._wrapped is not None:
+                 arg.Append(obj._wrapped)
+ 
+-        tool = TopTools_ListOfShape()
++        tool = List_TopoDS_Shape()
+         for obj in tools:
+             if obj._wrapped is not None:
+                 tool.Append(obj._wrapped)
+@@ -2978,7 +2978,9 @@ def topo_distance_to(
+ 
+     if peer_type == "Vertex":
+         vertex_neighbors: dict[Shape, set[Shape]] = {peer: set() for peer in peers}
+-        vertex_edge_map = TopTools_IndexedDataMapOfShapeListOfShape()
++        vertex_edge_map = (
++            IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher()
++        )
+         TopExp.MapShapesAndAncestors_s(
+             parent.wrapped,
+             ta.TopAbs_VERTEX,
+@@ -3003,7 +3005,7 @@ def topo_distance_to(
+                     if neighbor is not None and neighbor != vertex_peer:
+                         vertex_neighbors[vertex_peer].add(neighbor)
+     else:
+-        connector_peer_map = TopTools_IndexedDataMapOfShapeListOfShape()
++        connector_peer_map = IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher()
+         TopExp.MapShapesAndAncestors_s(
+             parent.wrapped,
+             connector_enum_lut[peer_type],
+@@ -3780,11 +3782,11 @@ def _topods_bool_op(
+     """
+     args = list(args)
+     tools = list(tools)
+-    arg = TopTools_ListOfShape()
++    arg = List_TopoDS_Shape()
+     for obj in args:
+         arg.Append(obj)
+ 
+-    tool = TopTools_ListOfShape()
++    tool = List_TopoDS_Shape()
+     for obj in tools:
+         tool.Append(obj)
+ 
+diff --git a/src/build123d/topology/three_d.py b/src/build123d/topology/three_d.py
+index cd0e1d2c..c90324ab 100644
+--- a/src/build123d/topology/three_d.py
++++ b/src/build123d/topology/three_d.py
+@@ -100,7 +100,10 @@ from OCP.TopoDS import (
+     TopoDS_Solid,
+     TopoDS_Wire,
+ )
+-from OCP.TopTools import TopTools_IndexedDataMapOfShapeListOfShape, TopTools_ListOfShape
++from OCP.collections import (
++    IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher,
++    List_TopoDS_Shape,
++)
+ from typing_extensions import Self
+ 
+ from build123d.build_enums import (
+@@ -264,7 +267,7 @@ class Mixin3D(Shape[TOPODS]):
+         native_edges = [e.wrapped for e in edge_list]
+ 
+         # make a edge --> faces mapping
+-        edge_face_map = TopTools_IndexedDataMapOfShapeListOfShape()
++        edge_face_map = IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher()
+         TopExp.MapShapesAndAncestors_s(
+             self.wrapped, ta.TopAbs_EDGE, ta.TopAbs_FACE, edge_face_map
+         )
+@@ -419,7 +422,7 @@ class Mixin3D(Shape[TOPODS]):
+             Kind.INTERSECTION: GeomAbs_JoinType.GeomAbs_Intersection,
+         }
+ 
+-        occ_faces_list = TopTools_ListOfShape()
++        occ_faces_list = List_TopoDS_Shape()
+         for face in faces:
+             occ_faces_list.Append(face.wrapped)
+ 
+@@ -670,7 +673,7 @@ class Mixin3D(Shape[TOPODS]):
+             Kind.TANGENT: GeomAbs_JoinType.GeomAbs_Tangent,
+         }
+ 
+-        occ_faces_list = TopTools_ListOfShape()
++        occ_faces_list = List_TopoDS_Shape()
+         for face in openings:
+             occ_faces_list.Append(face.wrapped)
+ 
+@@ -1279,7 +1282,7 @@ class Solid(Mixin3D[TopoDS_Solid]):
+         face_explorer = TopExp_Explorer(target.wrapped, ta.TopAbs_FACE)
+         while face_explorer.More():
+             target_face = TopoDS.Face(face_explorer.Current())
+-            modified_los: TopTools_ListOfShape = history.Modified(target_face)
++            modified_los: List_TopoDS_Shape = history.Modified(target_face)
+             while not modified_los.IsEmpty():
+                 modified_face = TopoDS.Face(modified_los.First())
+                 modified_los.RemoveFirst()
+diff --git a/src/build123d/topology/two_d.py b/src/build123d/topology/two_d.py
+index d23acabf..48a3c0bb 100644
+--- a/src/build123d/topology/two_d.py
++++ b/src/build123d/topology/two_d.py
+@@ -114,20 +114,19 @@ from OCP.Standard import (
+     Standard_TypeMismatch,
+ )
+ from OCP.StdFail import StdFail_NotDone
+-from OCP.TColgp import TColgp_Array1OfPnt, TColgp_HArray2OfPnt
+-from OCP.TColStd import (
+-    TColStd_Array1OfInteger,
+-    TColStd_Array1OfReal,
+-    TColStd_HArray2OfReal,
++from OCP.collections import (
++    Array1_double,
++    Array1_gp_Pnt,
++    Array1_int,
++    HArray2_double,
++    HArray2_gp_Pnt,
++    IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher,
++    List_TopoDS_Shape,
++    Sequence_TopoDS_Shape,
+ )
+ from OCP.TopAbs import TopAbs_Orientation
+ from OCP.TopExp import TopExp
+ from OCP.TopoDS import TopoDS, TopoDS_Face, TopoDS_Shape, TopoDS_Shell, TopoDS_Solid
+-from OCP.TopTools import (
+-    TopTools_IndexedDataMapOfShapeListOfShape,
+-    TopTools_ListOfShape,
+-    TopTools_SequenceOfShape,
+-)
+ from ocp_gordon import interpolate_curve_network
+ from typing_extensions import Self
+ 
+@@ -281,8 +280,8 @@ class Mixin2D(ABC, Shape[TOPODS]):
+ 
+         """
+ 
+-        def get(los: TopTools_ListOfShape) -> list:
+-            """Return objects from TopTools_ListOfShape as list"""
++        def get(los: List_TopoDS_Shape) -> list:
++            """Return objects from List_TopoDS_Shape as list"""
+             shapes = []
+             for _ in range(los.Size()):
+                 first = los.First()
+@@ -334,7 +333,7 @@ class Mixin2D(ABC, Shape[TOPODS]):
+         # Process the perimeter
+         if not perimeter.is_closed:
+             raise ValueError("perimeter must be a closed Wire or Edge")
+-        perimeter_edges = TopTools_SequenceOfShape()
++        perimeter_edges = Sequence_TopoDS_Shape()
+         seams = [seam for face in self.faces() for seam in face.seams]
+         for perimeter_edge in perimeter.edges():
+             if not perimeter_edge:
+@@ -1383,13 +1382,13 @@ class Face(Mixin2D[TopoDS_Face]):
+         ):
+             raise ValueError("A weight must be provided for each control point")
+ 
+-        points_ = TColgp_HArray2OfPnt(1, len(points), 1, len(points[0]))
++        points_ = HArray2_gp_Pnt(1, len(points), 1, len(points[0]))
+         for i, row_points in enumerate(points):
+             for j, point in enumerate(row_points):
+                 points_.SetValue(i + 1, j + 1, Vector(point).to_pnt())
+ 
+         if weights:
+-            weights_ = TColStd_HArray2OfReal(1, len(weights), 1, len(weights[0]))
++            weights_ = HArray2_double(1, len(weights), 1, len(weights[0]))
+             for i, row_weights in enumerate(weights):
+                 for j, weight in enumerate(row_weights):
+                     weights_.SetValue(i + 1, j + 1, float(weight))
+@@ -1433,15 +1432,15 @@ class Face(Mixin2D[TopoDS_Face]):
+         def create_zero_length_bspline_curve(
+             point: gp_Pnt, degree: int = 1
+         ) -> Geom_BSplineCurve:
+-            control_points = TColgp_Array1OfPnt(1, 2)
++            control_points = Array1_gp_Pnt(1, 2)
+             control_points.SetValue(1, point)
+             control_points.SetValue(2, point)
+ 
+-            knots = TColStd_Array1OfReal(1, 2)
++            knots = Array1_double(1, 2)
+             knots.SetValue(1, 0.0)
+             knots.SetValue(2, 1.0)
+ 
+-            multiplicities = TColStd_Array1OfInteger(1, 2)
++            multiplicities = Array1_int(1, 2)
+             multiplicities.SetValue(1, degree + 1)
+             multiplicities.SetValue(2, degree + 1)
+ 
+@@ -1682,7 +1681,7 @@ class Face(Mixin2D[TopoDS_Face]):
+         Returns:
+             Face: a potentially non-planar face defined by points
+         """
+-        points_ = TColgp_HArray2OfPnt(1, len(points), 1, len(points[0]))
++        points_ = HArray2_gp_Pnt(1, len(points), 1, len(points[0]))
+ 
+         for i, point_row in enumerate(points):
+             for j, point in enumerate(point_row):
+@@ -2010,7 +2009,7 @@ class Face(Mixin2D[TopoDS_Face]):
+ 
+         chamfer_builder = BRepFilletAPI_MakeFillet2d(self.wrapped)
+ 
+-        vertex_edge_map = TopTools_IndexedDataMapOfShapeListOfShape()
++        vertex_edge_map = IndexedDataMap_TopoDS_Shape_List_TopoDS_Shape_TopTools_ShapeMapHasher()
+         TopExp.MapShapesAndAncestors_s(
+             self.wrapped, ta.TopAbs_VERTEX, ta.TopAbs_EDGE, vertex_edge_map
+         )
+@@ -2018,7 +2017,7 @@ class Face(Mixin2D[TopoDS_Face]):
+         for v in vertices:
+             edge_list = vertex_edge_map.FindFromKey(v.wrapped)
+ 
+-            # Index or iterator access to OCP.TopTools.TopTools_ListOfShape is slow on M1 macs
++            # Index or iterator access to OCP.TopTools.List_TopoDS_Shape is slow on M1 macs
+             # Using First() and Last() to omit
+             edges = (
+                 Edge(TopoDS.Edge(edge_list.First())),
+@@ -2808,7 +2807,7 @@ class Face(Mixin2D[TopoDS_Face]):
+             trimmed_first.position_at(0) - trimmed_last.position_at(1)
+         ).length
+         wire_builder = BRepBuilderAPI_MakeWire()
+-        combined_edges = TopTools_ListOfShape()
++        combined_edges = List_TopoDS_Shape()
+         for edge in wrapped_edges:
+             combined_edges.Append(edge.wrapped)
+         wire_builder.Add(combined_edges)
+diff --git a/src/build123d/topology/utils.py b/src/build123d/topology/utils.py
+index 06a5264c..fe64d1f2 100644
+--- a/src/build123d/topology/utils.py
++++ b/src/build123d/topology/utils.py
+@@ -66,7 +66,7 @@ from OCP.BRepPrimAPI import BRepPrimAPI_MakePrism
+ from OCP.ShapeFix import ShapeFix_Face, ShapeFix_Shape
+ from OCP.TopAbs import TopAbs_ShapeEnum
+ from OCP.TopExp import TopExp_Explorer
+-from OCP.TopTools import TopTools_ListOfShape
++from OCP.collections import List_TopoDS_Shape
+ from OCP.TopoDS import (
+     TopoDS,
+     TopoDS_Compound,
+@@ -311,13 +311,13 @@ def new_edges(*objects: Shape, combined: Shape) -> ShapeList[Edge]:
+         ShapeList[Edge]: new edges
+     """
+     # Create a list of combined object edges
+-    combined_topo_edges = TopTools_ListOfShape()
++    combined_topo_edges = List_TopoDS_Shape()
+     for edge in combined.edges():
+         if edge.wrapped is not None:
+             combined_topo_edges.Append(edge.wrapped)
+ 
+     # Create a list of original object edges
+-    original_topo_edges = TopTools_ListOfShape()
++    original_topo_edges = List_TopoDS_Shape()
+     for edge in [e for obj in objects for e in obj.edges()]:
+         if edge.wrapped is not None:
+             original_topo_edges.Append(edge.wrapped)
+diff --git a/tests/test_direct_api/test_geom_equal.py b/tests/test_direct_api/test_geom_equal.py
+index 1df96f16..b1628310 100644
+--- a/tests/test_direct_api/test_geom_equal.py
++++ b/tests/test_direct_api/test_geom_equal.py
+@@ -362,26 +362,26 @@ class TestEdgeGeomEqualBSpline:
+     def test_different_knot_values(self):
+         """BSplines with different internal knot positions have different shapes."""
+         from OCP.Geom import Geom_BSplineCurve
+-        from OCP.TColgp import TColgp_Array1OfPnt
+-        from OCP.TColStd import TColStd_Array1OfReal, TColStd_Array1OfInteger
++        from OCP.collections import Array1_gp_Pnt
++        from OCP.collections import Array1_double, Array1_int
+         from OCP.gp import gp_Pnt
+         from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
+ 
+         # 5 poles for degree 3 with one internal knot
+-        poles = TColgp_Array1OfPnt(1, 5)
++        poles = Array1_gp_Pnt(1, 5)
+         poles.SetValue(1, gp_Pnt(0, 0, 0))
+         poles.SetValue(2, gp_Pnt(1, 2, 0))
+         poles.SetValue(3, gp_Pnt(2, 2, 0))
+         poles.SetValue(4, gp_Pnt(3, 2, 0))
+         poles.SetValue(5, gp_Pnt(4, 0, 0))
+ 
+-        mults = TColStd_Array1OfInteger(1, 3)
++        mults = Array1_int(1, 3)
+         mults.SetValue(1, 4)
+         mults.SetValue(2, 1)  # Internal knot
+         mults.SetValue(3, 4)
+ 
+         # Internal knot at 0.5
+-        knots1 = TColStd_Array1OfReal(1, 3)
++        knots1 = Array1_double(1, 3)
+         knots1.SetValue(1, 0.0)
+         knots1.SetValue(2, 0.5)
+         knots1.SetValue(3, 1.0)
+@@ -389,7 +389,7 @@ class TestEdgeGeomEqualBSpline:
+         e1 = Edge(BRepBuilderAPI_MakeEdge(curve1).Edge())
+ 
+         # Internal knot at 0.3 - different position changes shape!
+-        knots2 = TColStd_Array1OfReal(1, 3)
++        knots2 = Array1_double(1, 3)
+         knots2.SetValue(1, 0.0)
+         knots2.SetValue(2, 0.3)
+         knots2.SetValue(3, 1.0)
+@@ -404,13 +404,13 @@ class TestEdgeGeomEqualBSpline:
+     def test_different_multiplicities(self):
+         """BSplines with same poles/knots but different multiplicities have different shapes."""
+         from OCP.Geom import Geom_BSplineCurve
+-        from OCP.TColgp import TColgp_Array1OfPnt
+-        from OCP.TColStd import TColStd_Array1OfReal, TColStd_Array1OfInteger
++        from OCP.collections import Array1_gp_Pnt
++        from OCP.collections import Array1_double, Array1_int
+         from OCP.gp import gp_Pnt
+         from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
+ 
+         # Same 7 poles for both curves
+-        poles = TColgp_Array1OfPnt(1, 7)
++        poles = Array1_gp_Pnt(1, 7)
+         poles.SetValue(1, gp_Pnt(0, 0, 0))
+         poles.SetValue(2, gp_Pnt(1, 2, 0))
+         poles.SetValue(3, gp_Pnt(2, 1, 0))
+@@ -420,14 +420,14 @@ class TestEdgeGeomEqualBSpline:
+         poles.SetValue(7, gp_Pnt(6, 0, 0))
+ 
+         # Same 4 knots for both curves
+-        knots = TColStd_Array1OfReal(1, 4)
++        knots = Array1_double(1, 4)
+         knots.SetValue(1, 0.0)
+         knots.SetValue(2, 0.33)
+         knots.SetValue(3, 0.67)
+         knots.SetValue(4, 1.0)
+ 
+         # Multiplicities [4, 1, 2, 4] - sum = 11 = 7 + 3 + 1
+-        mults1 = TColStd_Array1OfInteger(1, 4)
++        mults1 = Array1_int(1, 4)
+         mults1.SetValue(1, 4)
+         mults1.SetValue(2, 1)
+         mults1.SetValue(3, 2)
+@@ -436,7 +436,7 @@ class TestEdgeGeomEqualBSpline:
+         e1 = Edge(BRepBuilderAPI_MakeEdge(curve1).Edge())
+ 
+         # Multiplicities [4, 2, 1, 4] - same sum, swapped internal mults
+-        mults2 = TColStd_Array1OfInteger(1, 4)
++        mults2 = Array1_int(1, 4)
+         mults2.SetValue(1, 4)
+         mults2.SetValue(2, 2)
+         mults2.SetValue(3, 1)
+@@ -453,26 +453,26 @@ class TestEdgeGeomEqualBSpline:
+     def test_rational_bspline_different_weights(self):
+         """Rational BSplines with different weights."""
+         from OCP.Geom import Geom_BSplineCurve
+-        from OCP.TColgp import TColgp_Array1OfPnt
+-        from OCP.TColStd import TColStd_Array1OfReal, TColStd_Array1OfInteger
++        from OCP.collections import Array1_gp_Pnt
++        from OCP.collections import Array1_double, Array1_int
+         from OCP.gp import gp_Pnt
+         from OCP.BRepBuilderAPI import BRepBuilderAPI_MakeEdge
+ 
+-        poles = TColgp_Array1OfPnt(1, 4)
++        poles = Array1_gp_Pnt(1, 4)
+         poles.SetValue(1, gp_Pnt(0, 0, 0))
+         poles.SetValue(2, gp_Pnt(1, 1, 0))
+         poles.SetValue(3, gp_Pnt(2, 1, 0))
+         poles.SetValue(4, gp_Pnt(3, 0, 0))
+ 
+-        knots = TColStd_Array1OfReal(1, 2)
++        knots = Array1_double(1, 2)
+         knots.SetValue(1, 0.0)
+         knots.SetValue(2, 1.0)
+-        mults = TColStd_Array1OfInteger(1, 2)
++        mults = Array1_int(1, 2)
+         mults.SetValue(1, 4)
+         mults.SetValue(2, 4)
+ 
+         # Weights [1, 2, 2, 1]
+-        weights1 = TColStd_Array1OfReal(1, 4)
++        weights1 = Array1_double(1, 4)
+         weights1.SetValue(1, 1.0)
+         weights1.SetValue(2, 2.0)
+         weights1.SetValue(3, 2.0)
+@@ -481,7 +481,7 @@ class TestEdgeGeomEqualBSpline:
+         e1 = Edge(BRepBuilderAPI_MakeEdge(curve1).Edge())
+ 
+         # Weights [1, 3, 3, 1]
+-        weights2 = TColStd_Array1OfReal(1, 4)
++        weights2 = Array1_double(1, 4)
+         weights2.SetValue(1, 1.0)
+         weights2.SetValue(2, 3.0)
+         weights2.SetValue(3, 3.0)
+diff --git a/tests/test_direct_api/test_solid.py b/tests/test_direct_api/test_solid.py
+index 75fad74e..cc37c20c 100644
+--- a/tests/test_direct_api/test_solid.py
++++ b/tests/test_direct_api/test_solid.py
+@@ -231,7 +231,7 @@ class TestSolid(unittest.TestCase):
+         path = Spline((0, 0), (10, 0), tangents=((0, 0, 1), (0, 0, -1)))
+         binormal = Edge.make_line((0, 1), (10, 1))
+         swept = Solid.sweep_multi([f0, f1], path, is_frenet=True, binormal=binormal)
+-        self.assertAlmostEqual(swept.volume, 23.78, 2)
++        self.assertAlmostEqual(swept.volume, 23.782, 2)
+ 
+         path = Spline((0, 0), (10, 0), tangents=((0, 0, 1), (1, 0, 0)))
+         swept = Solid.sweep_multi(
+diff --git a/tests/test_materials.py b/tests/test_materials.py
+index 85380ef4..00c18502 100644
+--- a/tests/test_materials.py
++++ b/tests/test_materials.py
+@@ -44,7 +44,7 @@ from OCP.Message import Message_ProgressRange
+ from OCP.RWGltf import RWGltf_CafReader
+ from OCP.TCollection import TCollection_AsciiString, TCollection_ExtendedString
+ from OCP.TDataStd import TDataStd_Name
+-from OCP.TDF import TDF_LabelSequence
++from OCP.collections import Sequence_TDF_Label
+ from OCP.TDocStd import TDocStd_Document
+ from OCP.XCAFDoc import XCAFDoc_DocumentTool, XCAFDoc_VisMaterialPBR
+ 
+@@ -345,7 +345,7 @@ def read_gltf(path: str) -> TDocStd_Document:
+ 
+ def gltf_shape_names(doc: TDocStd_Document) -> list[str]:
+     """Names of the free shapes (the glTF nodes) in an XCAF document."""
+-    labels = TDF_LabelSequence()
++    labels = Sequence_TDF_Label()
+     XCAFDoc_DocumentTool.ShapeTool_s(doc.Main()).GetFreeShapes(labels)
+     names = []
+     for i in range(1, labels.Length() + 1):
+@@ -371,7 +371,7 @@ def srgb_to_linear(channel: float) -> float:
+ def gltf_pbr_materials(doc: TDocStd_Document) -> list[XCAFDoc_VisMaterialPBR]:
+     """Metallic-roughness material definitions in an XCAF document."""
+     tool = XCAFDoc_DocumentTool.VisMaterialTool_s(doc.Main())
+-    labels = TDF_LabelSequence()
++    labels = Sequence_TDF_Label()
+     tool.GetMaterials(labels)
+     return [
+         tool.GetMaterial_s(labels.Value(i)).PbrMaterial()
