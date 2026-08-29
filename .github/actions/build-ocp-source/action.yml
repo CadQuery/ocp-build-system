@@ -169,23 +169,13 @@ runs:
         else
           curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_Windows.zip
         fi
+        # The 8.x archives extract flat, so unpack into a directory of our own.
         unzip -q OCP_src_stubs_*.zip -d OCP_src
         rm *.zip
 
-        # Find the source root. The 8.0.0.0 archives extract flat, while releases up to
-        # 7.9.x nested everything inside a single OCP_src_stubs_<os> directory.
-        STUBS=$(find OCP_src -maxdepth 2 -type d -name OCP-stubs -print -quit)
-        if [ -z "$STUBS" ]; then
-          echo "ERROR: OCP-stubs not found in the archive; top level holds:" >&2
-          ls OCP_src >&2
-          exit 1
-        fi
-        SRC=$(dirname "$STUBS")
-
-        mv "$SRC/OCP-stubs" pypi-stubs/
+        mv OCP_src/OCP-stubs pypi-stubs/
         mkdir OCP
-        mv "$SRC" OCP/OCP
-        rm -rf OCP_src
+        mv OCP_src OCP/OCP
 
     # - - -
 
