@@ -154,14 +154,12 @@ runs:
         if [[ "${{ inputs.use-vtk }}" == "novtk" ]]; then
           echo "=> Running novtk tests"
           uv run --no-sync pytest tests -v -W ignore \
-                 --deselect tests/test_materials.py::TestMaterialGltfExport::test_glb_pbr_values \
                  --ignore tests/test_direct_api/test_vtk_poly_data.py \
                  --ignore tests/test_direct_api/test_jupyter.py \
                  --ignore tests/test_examples.py  # 7.9. COMPATIBILITY ISSUE
         else
           echo "=> Running vtk tests"
           uv run --no-sync pytest tests -v -W ignore \
-                 --deselect tests/test_materials.py::TestMaterialGltfExport::test_glb_pbr_values \
                  --ignore tests/test_examples.py  # 7.9. COMPATIBILITY ISSUE
         fi
 
