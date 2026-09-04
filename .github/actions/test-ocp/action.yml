@@ -28,13 +28,6 @@ runs:
 
     # - - -
 
-    - name: Install tomli on Python 3.10
-      shell: bash -l {0}
-      if: ${{ matrix.python-version == '3.10' }}
-      run: uv pip install "tomli>=1.1.0"
-
-    # - - -
-    
     - name: Download vtk cadquery_ocp wheel
       if: inputs.use-vtk == 'vtk'
       uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c #v8.0.1
@@ -165,16 +158,12 @@ runs:
 
     # - - -
 
-    # Skipped: cadquery does not support OCP 8 yet, and the fix is coming from OCP's
-    # maintainer upstream - there is nothing for this repo to patch, unlike build123d /
-    # ocpsvg / ocp_gordon above. Re-enable by restoring the commented condition once
-    # cadquery releases OCP 8 support.
-    #
-    # cadquery 2.8 requires Python >= 3.11, and on macos-15-intel its
-    # numba -> llvmlite dependency has no wheel and fails to build from source.
+    # cadquery 2.8 requires Python >= 3.11. The ubuntu-22.04-arm and macos-15-intel
+    # exclusions are dropped on purpose, to find out whether both are supported by now -
+    # macos-15-intel used to fail building its numba -> llvmlite dependency from source.
+    # Restore them if that is still the case.
     - name: Run cadquery tests (${{ inputs.use-vtk }})
-      if: false
-      # if: inputs.use-vtk == 'vtk' && inputs.os != 'ubuntu-22.04-arm' && inputs.os != 'macos-15-intel' && inputs.python-version != '3.10'
+      if: inputs.use-vtk == 'vtk'
       shell: bash -l {0}
       run: |
         # Run cadquery tests
@@ -186,8 +175,14 @@ runs:
         git clone https://github.com/cadquery/cadquery.git
         cd cadquery
 
-        # Patch to allow cadquery_ocp v7.9
-        sed -i.bak 's/"cadquery-ocp>=7\.9\.3\.1,<8\.0",/"cadquery-ocp>=8.0,< 9.0",/' setup.py
+        # cadquery master pins "cadquery-ocp==8.0.0.*". That prefix match covers the
+        # 8.0.0.x wheels but NOT the 8.0.1 wheel built on this branch, and no 8.x
+        # cadquery-ocp exists on PyPI to fall back to - so repoint the pin at exactly
+        # the wheel installed above. Drop this once cadquery widens the pin for 8.0.1.
+        # The grep makes an upstream pin change fail loudly instead of letting sed
+        # silently no-op.
+        grep -q '"cadquery-ocp==8\.0\.0\.\*",' setup.py
+        sed -i.bak 's/"cadquery-ocp==8\.0\.0\.\*",/"cadquery-ocp==${{ env.WHEEL }}",/' setup.py
 
         uv pip install .
 
