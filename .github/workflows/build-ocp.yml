@@ -4,20 +4,20 @@ on: workflow_dispatch
 # on:
 #   push:
 #     branches:
-#       - v8.0
+#       - v8.0.1
 
 env:
-  OCP: 8.0.0.1
-  WHEEL: 8.0.0.1.0
+  OCP: 8.0.1.0
+  WHEEL: 8.0.1.0.0
   VTK: 9.6.2
   VTK_MAJOR: 9.6
-  OCCT: 8.0.0
+  OCCT: 8.0.1
   PYBIND11: 2.13
   PYWRAP: "false"
   # OCP source download URL (default: https://github.com/CadQuery/OCP/releases/download)
   # SOURCE_URL: https://github.com/bernhard-42/__temp_artefacts__/releases/download
   SOURCE_URL: https://github.com/CadQuery/OCP/releases/download
-  RELEASE_TO_REPO: "true"
+  RELEASE_TO_REPO: "false"
 
 jobs:
   # ================================================================================
