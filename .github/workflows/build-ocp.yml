@@ -35,8 +35,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
-        # python-version: ["3.11", "3.12", "3.13", "3.14"]
-        python-version: ["3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
         include:
           - os: "ubuntu-22.04"
@@ -77,8 +76,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["macos-15-intel", "macos-15", "windows-latest"]
-        # python-version: ["3.11", "3.12", "3.13", "3.14"]
-        python-version: ["3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
         include:
           - os: "macos-15"
@@ -192,8 +190,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # python-version: ["3.11", "3.12", "3.13", "3.14"]
-        python-version: ["3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
@@ -238,8 +235,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
-        # python-version: ["3.11", "3.12", "3.13", "3.14"]
-        python-version: ["3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
         include:
           - os: "ubuntu-22.04"
@@ -275,8 +271,7 @@ jobs:
       fail-fast: false
       matrix:
         os: ["macos-15-intel", "macos-15", "windows-latest"]
-        # python-version: ["3.11", "3.12", "3.13", "3.14"]
-        python-version: ["3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
         include:
           - os: "macos-15"
@@ -335,8 +330,7 @@ jobs:
             "ubuntu-22.04-arm",
             "windows-latest",
           ]
-        # python-version: ["3.11", "3.12", "3.13", "3.14"]
-        python-version: ["3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
         include:
           - os: "macos-15-intel"
