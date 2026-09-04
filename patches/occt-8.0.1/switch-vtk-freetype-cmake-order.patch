@@ -1,0 +1,52 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index d051f5ccce..391f486aa4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -521,23 +521,6 @@ else()
+   OCCT_CHECK_AND_UNSET ("USE_XLIB")
+ endif()
+ 
+-# FreeType
+-if (CAN_USE_FREETYPE AND USE_FREETYPE)
+-  message (STATUS "Info: FreeType is used by OCCT")
+-  add_definitions (-DHAVE_FREETYPE)
+-  OCCT_ADD_VCPKG_FEATURE ("freetype")
+-  list (APPEND OCCT_3RDPARTY_CMAKE_LIST "adm/cmake/freetype")
+-else()
+-  if (NOT CAN_USE_FREETYPE)
+-    OCCT_CHECK_AND_UNSET ("USE_FREETYPE")
+-  endif()
+-  OCCT_UNSET_VCPKG_FEATURE ("freetype")
+-  OCCT_CHECK_AND_UNSET_GROUP ("3RDPARTY_FREETYPE")
+-  OCCT_CHECK_AND_UNSET ("3RDPARTY_FREETYPE_INCLUDE_DIR_freetype2")
+-  OCCT_CHECK_AND_UNSET ("3RDPARTY_FREETYPE_INCLUDE_DIR_ft2build")
+-  OCCT_CHECK_AND_UNSET ("INSTALL_FREETYPE")
+-endif()
+-
+ # VTK
+ if (USE_VTK)
+   add_definitions (-DHAVE_VTK)
+@@ -555,6 +538,23 @@ else()
+   endif()
+ endif()
+ 
++# FreeType
++if (CAN_USE_FREETYPE AND USE_FREETYPE)
++  message (STATUS "Info: FreeType is used by OCCT")
++  add_definitions (-DHAVE_FREETYPE)
++  OCCT_ADD_VCPKG_FEATURE ("freetype")
++  list (APPEND OCCT_3RDPARTY_CMAKE_LIST "adm/cmake/freetype")
++else()
++  if (NOT CAN_USE_FREETYPE)
++    OCCT_CHECK_AND_UNSET ("USE_FREETYPE")
++  endif()
++  OCCT_UNSET_VCPKG_FEATURE ("freetype")
++  OCCT_CHECK_AND_UNSET_GROUP ("3RDPARTY_FREETYPE")
++  OCCT_CHECK_AND_UNSET ("3RDPARTY_FREETYPE_INCLUDE_DIR_freetype2")
++  OCCT_CHECK_AND_UNSET ("3RDPARTY_FREETYPE_INCLUDE_DIR_ft2build")
++  OCCT_CHECK_AND_UNSET ("INSTALL_FREETYPE")
++endif()
++
+ # FREEIMAGE
+ if (CAN_USE_FREEIMAGE AND USE_FREEIMAGE)
+   add_definitions (-DHAVE_FREEIMAGE)
