@@ -17,7 +17,7 @@ env:
   # OCP source download URL (default: https://github.com/CadQuery/OCP/releases/download)
   # SOURCE_URL: https://github.com/bernhard-42/__temp_artefacts__/releases/download
   SOURCE_URL: https://github.com/CadQuery/OCP/releases/download
-  RELEASE_TO_REPO: "true"
+  RELEASE_TO_REPO: "false"
 
 jobs:
   # ================================================================================
@@ -382,6 +382,10 @@ jobs:
         uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 #v3.0.2
         with:
           tag_name: v${{ env.WHEEL }}
+          # Without this the action sends no target_commitish and GitHub creates the tag
+          # on the default branch, so the tag points at main instead of the commit that
+          # produced the wheels.
+          target_commitish: ${{ github.sha }}
           name: Release ${{ env.WHEEL }}
           files: wheels/*.whl
           fail_on_unmatched_files: true
