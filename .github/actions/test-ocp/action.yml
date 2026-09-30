@@ -176,15 +176,6 @@ runs:
         git clone https://github.com/cadquery/cadquery.git
         cd cadquery
 
-        # cadquery master pins "cadquery-ocp==8.0.0.*". That prefix match covers the
-        # 8.0.0.x wheels but NOT the 8.0.1 wheel built on this branch, and no 8.x
-        # cadquery-ocp exists on PyPI to fall back to - so repoint the pin at exactly
-        # the wheel installed above. Drop this once cadquery widens the pin for 8.0.1.
-        # The grep makes an upstream pin change fail loudly instead of letting sed
-        # silently no-op.
-        grep -q '"cadquery-ocp==8\.0\.0\.\*",' setup.py
-        sed -i.bak 's/"cadquery-ocp==8\.0\.0\.\*",/"cadquery-ocp==${{ env.WHEEL }}",/' setup.py
-
         uv pip install .
 
         # 7.9. COMPATIBILITY ISSUE
