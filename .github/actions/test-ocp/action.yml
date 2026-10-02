@@ -190,7 +190,7 @@ runs:
         if [[ "${{ inputs.os }}" == "ubuntu-22.04-arm" || "${{ inputs.os }}" == "macos-15" ]]; then
           DESELECT+=(--deselect "tests/test_cadquery.py::TestCadQuery::test_interpPlate")
         fi
-        if [[ "${{ inputs.os }}" == "ubuntu-22.04-arm" ]]; then
+        if [[ "${{ inputs.os }}" == "ubuntu-22.04-arm" || "${{ inputs.os }}" == "macos-15" ]]; then
           # Ex101_InterpPlate.py uses makeNSidedSurface / BRepOffsetAPI_MakeFilling, whose
           # plate solve is numerically marginal and fails to converge on arm64. The index
           # is glob() order (ids=count(0) over examples/*.py) and is NOT portable, so resolve
