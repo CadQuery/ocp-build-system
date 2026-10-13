@@ -1,0 +1,42 @@
+--- a/src/ChFiDS/ChFiDS_FilSpine.cxx
++++ b/src/ChFiDS/ChFiDS_FilSpine.cxx
+@@ -52 +52,4 @@
+-  laws.Clear();
++  if (!parandrad.IsEmpty())
++  {
++    laws.Clear();
++  }
+@@ -59,0 +63,4 @@
++    if (parandrad.IsEmpty())
++    {
++      return;
++    }
+@@ -212,4 +219,11 @@
+-  splitdone                   = Standard_False;
+-  Handle(Law_Composite) prout = new Law_Composite();
+-  Law_Laws&             lst   = prout->ChangeLaws();
+-  lst.Append(C);
++  splitdone = Standard_False;
++  if (dynamic_cast<const Law_Composite*>(C.get()))
++  {
++    laws.Append(C);
++  }
++  else
++  {
++    Handle(Law_Composite) prout = new Law_Composite();
++    prout->ChangeLaws().Append(C);
++    laws.Append(prout);
++  }
+@@ -240,0 +255,4 @@
++  if (parandrad.IsEmpty())
++  {
++    return Standard_False;
++  }
+@@ -336,2 +354,5 @@
+-  Handle(Law_Composite) l = ComputeLaw(Els);
+-  laws.Append(l);
++  if (!parandrad.IsEmpty())
++  {
++    Handle(Law_Composite) l = ComputeLaw(Els);
++    laws.Append(l);
++  }

@@ -1,0 +1,44 @@
+diff --git a/src/ModelingAlgorithms/TKFillet/ChFiDS/ChFiDS_FilSpine.cxx b/src/ModelingAlgorithms/TKFillet/ChFiDS/ChFiDS_FilSpine.cxx
+index a4667e778..6be86e2d0 100644
+--- a/src/ModelingAlgorithms/TKFillet/ChFiDS/ChFiDS_FilSpine.cxx
++++ b/src/ModelingAlgorithms/TKFillet/ChFiDS/ChFiDS_FilSpine.cxx
+@@ -53 +53,4 @@ void ChFiDS_FilSpine::Reset(const bool AllData)
+-  laws.Clear();
++  if (!parandrad.IsEmpty())
++  {
++    laws.Clear();
++  }
+@@ -62,0 +66,4 @@ void ChFiDS_FilSpine::Reset(const bool AllData)
++    if (parandrad.IsEmpty())
++    {
++      return;
++    }
+@@ -237,4 +244,11 @@ void ChFiDS_FilSpine::SetRadius(const occ::handle<Law_Function>& C, const int /*
+-  splitdone                                          = false;
+-  occ::handle<Law_Composite>                   prout = new Law_Composite();
+-  NCollection_List<occ::handle<Law_Function>>& lst   = prout->ChangeLaws();
+-  lst.Append(C);
++  splitdone = false;
++  if (dynamic_cast<const Law_Composite*>(C.get()))
++  {
++    laws.Append(C);
++  }
++  else
++  {
++    occ::handle<Law_Composite> prout = new Law_Composite();
++    prout->ChangeLaws().Append(C);
++    laws.Append(prout);
++  }
+@@ -269,0 +284,4 @@ bool ChFiDS_FilSpine::IsConstant(const int IE) const
++  if (parandrad.IsEmpty())
++  {
++    return false;
++  }
+@@ -379,2 +397,5 @@ void ChFiDS_FilSpine::AppendLaw(const occ::handle<ChFiDS_ElSpine>& Els)
+-  occ::handle<Law_Composite> l = ComputeLaw(Els);
+-  laws.Append(l);
++  if (!parandrad.IsEmpty())
++  {
++    occ::handle<Law_Composite> l = ComputeLaw(Els);
++    laws.Append(l);
++  }

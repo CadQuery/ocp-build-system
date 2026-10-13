@@ -56,7 +56,7 @@ runs:
       with:
         path: |
           ~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}
-        key: OCCT-${{ env.OCCT }}-${{ inputs.use-vtk }}-${{ inputs.os }}-py-${{ inputs.python-version }}-
+        key: OCCT-${{ env.OCCT }}-${{ inputs.use-vtk }}-${{ inputs.os }}-py-${{ inputs.python-version }}-${{ hashFiles(format('patches/occt-{0}/*.patch', env.OCCT)) }}
 
     # - - -
 
@@ -172,6 +172,7 @@ runs:
         git checkout -b V$OCCT tags/V$OCCT
 
         patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/switch-vtk-freetype-cmake-order.patch
+        patch --posix -p1 < ../patches/occt-${{ env.OCCT }}/external-radius-law.patch
 
         if [[ "$RUNNER_OS" == "Windows" ]]; then
           # OCCT 8.0.0 moved toolkits under their module directory and replaced the
@@ -339,6 +340,24 @@ runs:
         ninja -C build install
 
     # - - -
+
+    # Run before saving a newly built SDK; the patch digest invalidates older caches.
+    - name: Check external radius-law fillet
+      if: runner.os == 'Linux' && steps.cache-occt-restore.outputs.cache-hit != 'true'
+      shell: bash -l {0}
+      run: |
+        set -euo pipefail
+        M1823_SDK="$HOME/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}"
+        M1823_ABI=0
+        if [[ "$(uname -m)" == "aarch64" ]]; then M1823_ABI=1; fi
+        g++ -O2 -std=c++17 -D_GLIBCXX_USE_CXX11_ABI="$M1823_ABI" \
+          -I"$M1823_SDK/include/opencascade" \
+          -I"$GITHUB_WORKSPACE/OCCT/src/Deprecated/NCollectionAliases" \
+          tests/external-law/probe.cpp -L"$M1823_SDK/lib" \
+          -lTKFillet -lTKPrim -lTKBO -lTKBool -lTKShHealing -lTKGeomAlgo \
+          -lTKTopAlgo -lTKBRep -lTKG3d -lTKG2d -lTKGeomBase -lTKMath -lTKernel \
+          -Wl,-rpath,"$M1823_SDK/lib" -o external-law-probe
+        LD_LIBRARY_PATH="$M1823_SDK/lib${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" ./external-law-probe
 
     - name: Cache OCCT build folder
       id: cache-occt-save
