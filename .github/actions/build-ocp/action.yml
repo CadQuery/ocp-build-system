@@ -602,7 +602,60 @@ runs:
 
         PATH=~/opt/local/occt-${{ env.OCCT }}-${{ inputs.use-vtk }}/win64/vc14/bin/:$PATH delvewheel repair $EXCLUDE --wheel-dir wheel --namespace-pkg ${PKG_NAME} dist/*.whl
 
-    
+
+    - name: (All) Collect third-party license notices
+      shell: bash -l {0}
+      run: |
+        # (All) Collect third-party license notices
+        # Runs against the repaired wheel (post auditwheel/delocate/delvewheel), so it
+        # documents exactly the native libraries that ship. Writes THIRD-PARTY-NOTICES,
+        # CORRESPONDING-SOURCE and BUILD-MANIFEST plus a licenses/ dir into the wheel.
+        set -e
+        set -o pipefail
+
+        # mac/windows resolve python from the micromamba env; Linux uses the active uv venv
+        if [[ "$RUNNER_OS" != "Linux" ]]; then
+          micromamba activate build-ocp
+        fi
+
+        if [[ "${{ inputs.use-vtk }}" == "vtk" ]]; then
+          PKG_NAME="cadquery_ocp"
+        else
+          PKG_NAME="cadquery_ocp_novtk"
+        fi
+
+        OCCT_TAG="V$(echo '${{ env.OCCT }}' | tr '.' '_')"
+        OCCT_PATCHES=$(ls patches/occt-${{ env.OCCT }}/ 2>/dev/null | sed "s#^#patches/occt-${{ env.OCCT }}/#" | paste -sd, - || true)
+        BUILD_INFO="Platform tag: ${{ inputs.plat }}
+        Python: ${{ inputs.python-version }}  (${RUNNER_OS}, $(uname -m 2>/dev/null || echo n/a))
+        VTK variant: ${{ inputs.use-vtk }}
+        C++ standard: C++17   OCCT BUILD_OPT_PROFILE: Production
+        Repair tool: ${{ inputs.delocate }}
+        Built by GitHub Actions run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        Source commit: ${{ github.sha }}"
+
+        cd pypi/wheel
+        python -m wheel unpack ${PKG_NAME}*.whl
+        rm ${PKG_NAME}*.whl
+        UNPACKED=$(ls -d ${PKG_NAME}-${{ env.WHEEL }})
+
+        python ../collect_licenses.py \
+          --wheel-root "$UNPACKED" \
+          --pkg "$PKG_NAME" \
+          --occt-version "${{ env.OCCT }}" \
+          --occt-tag "$OCCT_TAG" \
+          --ocp-version "${{ env.WHEEL }}" \
+          --ocp-source-url "${{ env.SOURCE_URL }}/${{ env.OCP }}/" \
+          --occt-patches "$OCCT_PATCHES" \
+          --build-info "$BUILD_INFO"
+
+        python -m wheel pack "$UNPACKED"
+        rm -rf "$UNPACKED"
+
+        echo "=> wheel now contains:"
+        unzip -l ${PKG_NAME}*.whl | grep -iE "licenses/|NOTICES|CORRESPONDING|MANIFEST" || true
+
+
     - name: Upload vtk cadquery_ocp wheel
       if: inputs.use-vtk == 'vtk'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1
