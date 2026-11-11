@@ -485,7 +485,8 @@ runs:
         cd work
         python -m wheel unpack ../dist/${PKG_NAME}*.whl
         cd ${PKG_NAME}*
-        sed -i.bak "s/Root-Is-Purelib: true/Root-Is-Purelib: false/" ${PKG_NAME}*/WHEEL
+        # GNU sed in the manylinux image: edit in place, no stray WHEEL.bak packed into the wheel
+        sed -i "s/Root-Is-Purelib: true/Root-Is-Purelib: false/" ${PKG_NAME}*/WHEEL
         cd ..
         python -m wheel pack ${PKG_NAME}*
         rm ../dist/${PKG_NAME}*.whl
