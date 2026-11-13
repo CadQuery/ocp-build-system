@@ -227,6 +227,24 @@ runs:
         done
         rm "$ORIG_WHEEL"
 
+        # Regression guard (OCP issue #234, finding 6): the stubs embed OCCT
+        # header documentation, so every stubs wheel must ship the OCCT LGPL +
+        # exception texts and the third-party notices (PEP 639 license-files ->
+        # *.dist-info/licenses/). Fail if a packaging change dropped them.
+        for whl in *.whl; do
+          contents=$(unzip -l "$whl")
+          for required in \
+            "licenses/LICENSE_LGPL_21.txt" \
+            "licenses/OCCT_LGPL_EXCEPTION.txt" \
+            "licenses/THIRD-PARTY-NOTICES.txt"; do
+            if ! echo "$contents" | grep -q "$required"; then
+              echo "ERROR: '$required' missing from stubs wheel $whl (OCP#234 finding 6)"
+              exit 1
+            fi
+          done
+        done
+        echo "=> stubs wheels carry OCCT license texts + notices"
+
     - name: Upload cadquery_ocp stubs wheel
       if: env.PYWRAP == 'false'
       uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a #v7.0.1

@@ -2,6 +2,12 @@
 
 Python wrapper for OCCT generated using pywrap. Typing [stubs](https://pypi.org/project/cadquery-ocp-stubs/) available from pypi.
 
+> **This distribution is based on Open CASCADE Technology (OCCT)**, Copyright ©
+> OPEN CASCADE SAS, used under the GNU LGPL-2.1 with the Open CASCADE Exception
+> 1.0 (SPDX `LGPL-2.1-only WITH OCCT-exception-1.0`). See the Licensing section
+> below and the `THIRD-PARTY-NOTICES.txt` / `*.dist-info/licenses/` shipped in
+> each wheel.
+
 ## Goals of OCP
 * Provide thin bindings to OCCT.
 * Wrap all OCCT modules (if practical).

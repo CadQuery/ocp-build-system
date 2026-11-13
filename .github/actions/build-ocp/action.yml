@@ -656,6 +656,21 @@ runs:
         echo "=> wheel now contains:"
         unzip -l ${PKG_NAME}*.whl | grep -iE "licenses/|NOTICES|CORRESPONDING|MANIFEST" || true
 
+        # Regression guard (OCP issue #234, finding 6): the OCCT LGPL + exception
+        # texts and the third-party notices must be present in every wheel, or an
+        # OCCT update / refactor has silently dropped the required notices.
+        contents=$(unzip -l ${PKG_NAME}*.whl)
+        for required in \
+          "licenses/OpenCASCADE-OCCT/LICENSE_LGPL_21.txt" \
+          "licenses/OpenCASCADE-OCCT/OCCT_LGPL_EXCEPTION.txt" \
+          "THIRD-PARTY-NOTICES.txt"; do
+          if ! echo "$contents" | grep -q "$required"; then
+            echo "ERROR: required license material '$required' missing from wheel (OCP#234 finding 6)"
+            exit 1
+          fi
+        done
+        echo "=> OCCT license texts + third-party notices present"
+
 
     - name: Upload vtk cadquery_ocp wheel
       if: inputs.use-vtk == 'vtk'
