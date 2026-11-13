@@ -17,7 +17,7 @@ env:
   # OCP source download URL (default: https://github.com/CadQuery/OCP/releases/download)
   # SOURCE_URL: https://github.com/bernhard-42/__temp_artefacts__/releases/download
   SOURCE_URL: https://github.com/CadQuery/OCP/releases/download
-  RELEASE_TO_REPO: "true"
+  RELEASE_TO_REPO: "false"
 
 jobs:
   # ================================================================================
@@ -34,16 +34,16 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        os: ["ubuntu-22.04"]  #, "ubuntu-22.04-arm"]
+        python-version: ["3.11"]  #, "3.12", "3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
         include:
           - os: "ubuntu-22.04"
             runner: ubuntu-latest
             container: quay.io/pypa/manylinux_2_28_x86_64
-          - os: "ubuntu-22.04-arm"
-            runner: ubuntu-24.04-arm
-            container: quay.io/pypa/manylinux_2_28_aarch64
+          # - os: "ubuntu-22.04-arm"           # dropped for test build
+          #   runner: ubuntu-24.04-arm
+          #   container: quay.io/pypa/manylinux_2_28_aarch64
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
@@ -69,6 +69,7 @@ jobs:
           shells: "bash"
 
   sdks-win-mac:
+    if: ${{ false }}
     name: Build OCCT SDK for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
     runs-on: ${{ matrix.os }}
 
@@ -155,6 +156,7 @@ jobs:
           plat: ${{ matrix.plat }}
 
   sources-win-mac:
+    if: ${{ false }}
     name: Build OCP source on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
@@ -190,7 +192,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.11"]  #, "3.12", "3.13", "3.14"]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
@@ -234,18 +236,18 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: ["ubuntu-22.04", "ubuntu-22.04-arm"]
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        os: ["ubuntu-22.04"]  #, "ubuntu-22.04-arm"]
+        python-version: ["3.11"]  #, "3.12", "3.13", "3.14"]
         use-vtk: ["vtk", "novtk"]
         include:
           - os: "ubuntu-22.04"
             runner: ubuntu-latest
             plat: manylinux_2_28_x86_64
             container: quay.io/pypa/manylinux_2_28_x86_64
-          - os: "ubuntu-22.04-arm"
-            runner: ubuntu-24.04-arm
-            plat: manylinux_2_28_aarch64
-            container: quay.io/pypa/manylinux_2_28_aarch64
+          # - os: "ubuntu-22.04-arm"           # dropped for test build
+          #   runner: ubuntu-24.04-arm
+          #   plat: manylinux_2_28_aarch64
+          #   container: quay.io/pypa/manylinux_2_28_aarch64
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 #v7.0.1
@@ -264,6 +266,7 @@ jobs:
           ocp-source-tag: "ubuntu-22.04"
 
   ocp-win-mac:
+    if: ${{ false }}
     name: Build OCP for ${{ matrix.python-version }} on ${{ matrix.os }} (${{ matrix.use-vtk }})
     runs-on: ${{ matrix.os }}
     needs: [sdks-win-mac, sources-win-mac, ocp-proxy]

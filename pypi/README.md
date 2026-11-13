@@ -2,6 +2,12 @@
 
 Python wrapper for OCCT generated using pywrap. Typing [stubs](https://pypi.org/project/cadquery-ocp-stubs/) available from pypi.
 
+> **This distribution is based on Open CASCADE Technology (OCCT)**, Copyright ©
+> OPEN CASCADE SAS, used under the GNU LGPL-2.1 with the Open CASCADE Exception
+> 1.0 (SPDX `LGPL-2.1-only WITH OCCT-exception-1.0`). See the Licensing section
+> below and the `THIRD-PARTY-NOTICES.txt` / `*.dist-info/licenses/` shipped in
+> each wheel.
+
 ## Goals of OCP
 * Provide thin bindings to OCCT.
 * Wrap all OCCT modules (if practical).
@@ -10,3 +16,19 @@ Python wrapper for OCCT generated using pywrap. Typing [stubs](https://pypi.org/
 
 ## Non-goals
 * Provide additional functionality not present in OCCT
+
+## Licensing
+
+The OCP binding code in this project is licensed under the Apache-2.0 license
+(see the bundled `LICENSE`). The binary wheels additionally **bundle native
+libraries under other licenses**, most notably Open CASCADE Technology (OCCT),
+which is **LGPL-2.1 with the Open CASCADE Exception**, along with FreeImage,
+FreeType, Fontconfig, LibRaw and several image/compression codecs.
+
+Each wheel ships the full set of third-party license texts under
+`<package>/licenses/` and in the standard `*.dist-info/licenses/` location, a
+`THIRD-PARTY-NOTICES.txt` listing every bundled component and its license, a
+`CORRESPONDING-SOURCE.txt` written offer/pointer for obtaining the sources
+(OCCT, OCP and the distribution source packages), and a `BUILD-MANIFEST.txt`
+recording the exact OCCT/OCP revisions, applied patches and build options.
+Downstream redistributors should carry these files with any redistribution.
