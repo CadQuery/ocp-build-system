@@ -65,6 +65,8 @@ runs:
         curl -Ls https://github.com/Tencent/rapidjson/archive/${RAPIDJSON_REV}.tar.gz | tar xz -C /tmp
         rm -rf /usr/include/rapidjson
         cp -r /tmp/rapidjson-${RAPIDJSON_REV}/include/rapidjson /usr/include/
+        # record the exact revision for the third-party license notices
+        echo "RAPIDJSON_REV=${RAPIDJSON_REV}" >> "$GITHUB_ENV"
 
     # - - -
 
@@ -79,6 +81,8 @@ runs:
         set -e
         mkdir -p /tmp/tiff && cd /tmp/tiff
         dnf download --source libtiff -q
+        # record the exact source RPM for CORRESPONDING-SOURCE / the license notices
+        echo "TIFF_SRPM=$(basename "$(ls *.src.rpm | head -1)")" >> "$GITHUB_ENV"
         rpm2cpio *.src.rpm | cpio -idm --quiet
         tar xf tiff-*.tar.*
         cd tiff-*/
@@ -640,6 +644,9 @@ runs:
         rm ${PKG_NAME}*.whl
         UNPACKED=$(ls -d ${PKG_NAME}-${{ env.WHEEL }})
 
+        # exact versions of the header-only components for the notices
+        PYBIND11_VER=$(python -c "import pybind11; print(pybind11.__version__)" 2>/dev/null || echo "")
+
         python ../collect_licenses.py \
           --wheel-root "$UNPACKED" \
           --pkg "$PKG_NAME" \
@@ -648,6 +655,10 @@ runs:
           --ocp-version "${{ env.WHEEL }}" \
           --ocp-source-url "${{ env.SOURCE_URL }}/${{ env.OCP }}/" \
           --occt-patches "$OCCT_PATCHES" \
+          --ocp-license "../${PKG_NAME}/LICENSE" \
+          --libtiff-srpm "${TIFF_SRPM:-}" \
+          --rapidjson-rev "${RAPIDJSON_REV:-}" \
+          --pybind11-version "$PYBIND11_VER" \
           --build-info "$BUILD_INFO"
 
         python -m wheel pack "$UNPACKED"
@@ -663,13 +674,14 @@ runs:
         for required in \
           "licenses/OpenCASCADE-OCCT/LICENSE_LGPL_21.txt" \
           "licenses/OpenCASCADE-OCCT/OCCT_LGPL_EXCEPTION.txt" \
+          "${PKG_NAME}/LICENSE" \
           "THIRD-PARTY-NOTICES.txt"; do
           if ! echo "$contents" | grep -q "$required"; then
-            echo "ERROR: required license material '$required' missing from wheel (OCP#234 finding 6)"
+            echo "ERROR: required license material '$required' missing from wheel (OCP#234 / issue #71)"
             exit 1
           fi
         done
-        echo "=> OCCT license texts + third-party notices present"
+        echo "=> OCCT license texts + OCP LICENSE + third-party notices present"
 
 
     - name: Upload vtk cadquery_ocp wheel

@@ -78,8 +78,11 @@ RPM_KNOWN = {
     "libwebp7":      ("libwebp", "https://developers.google.com/speed/webp"),
 }
 NOTES = {
-    "libtiff": "rebuilt in this repo from the distribution source RPM with the "
-               "GPL JBIG codec disabled (configure flag --disable-jbig only)",
+    "libtiff": "rebuilt from the AlmaLinux 8 libtiff source RPM with the GPL JBIG "
+               "codec disabled: ./configure --disable-jbig --disable-static "
+               "--enable-ld-version-script CFLAGS=-O2 (no source modifications). "
+               "See CORRESPONDING-SOURCE.txt / BUILD-MANIFEST.txt for the exact "
+               "source RPM and steps.",
 }
 
 # Upstream identity keyed by normalised soname, for the conda (mac/windows) and
@@ -122,6 +125,50 @@ KNOWN = {
     "stdc++": ("GCC runtime (libstdc++)", "GPL-3.0-or-later WITH GCC-exception-3.1", "https://gcc.gnu.org/"),
     "gcc_s": ("GCC runtime (libgcc_s)", "GPL-3.0-or-later WITH GCC-exception-3.1", "https://gcc.gnu.org/"),
 }
+
+# Canonical upstream license texts vendored in-repo, used when the distribution
+# ships no %license text for a component (a *-libs runtime sub-package that
+# carries none, or a library rebuilt from source and so owned by no RPM) and for
+# header-only code that never appears as a vendored shared library. See
+# license-fallbacks/README.md for the provenance of each text.
+FALLBACKS_DIR = Path(__file__).resolve().parent / "license-fallbacks"
+
+# AlmaLinux RPM name -> license-fallbacks/ subdir (sbom backend).
+FALLBACK_BY_RPM = {
+    "OpenEXR-libs": "OpenEXR",
+    "ilmbase":      "OpenEXR",
+    "jasper-libs":  "JasPer",
+    "jxrlib":       "jxrlib",
+    "xz-libs":      "xz",
+    "libgomp":      "libgomp",
+    "libtiff":      "libtiff",
+}
+# Normalised soname -> license-fallbacks/ subdir, for libraries folded in without
+# an owning RPM (e.g. the source-rebuilt libtiff) and for the conda/degraded
+# backends on mac/windows.
+FALLBACK_BY_NORM = {
+    "tiff": "libtiff",
+    "half": "OpenEXR", "iex": "OpenEXR", "iexmath": "OpenEXR", "imath": "OpenEXR",
+    "ilmthread": "OpenEXR", "ilmimf": "OpenEXR",
+    "jasper": "JasPer",
+    "jpegxr": "jxrlib", "jxrglue": "jxrlib",
+    "lzma": "xz",
+    "gomp": "libgomp",
+}
+# Header-only / statically-incorporated third-party code: compiled into the OCP
+# extension or the OCCT libraries, so it ships inside the binaries but never as a
+# separate shared library. Not discoverable from the vendored-lib scan, so it is
+# listed explicitly. ``sub`` is its license-fallbacks/ subdir; ``ver_key`` picks
+# the version string passed on the command line.
+HEADER_ONLY = [
+    {"name": "RapidJSON", "license": "MIT (bundled msinttypes BSD-3-Clause; bundled JSON license)",
+     "url": "https://github.com/Tencent/rapidjson", "sub": "rapidjson", "ver_key": "rapidjson",
+     "note": "header-only; compiled into the OCCT glTF read/write libraries (OCCT built with USE_RAPIDJSON=ON)"},
+    {"name": "pybind11", "license": "BSD-3-Clause",
+     "url": "https://github.com/pybind/pybind11", "sub": "pybind11", "ver_key": "pybind11",
+     "note": "header-only; compiled into the OCP Python extension module (OCP*.so / OCP*.pyd)"},
+]
+
 
 # glibc / loader libraries are provided by the platform (manylinux policy) and
 # are never vendored; ignore them if they ever appear in a closure.
@@ -201,6 +248,73 @@ def copy_license_dir(src: Path, dest: Path) -> list[str]:
                 shutil.copy2(f, target)
                 copied.append(f.name)
     return copied
+
+
+def fallback_license_dir(rpm_name: str, norm: str) -> Path | None:
+    """Vendored upstream license text for a component the distro ships none for."""
+    sub = FALLBACK_BY_RPM.get(rpm_name) or FALLBACK_BY_NORM.get(norm)
+    if sub:
+        d = FALLBACKS_DIR / sub
+        if d.is_dir():
+            return d
+        log(f"WARNING: expected fallback license dir {d} is missing")
+    return None
+
+
+def apply_fallback(entry: dict, dest: Path, rpm_name: str, norm: str) -> None:
+    """If *entry* has no bundled distro license text, fill it from the vendored
+    upstream text (if one is mapped). Marks the text source for the notice."""
+    if entry.get("license_files"):
+        entry.setdefault("text_source", "distro")
+        return
+    fb = fallback_license_dir(rpm_name, norm)
+    if fb:
+        entry["license_files"] = copy_license_dir(fb, dest)
+        entry["text_source"] = "vendored"
+        log(f"using vendored upstream license text for {entry['name']} (from {fb.name}/)")
+    else:
+        entry.setdefault("text_source", "distro")
+
+
+def build_header_only(lic_dir: Path, versions: dict[str, str]) -> list[dict]:
+    """License entries for header-only / statically-incorporated code."""
+    out = []
+    for h in HEADER_ONLY:
+        dest = lic_dir / re.sub(r"[^A-Za-z0-9_.-]", "_", h["name"])
+        files = copy_license_dir(FALLBACKS_DIR / h["sub"], dest)
+        if not files:
+            log(f"WARNING: no vendored license text for header-only component {h['name']}")
+        out.append({**h, "version": versions.get(h["ver_key"], ""), "license_files": files})
+    return out
+
+
+def ensure_ocp_license(pkg_dir: Path, local: str, url: str) -> None:
+    """Guarantee the Apache-2.0 OCP LICENSE is present at <pkg>/LICENSE.
+
+    setuptools packages it for the ``cadquery_ocp`` build but not for the
+    renamed ``cadquery_ocp_novtk`` package (the package-data key is not
+    renamed), so the THIRD-PARTY-NOTICES reference to ``<pkg>/LICENSE`` would
+    otherwise dangle. Prefer the copy curled into the build tree; fall back to
+    fetching it from the OCP repository."""
+    target = pkg_dir / "LICENSE"
+    if target.is_file() and target.stat().st_size > 0:
+        log("OCP Apache LICENSE already present in package")
+        return
+    if local:
+        p = Path(local)
+        if p.is_file() and p.stat().st_size > 0:
+            shutil.copy2(p, target)
+            log(f"copied OCP Apache LICENSE into package from {local}")
+            return
+        log(f"note: --ocp-license {local} not found; will try the network")
+    if url:
+        try:
+            target.write_bytes(fetch(url))
+            log(f"fetched OCP Apache LICENSE into package from {url}")
+            return
+        except Exception as exc:
+            log(f"WARNING: could not fetch OCP Apache LICENSE from {url}: {exc}")
+    log("WARNING: OCP Apache LICENSE could not be ensured at <pkg>/LICENSE")
 
 
 def prune_backup_files(root: Path) -> None:
@@ -304,7 +418,8 @@ def conda_info(norm: str, index: list[dict], conda_prefix: Path) -> dict | None:
 # Inventory builders (per backend) -> dict[key] = component entry
 # --------------------------------------------------------------------------- #
 
-def build_sbom_components(sbom: dict, third_party_files: list[Path], lic_dir: Path) -> dict:
+def build_sbom_components(sbom: dict, third_party_files: list[Path], lic_dir: Path,
+                          libtiff_srpm: str = "") -> dict:
     """Authoritative inventory from the SBOM, enriched via rpm, with vendored
     files attributed by soname stem."""
     # map each RPM to the soname stems it owns, for file attribution
@@ -334,8 +449,9 @@ def build_sbom_components(sbom: dict, third_party_files: list[Path], lic_dir: Pa
 
         dest = lic_dir / re.sub(r"[^A-Za-z0-9_.-]", "_", name)
         entry["license_files"] = copy_license_dir(Path("/usr/share/licenses") / name, dest)
+        apply_fallback(entry, dest, rpm_name=name, norm="")
         if not entry["license_files"]:
-            log(f"note: no /usr/share/licenses text for {name} - recording SPDX tag + source RPM only")
+            log(f"note: no license text (distro or vendored) for {name} - recording SPDX tag + source RPM only")
         components[name] = entry
 
     # attribute vendored files to their owning RPM by soname stem; anything the
@@ -365,12 +481,14 @@ def build_sbom_components(sbom: dict, third_party_files: list[Path], lic_dir: Pa
                 "rpm": "",
                 "version": "",
                 "license": known[1] if known else "unknown",
-                "source_rpm": "",
+                "source_rpm": libtiff_srpm if norm == "tiff" else "",
                 "url": known[2] if known else "",
                 "note": NOTES.get("libtiff") if norm == "tiff" else "",
                 "files": [],
                 "license_files": [],
             }
+            dest = lic_dir / re.sub(r"[^A-Za-z0-9_.-]", "_", display)
+            apply_fallback(entry, dest, rpm_name="", norm=norm)
             components[display] = entry
         entry["files"].append(lib.name)
     return components
@@ -403,8 +521,9 @@ def build_nonlinux_components(third_party_files: list[Path], backend: str, lic_d
         if backend == "conda" and rec and rec.get("licenses_path"):
             lp = Path(rec["licenses_path"]) / "info" / "licenses"
             entry["license_files"] = copy_license_dir(lp, dest)
+        apply_fallback(entry, dest, rpm_name="", norm=norm)
         if not entry["license_files"]:
-            log(f"note: no bundled license text for {display} - recording SPDX tag + source pointer only")
+            log(f"note: no license text (conda or vendored) for {display} - recording SPDX tag + source pointer only")
         components[display] = entry
     return components
 
@@ -424,6 +543,15 @@ def main() -> int:
     ap.add_argument("--ocp-source-url", required=True)
     ap.add_argument("--occt-patches", default="")
     ap.add_argument("--build-info", default="")
+    ap.add_argument("--ocp-license", default="",
+                    help="path to the Apache-2.0 OCP LICENSE to guarantee at <pkg>/LICENSE")
+    ap.add_argument("--ocp-license-url",
+                    default="https://raw.githubusercontent.com/CadQuery/OCP/refs/heads/master/LICENSE",
+                    help="fallback URL for the OCP LICENSE if --ocp-license is absent")
+    ap.add_argument("--libtiff-srpm", default="",
+                    help="exact AlmaLinux source RPM libtiff was rebuilt from (Linux only)")
+    ap.add_argument("--rapidjson-rev", default="", help="RapidJSON revision compiled into OCCT")
+    ap.add_argument("--pybind11-version", default="", help="pybind11 version compiled into the OCP extension")
     args = ap.parse_args()
 
     root = Path(args.wheel_root)
@@ -431,6 +559,9 @@ def main() -> int:
     pkg_dir.mkdir(parents=True, exist_ok=True)
     lic_dir = pkg_dir / "licenses"
     lic_dir.mkdir(parents=True, exist_ok=True)
+
+    # guarantee the Apache-2.0 OCP LICENSE the notices reference is in the package
+    ensure_ocp_license(pkg_dir, args.ocp_license, args.ocp_license_url)
 
     sbom = load_sbom(root)
     if sbom is not None and shutil.which("rpm"):
@@ -475,11 +606,20 @@ def main() -> int:
         third_party_files.append(lib)
 
     if backend == "sbom":
-        components = build_sbom_components(sbom, third_party_files, lic_dir)
+        components = build_sbom_components(sbom, third_party_files, lic_dir,
+                                           libtiff_srpm=args.libtiff_srpm)
     else:
         components = build_nonlinux_components(third_party_files, backend, lic_dir)
 
-    log(f"OCCT libraries: {occt_count}; other components: {len(components)}")
+    # header-only / statically incorporated code (compiled into the binaries,
+    # never shipped as a separate shared library)
+    header_only = build_header_only(lic_dir, {
+        "rapidjson": args.rapidjson_rev,
+        "pybind11": args.pybind11_version,
+    })
+
+    log(f"OCCT libraries: {occt_count}; other components: {len(components)}; "
+        f"header-only: {len(header_only)}")
 
     # --- write the notices ---------------------------------------------------
     occt_block = (
@@ -501,8 +641,12 @@ def main() -> int:
         occt_block,
     ]
     for entry in sorted(components.values(), key=lambda e: e["name"].lower()):
-        lf = (", ".join(sorted(set(entry["license_files"]))) if entry["license_files"]
-              else "(text not bundled by distro; see Source/URL)")
+        if entry["license_files"]:
+            lf = ", ".join(sorted(set(entry["license_files"])))
+            if entry.get("text_source") == "vendored":
+                lf += " (upstream canonical text, vendored by ocp-build-system)"
+        else:
+            lf = "(text not bundled by distro; see Source/URL)"
         block = [
             f"{entry['name']} {entry['version']}".rstrip(),
             f"  License: {entry['license']}",
@@ -520,6 +664,26 @@ def main() -> int:
             "",
         ]
         lines += block
+
+    if header_only:
+        lines += [
+            "STATICALLY INCORPORATED / HEADER-ONLY COMPONENTS",
+            "------------------------------------------------",
+            "The following third-party code is compiled into the binaries above and",
+            "ships inside them; it is not distributed as a separate shared library.",
+            "",
+        ]
+        for h in header_only:
+            lf = (", ".join(sorted(set(h["license_files"]))) if h["license_files"]
+                  else "(see Upstream)")
+            lines += [
+                f"{h['name']} {h['version']}".rstrip(),
+                f"  License: {h['license']}",
+                f"  Upstream: {h['url']}",
+                f"  Note: {h['note']}",
+                f"  Bundled license text: {lf}",
+                "",
+            ]
     (pkg_dir / "THIRD-PARTY-NOTICES.txt").write_text("\n".join(lines))
 
     # corresponding-source offer (satisfies LGPL-2.1 and FIPL source clauses)
