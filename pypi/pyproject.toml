@@ -9,10 +9,11 @@ description = "Python wrapper for Open CASCADE Technology 3D geometry library ba
 authors = [{ name = "Bernhard Walter" }]
 requires-python = ">=3.11,<3.15"
 readme = "README.md"
-license = { text = "Apache-2.0" }
-classifiers = [
-  "License :: OSI Approved :: Apache Software License",
-]
+# OCP's own binding code is Apache-2.0; the binary wheel also bundles the OCCT
+# shared libraries (LGPL-2.1 WITH the Open CASCADE Exception) and other native
+# libraries. The OCCT + third-party license texts and notices are added to the
+# wheel at build time (see collect_licenses.py / THIRD-PARTY-NOTICES.txt).
+license = "Apache-2.0 AND LGPL-2.1-only WITH OCCT-exception-1.0"
 dependencies = ["cadquery-ocp-proxy==0.0.0.0"]
 
 [tool.setuptools]
