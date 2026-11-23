@@ -17,7 +17,7 @@ env:
   # OCP source download URL (default: https://github.com/CadQuery/OCP/releases/download)
   # SOURCE_URL: https://github.com/bernhard-42/__temp_artefacts__/releases/download
   SOURCE_URL: https://github.com/CadQuery/OCP/releases/download
-  RELEASE_TO_REPO: "true"
+  RELEASE_TO_REPO: "false"
 
 jobs:
   # ================================================================================

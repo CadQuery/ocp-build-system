@@ -99,6 +99,9 @@ runs:
         set -e
         set -o pipefail
 
+        # Retry wrapper for flaky git clones / index fetches.
+        RETRY="bash $GITHUB_WORKSPACE/.github/scripts/retry.sh --"
+
         uv pip install packaging pytest
 
         # Install lib3mf wheel for Linux aarch64 (no PyPI wheel available)
@@ -114,17 +117,17 @@ runs:
         # patched sources instead of the unpatched PyPI releases (which would also drag
         # cadquery-ocp-proxy back to 7.9 via their "< 8.0" bounds).
         # These patches are meant to go upstream; drop this block once both release.
-        git clone https://github.com/gongfan99/ocp_gordon.git
+        $RETRY git clone https://github.com/gongfan99/ocp_gordon.git
         git -C ocp_gordon checkout 977399a97d47e45e4b4746917bbdc1bb7141d709
         git -C ocp_gordon apply ../patches/ocp_gordon-ocp8.patch
         uv pip install ./ocp_gordon
 
-        git clone https://github.com/snoyer/ocpsvg.git
+        $RETRY git clone https://github.com/snoyer/ocpsvg.git
         git -C ocpsvg checkout 83f57aa0b3d5636d64405238f39914917ef9e234
         git -C ocpsvg apply ../patches/ocpsvg-ocp8.patch
         uv pip install ./ocpsvg
 
-        git clone https://github.com/gumyr/build123d.git
+        $RETRY git clone https://github.com/gumyr/build123d.git
         cd build123d
         git checkout 2851b011901c5603eace947f411ebda9191b739c
 
@@ -173,7 +176,7 @@ runs:
 
         uv pip install "pytest<8.3.4" docutils ipython  # pin pytest to avoid atexit segfault on Windows
 
-        git clone https://github.com/cadquery/cadquery.git
+        bash "$GITHUB_WORKSPACE/.github/scripts/retry.sh" -- git clone https://github.com/cadquery/cadquery.git
         cd cadquery
 
         uv pip install .

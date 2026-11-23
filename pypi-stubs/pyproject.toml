@@ -1,5 +1,6 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
+# >=77 for PEP 639 SPDX `license` expression + `license-files` support
+requires = ["setuptools>=77.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -9,9 +10,15 @@ description = "Typing stubs for cadquery-ocp based on the official CadQuery/OCP 
 authors = [{ name = "Bernhard Walter" }]
 requires-python = ">=3.10,<3.15"
 readme = "README.md"
-license = { text = "Apache-2.0" }
-classifiers = [
-  "License :: OSI Approved :: Apache Software License",
+# The stub structure is Apache-2.0; the .pyi files also embed OCCT header
+# documentation, which stays under LGPL-2.1 WITH the Open CASCADE Exception.
+# See THIRD-PARTY-NOTICES.txt.
+license = "Apache-2.0 AND LGPL-2.1-only WITH OCCT-exception-1.0"
+license-files = [
+  "licenses/LICENSE.apache.txt",
+  "licenses/LICENSE_LGPL_21.txt",
+  "licenses/OCCT_LGPL_EXCEPTION.txt",
+  "THIRD-PARTY-NOTICES.txt",
 ]
 
 [tool.setuptools]

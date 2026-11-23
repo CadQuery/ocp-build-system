@@ -128,7 +128,7 @@ runs:
         # two sources depending on step order.
         eval "$(micromamba shell hook -s bash)"
         micromamba activate vtk
-        pip install -q --target /tmp/vtk-wheel vtk==${{ env.VTK }}
+        bash "$GITHUB_WORKSPACE/.github/scripts/retry.sh" -- pip install -q --target /tmp/vtk-wheel vtk==${{ env.VTK }}
         SITE_PACKAGES=/tmp/vtk-wheel
 
         cp $SITE_PACKAGES/${{ inputs.vtk-libs }} $DEST/${{ inputs.vtk-libdest }}/

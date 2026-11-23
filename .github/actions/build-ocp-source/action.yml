@@ -35,9 +35,9 @@ runs:
         set -u
         set -o pipefail
 
-        dnf install -y -q \
+        bash "$GITHUB_WORKSPACE/.github/scripts/retry.sh" -- dnf install -y -q \
           ca-certificates mesa-libGL-devel mesa-libEGL-devel mesa-libGLU-devel freeglut-devel \
-          git patch curl > /dev/null 2>&1
+          git patch curl
 
     # - - -
 
@@ -50,7 +50,7 @@ runs:
         set -u
         set -o pipefail
 
-        dnf install -y -q curl unzip > /dev/null 2>&1
+        bash "$GITHUB_WORKSPACE/.github/scripts/retry.sh" -- dnf install -y -q curl unzip
 
     - name: Set up Python ${{ inputs.python-version }} via micromamba [PYWRAP=true]
       if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
@@ -91,11 +91,12 @@ runs:
         set -u
         set -o pipefail
 
-        git clone https://github.com/cadquery/OCP.git
+        RETRY="bash $GITHUB_WORKSPACE/.github/scripts/retry.sh --"
+        $RETRY git clone https://github.com/cadquery/OCP.git
         cd OCP
         # use master for the time being
         # git checkout -b V${{ env.OCP }} tags/${{ env.OCP }}
-        git submodule update --init
+        $RETRY git submodule update --init
 
     # - - -
 
@@ -132,7 +133,7 @@ runs:
 
         micromamba activate build-ocp-source
         cd OCP
-        micromamba create --yes --platform win-64 --no-deps --prefix ./occt  occt=${{ env.OCCT }}
+        bash "$GITHUB_WORKSPACE/.github/scripts/retry.sh" -- micromamba create --yes --platform win-64 --no-deps --prefix ./occt occt=${{ env.OCCT }}
 
         cmake -DPython_ROOT_DIR=$CONDA_PREFIX \
               -DPython3_ROOT_DIR=$CONDA_PREFIX \
@@ -162,12 +163,13 @@ runs:
 
         rm -fr OCP  # remove the cached sources again
 
+        RETRY="bash $GITHUB_WORKSPACE/.github/scripts/retry.sh --"
         if [[ ${{ inputs.os }} == "macos-15-intel" || ${{ inputs.os }} == "macos-15" ]]; then
-          curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_OSX.zip
+          $RETRY curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_OSX.zip
         elif [[ ${{ inputs.os }} == "ubuntu-22.04" || ${{ inputs.os }} == "ubuntu-22.04-arm" ]]; then
-          curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_Linux.zip
+          $RETRY curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_Linux.zip
         else
-          curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_Windows.zip
+          $RETRY curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_Windows.zip
         fi
         # The 8.x archives extract flat, so unpack into a directory of our own.
         unzip -q OCP_src_stubs_*.zip -d OCP_src
@@ -214,6 +216,14 @@ runs:
 
         cd pypi-stubs
         sed -i.bak 's/0\.0\.0\.0/${{ env.WHEEL }}/g' pyproject.toml
+
+        # OCP issue #234 safety net: every shipped .pyi stub embeds OCCT header
+        # documentation, so in source form it must carry the OCCT per-file LGPL +
+        # exception notice. The OCP generator is expected to emit it; this adds it
+        # only to files that arrive without one (idempotent; never duplicated).
+        python "$GITHUB_WORKSPACE/add_license_headers.py" \
+          --root OCP-stubs --occt "${{ env.OCCT }}" --ext .pyi
+
         uv build --wheel
 
         # Retag wheel with platform-specific tags
@@ -226,6 +236,30 @@ runs:
           wheel tags --platform-tag "$plat" "$ORIG_WHEEL"
         done
         rm "$ORIG_WHEEL"
+
+        # Regression guard (OCP issue #234, finding 6): the stubs embed OCCT
+        # header documentation, so every stubs wheel must ship the OCCT LGPL +
+        # exception texts and the third-party notices (PEP 639 license-files ->
+        # *.dist-info/licenses/). Fail if a packaging change dropped them.
+        for whl in *.whl; do
+          contents=$(unzip -l "$whl")
+          for required in \
+            "licenses/LICENSE_LGPL_21.txt" \
+            "licenses/OCCT_LGPL_EXCEPTION.txt" \
+            "licenses/THIRD-PARTY-NOTICES.txt"; do
+            if ! echo "$contents" | grep -q "$required"; then
+              echo "ERROR: '$required' missing from stubs wheel $whl (OCP#234 finding 6)"
+              exit 1
+            fi
+          done
+          # the .pyi files themselves must carry the per-file OCCT notice
+          sample=$(unzip -Z1 "$whl" | grep -m1 '\.pyi$' || true)
+          if [ -n "$sample" ] && ! unzip -p "$whl" "$sample" | grep -q "OCCT_LGPL_EXCEPTION"; then
+            echo "ERROR: $sample in $whl lacks the per-file OCCT license notice (OCP#234)"
+            exit 1
+          fi
+        done
+        echo "=> stubs wheels carry OCCT license texts + per-file notices"
 
     - name: Upload cadquery_ocp stubs wheel
       if: env.PYWRAP == 'false'
