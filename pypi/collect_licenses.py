@@ -572,17 +572,28 @@ def main() -> int:
         backend = "degraded"
     log(f"backend={backend}")
 
-    # --- OCCT LGPL + exception (always, from the pinned tag) ----------------
+    # --- OCCT LGPL + exception ----------------------------------------------
+    # These two texts are invariant for the OCCT line, so they are vendored in
+    # the repo (license-fallbacks/OpenCASCADE-OCCT/) and the build does not
+    # depend on a live network fetch - a transient GitHub-raw outage (e.g. HTTP
+    # 503) must not sink the wheel. The pinned-tag download is kept only as a
+    # fallback for the unlikely case that a vendored copy is missing.
     occt_dir = lic_dir / "OpenCASCADE-OCCT"
     occt_dir.mkdir(parents=True, exist_ok=True)
+    vendored = FALLBACKS_DIR / "OpenCASCADE-OCCT"
     base = f"{args.occt_repo}/raw/{args.occt_tag}"
-    try:
-        (occt_dir / "LICENSE_LGPL_21.txt").write_bytes(fetch(f"{base}/LICENSE_LGPL_21.txt"))
-        (occt_dir / "OCCT_LGPL_EXCEPTION.txt").write_bytes(fetch(f"{base}/OCCT_LGPL_EXCEPTION.txt"))
-        log("fetched OCCT LGPL + exception")
-    except Exception as exc:
-        log(f"FATAL: could not fetch OCCT license texts: {exc}")
-        return 2
+    for name in ("LICENSE_LGPL_21.txt", "OCCT_LGPL_EXCEPTION.txt"):
+        local = vendored / name
+        if local.exists():
+            (occt_dir / name).write_bytes(local.read_bytes())
+            log(f"OCCT {name}: used vendored copy")
+        else:
+            try:
+                (occt_dir / name).write_bytes(fetch(f"{base}/{name}"))
+                log(f"OCCT {name}: fetched from {args.occt_tag} (no vendored copy)")
+            except Exception as exc:
+                log(f"FATAL: OCCT {name} not vendored and could not be fetched: {exc}")
+                return 2
 
     # --- enumerate vendored libraries ---------------------------------------
     libs = find_vendored_libs(root)

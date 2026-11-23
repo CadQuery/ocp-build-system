@@ -35,9 +35,9 @@ runs:
         set -u
         set -o pipefail
 
-        dnf install -y -q \
+        bash "$GITHUB_WORKSPACE/.github/scripts/retry.sh" -- dnf install -y -q \
           ca-certificates mesa-libGL-devel mesa-libEGL-devel mesa-libGLU-devel freeglut-devel \
-          git patch curl > /dev/null 2>&1
+          git patch curl
 
     # - - -
 
@@ -50,7 +50,7 @@ runs:
         set -u
         set -o pipefail
 
-        dnf install -y -q curl unzip > /dev/null 2>&1
+        bash "$GITHUB_WORKSPACE/.github/scripts/retry.sh" -- dnf install -y -q curl unzip
 
     - name: Set up Python ${{ inputs.python-version }} via micromamba [PYWRAP=true]
       if: env.PYWRAP == 'true' && steps.cache-ocp-source-restore.outputs.cache-hit != 'true'
@@ -91,11 +91,12 @@ runs:
         set -u
         set -o pipefail
 
-        git clone https://github.com/cadquery/OCP.git
+        RETRY="bash $GITHUB_WORKSPACE/.github/scripts/retry.sh --"
+        $RETRY git clone https://github.com/cadquery/OCP.git
         cd OCP
         # use master for the time being
         # git checkout -b V${{ env.OCP }} tags/${{ env.OCP }}
-        git submodule update --init
+        $RETRY git submodule update --init
 
     # - - -
 
@@ -132,7 +133,7 @@ runs:
 
         micromamba activate build-ocp-source
         cd OCP
-        micromamba create --yes --platform win-64 --no-deps --prefix ./occt  occt=${{ env.OCCT }}
+        bash "$GITHUB_WORKSPACE/.github/scripts/retry.sh" -- micromamba create --yes --platform win-64 --no-deps --prefix ./occt occt=${{ env.OCCT }}
 
         cmake -DPython_ROOT_DIR=$CONDA_PREFIX \
               -DPython3_ROOT_DIR=$CONDA_PREFIX \
@@ -162,12 +163,13 @@ runs:
 
         rm -fr OCP  # remove the cached sources again
 
+        RETRY="bash $GITHUB_WORKSPACE/.github/scripts/retry.sh --"
         if [[ ${{ inputs.os }} == "macos-15-intel" || ${{ inputs.os }} == "macos-15" ]]; then
-          curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_OSX.zip
+          $RETRY curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_OSX.zip
         elif [[ ${{ inputs.os }} == "ubuntu-22.04" || ${{ inputs.os }} == "ubuntu-22.04-arm" ]]; then
-          curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_Linux.zip
+          $RETRY curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_Linux.zip
         else
-          curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_Windows.zip
+          $RETRY curl -fL -O ${{ env.SOURCE_URL }}/${{ env.OCP }}/OCP_src_stubs_Windows.zip
         fi
         # The 8.x archives extract flat, so unpack into a directory of our own.
         unzip -q OCP_src_stubs_*.zip -d OCP_src

@@ -47,13 +47,16 @@ runs:
         # (manylinux) Install dependencies
         # System libs only - never from conda, which would put conda binaries in the wheel.
         set -e
-        dnf install -y -q epel-release > /dev/null 2>&1 || true
-        dnf install -y -q \
+        # Retry wrapper for flaky network ops (dnf mirror / GitHub hiccups).
+        RETRY="bash $GITHUB_WORKSPACE/.github/scripts/retry.sh --"
+        $RETRY dnf install -y -q epel-release || true
+        # Not silenced (-q keeps it quiet on success) so a real failure is diagnosable.
+        $RETRY dnf install -y -q \
           mesa-libGL-devel mesa-libEGL-devel mesa-libGLU-devel freeglut-devel libXcursor-devel \
           libX11-devel libXi-devel libXmu-devel \
           freeimage-devel freetype-devel fontconfig-devel fmt-devel \
           git patch ca-certificates curl unzip cpio dnf-plugins-core \
-          autoconf automake libtool libjpeg-turbo-devel xz-devel libzstd-devel libwebp-devel zlib-devel > /dev/null 2>&1
+          autoconf automake libtool libjpeg-turbo-devel xz-devel libzstd-devel libwebp-devel zlib-devel
 
         # AlmaLinux 8 ships the real rapidjson 1.1.0 (2016), which GCC 14 rejects with
         # "assignment of read-only member GenericStringRef::length". Upstream has cut no
@@ -62,7 +65,10 @@ runs:
         # the fix - which is why the previous conda-based build never hit this. Pinning a
         # master revision here keeps us in sync with what conda provided.
         RAPIDJSON_REV=24b5e7a8b27f42fa16b96fc70aade9106cf7102f
-        curl -Ls https://github.com/Tencent/rapidjson/archive/${RAPIDJSON_REV}.tar.gz | tar xz -C /tmp
+        # Download then extract as two steps: -f makes curl fail (and retry) on an HTTP
+        # error instead of piping an error page into tar.
+        $RETRY curl -fLs -o /tmp/rapidjson.tar.gz https://github.com/Tencent/rapidjson/archive/${RAPIDJSON_REV}.tar.gz
+        tar xzf /tmp/rapidjson.tar.gz -C /tmp
         rm -rf /usr/include/rapidjson
         cp -r /tmp/rapidjson-${RAPIDJSON_REV}/include/rapidjson /usr/include/
         # record the exact revision for the third-party license notices
@@ -446,7 +452,8 @@ runs:
 
         mkdir $PKG_NAME
         cd $PKG_NAME
-        curl -O https://raw.githubusercontent.com/CadQuery/OCP/refs/heads/master/LICENSE
+        # -fL so an HTTP error fails (and retries) instead of saving an error page as LICENSE.
+        bash "$GITHUB_WORKSPACE/.github/scripts/retry.sh" -- curl -fL -O https://raw.githubusercontent.com/CadQuery/OCP/refs/heads/master/LICENSE
         cd ..
 
         if [[ "$RUNNER_OS" == "Windows" ]]; then
